@@ -26,6 +26,25 @@ Kinetic.Stage = function(config) {
 
     this.width = config.width;
     this.height = config.height;
+    if (config.fullscreen) {
+        this.width = document.documentElement.clientWidth;
+        this.height = document.documentElement.clientHeight;
+        //hiding scrollbars and no margin
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+        document.body.style.margin = "0px";
+        //handling window resizing
+        var self = this;
+        window.onresize = function () {
+            var width  = document.documentElement.clientWidth;
+            var height = document.documentElement.clientHeight;
+            //set dom dimensions
+            self.content.style.width = width + 'px';
+            self.content.style.height = height + 'px';
+            //resize stage
+            self.setSize(width, height);
+        }
+    }
     this.scale = {
         x: 1,
         y: 1
