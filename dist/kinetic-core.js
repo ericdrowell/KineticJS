@@ -1113,7 +1113,6 @@ Kinetic.Stage = function(config) {
     // call super constructors
     Kinetic.Container.apply(this, []);
     Kinetic.Node.apply(this, [config]);
-
 };
 /*
  * Stage methods
