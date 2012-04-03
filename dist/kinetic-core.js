@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Apr 01 2012
+ * Date: Apr 03 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1056,6 +1056,19 @@ Kinetic.Stage = function(config) {
 
     this.width = config.width;
     this.height = config.height;
+    if (config.fullscreen == true) {
+      this.width = document.documentElement.clientWidth;
+      this.height = document.documentElement.clientHeight;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      document.body.style.margin = "0px";
+      var self = this;
+      window.onresize = function () {
+        self.width  = document.documentElement.clientWidth;
+        self.height = document.documentElement.clientHeight;
+        self.draw();
+      }
+    }
     this.scale = {
         x: 1,
         y: 1
