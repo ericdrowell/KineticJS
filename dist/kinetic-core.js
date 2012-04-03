@@ -1062,12 +1062,6 @@ Kinetic.Stage = function(config) {
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
       document.body.style.margin = "0px";
-      var self = this;
-      window.onresize = function () {
-        self.width  = document.documentElement.clientWidth;
-        self.height = document.documentElement.clientHeight;
-        self.draw();
-      }
     }
     this.scale = {
         x: 1,
