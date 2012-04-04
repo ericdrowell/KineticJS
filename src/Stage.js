@@ -10,6 +10,7 @@
  * @param {String|DomElement} cont Container id or DOM element
  * @param {int} width
  * @param {int} height
+ * @param {bool} fitToPage If true, the Stage will fit to client page
  */
 Kinetic.Stage = function(config) {
     /*
@@ -26,7 +27,7 @@ Kinetic.Stage = function(config) {
 
     this.width = config.width;
     this.height = config.height;
-    if (config.fullscreen) {
+    if (config.fitToPage) {
         this.width = document.documentElement.clientWidth;
         this.height = document.documentElement.clientHeight;
         //hiding scrollbars and no margin

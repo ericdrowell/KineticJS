@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Apr 03 2012
+ * Date: Apr 04 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1040,6 +1040,7 @@ Kinetic.Container.prototype = {
  * @param {String|DomElement} cont Container id or DOM element
  * @param {int} width
  * @param {int} height
+ * @param {bool} fitToPage If true, the Stage will fit to client page
  */
 Kinetic.Stage = function(config) {
     /*
@@ -1056,7 +1057,7 @@ Kinetic.Stage = function(config) {
 
     this.width = config.width;
     this.height = config.height;
-    if (config.fullscreen) {
+    if (config.fitToPage) {
         this.width = document.documentElement.clientWidth;
         this.height = document.documentElement.clientHeight;
         //hiding scrollbars and no margin
