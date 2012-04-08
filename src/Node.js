@@ -565,8 +565,9 @@ Kinetic.Node.prototype = {
     /**
      * get transform of the node while taking into
      * account the transforms of its parents
+     * @param {Boolean} _isDrag for internal drag-drop usage 
      */
-    getAbsoluteTransform: function() {
+    getAbsoluteTransform: function(_isDrag) {
         // absolute transform
         var am = new Kinetic.Transform();
 
@@ -581,7 +582,7 @@ Kinetic.Node.prototype = {
 
         for(var n = 0; n < family.length; n++) {
             var node = family[n];
-            var m = node.getTransform();
+            var m = node.getTransform(node === this ? _isDrag :false);
             am.multiply(m);
         }
 
@@ -590,13 +591,17 @@ Kinetic.Node.prototype = {
     /**
      * get transform of the node while not taking
      * into account the transforms of its parents
+     * @param {Boolean} _isDrag for internal drag-drop usage 
      */
-    getTransform: function() {
+    getTransform: function(_isDrag) {
         var m = new Kinetic.Transform();
 
         if(this.attrs.x !== 0 || this.attrs.y !== 0) {
             m.translate(this.attrs.x, this.attrs.y);
         }
+        
+        if(_isDrag) return m;
+        
         if(this.attrs.rotation !== 0) {
             m.rotate(this.attrs.rotation);
         }
@@ -621,11 +626,10 @@ Kinetic.Node.prototype = {
             var pos = stage.getUserPosition();
 
             if(pos) {
-                var m = that.getTransform().getTranslation();
-                var am = that.getAbsoluteTransform().getTranslation();
+                var ap = that.getAbsoluteTransform(true).getTranslation();
                 go.drag.node = that;
-                go.drag.offset.x = pos.x - that.getAbsoluteTransform().getTranslation().x;
-                go.drag.offset.y = pos.y - that.getAbsoluteTransform().getTranslation().y;
+                go.drag.offset.x = pos.x - ap.x;
+                go.drag.offset.y = pos.y - ap.y;
             }
         });
     },

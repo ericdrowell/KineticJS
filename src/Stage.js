@@ -755,28 +755,14 @@ Kinetic.Stage.prototype = {
                     newNodePos.y = db.bottom;
                 }
 
-                /*
-                 * save rotation and scale and then
-                 * remove them from the transform
-                 */
-                var rot = node.attrs.rotation;
-                var scale = {
-                    x: node.attrs.scale.x,
-                    y: node.attrs.scale.y
-                };
-                node.attrs.rotation = 0;
-                node.attrs.scale = {
-                    x: 1,
-                    y: 1
-                };
-
                 // unravel transform
-                var it = node.getAbsoluteTransform();
+                var it = node.getAbsoluteTransform(true);
                 it.invert();
                 it.translate(newNodePos.x, newNodePos.y);
+                var pt=it.getTranslation();
                 newNodePos = {
-                    x: node.attrs.x + it.getTranslation().x,
-                    y: node.attrs.y + it.getTranslation().y
+                    x: node.attrs.x + pt.x,
+                    y: node.attrs.y + pt.y
                 };
 
                 // constraint overrides
@@ -788,13 +774,6 @@ Kinetic.Stage.prototype = {
                 }
 
                 node.setPosition(newNodePos.x, newNodePos.y);
-
-                // restore rotation and scale
-                node.rotate(rot);
-                node.attrs.scale = {
-                    x: scale.x,
-                    y: scale.y
-                };
 
                 go.drag.node.getLayer().draw();
 
