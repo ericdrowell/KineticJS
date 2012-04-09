@@ -609,8 +609,9 @@ Kinetic.Node.prototype = {
     /**
      * get transform of the node while not taking
      * into account the transforms of its parents
+     * @param {Boolean} _isDrag for internal drag-drop usage 
      */
-    getTransform: function() {
+    getTransform: function(_isDrag) {
         var m = new Kinetic.Transform();
 
         if(this.attrs.x !== 0 || this.attrs.y !== 0) {
@@ -640,11 +641,21 @@ Kinetic.Node.prototype = {
             var pos = stage.getUserPosition();
 
             if(pos) {
-                var m = that.getTransform().getTranslation();
-                var am = that.getAbsoluteTransform().getTranslation();
+                /*
+                 * save centerOffset and then
+                 * remove them from the transform
+                 */
+                var centerOffset=that.attrs.centerOffset;
+                that.attrs.centerOffset = {
+                    x: 0,
+                    y: 0
+                };
+                var ap = that.getAbsolutePosition();
                 go.drag.node = that;
-                go.drag.offset.x = pos.x - that.getAbsoluteTransform().getTranslation().x;
-                go.drag.offset.y = pos.y - that.getAbsoluteTransform().getTranslation().y;
+                go.drag.offset.x = pos.x - ap.x;
+                go.drag.offset.y = pos.y - ap.y;
+                //restore centerOffset
+                that.setCenterOffset(centerOffset.x,centerOffset.y);
             }
         });
     },

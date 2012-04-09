@@ -789,11 +789,21 @@ Kinetic.Node.prototype = {
             var pos = stage.getUserPosition();
 
             if(pos) {
-                var m = that.getTransform().getTranslation();
-                var am = that.getAbsoluteTransform().getTranslation();
+                /*
+                 * save centerOffset and then
+                 * remove them from the transform
+                 */
+                var centerOffset=that.attrs.centerOffset;
+                that.attrs.centerOffset = {
+                    x: 0,
+                    y: 0
+                };
+                var ap = that.getAbsolutePosition();
                 go.drag.node = that;
-                go.drag.offset.x = pos.x - that.getAbsoluteTransform().getTranslation().x;
-                go.drag.offset.y = pos.y - that.getAbsoluteTransform().getTranslation().y;
+                go.drag.offset.x = pos.x - ap.x;
+                go.drag.offset.y = pos.y - ap.y;
+                //restore centerOffset
+                that.setCenterOffset(centerOffset.x,centerOffset.y);
             }
         });
     },
@@ -1764,29 +1774,32 @@ Kinetic.Stage.prototype = {
                 if(db.bottom !== undefined && newNodePos.y > db.bottom) {
                     newNodePos.y = db.bottom;
                 }
-
                 /*
-                 * save rotation and scale and then
+                 * save rotation,scale,centerOffset and then
                  * remove them from the transform
                  */
                 var rot = node.attrs.rotation;
-                var scale = {
-                    x: node.attrs.scale.x,
-                    y: node.attrs.scale.y
-                };
+                var scale = node.attrs.scale;
+                var centerOffset = node.attrs.centerOffset;
+               
                 node.attrs.rotation = 0;
                 node.attrs.scale = {
                     x: 1,
                     y: 1
                 };
-
+                node.attrs.centerOffset = {
+                    x: 0,
+                    y: 0
+                };
+                
                 // unravel transform
                 var it = node.getAbsoluteTransform();
                 it.invert();
                 it.translate(newNodePos.x, newNodePos.y);
+                var pt = it.getTranslation();
                 newNodePos = {
-                    x: node.attrs.x + it.getTranslation().x,
-                    y: node.attrs.y + it.getTranslation().y
+                    x: node.attrs.x + pt.x,
+                    y: node.attrs.y + pt.y
                 };
 
                 // constraint overrides
@@ -1796,16 +1809,14 @@ Kinetic.Stage.prototype = {
                 else if(dc === 'vertical') {
                     newNodePos.x = node.attrs.x;
                 }
-
+                
                 node.setPosition(newNodePos.x, newNodePos.y);
-
-                // restore rotation and scale
+                
+                // restore rotation, scale and centerOffset
                 node.rotate(rot);
-                node.attrs.scale = {
-                    x: scale.x,
-                    y: scale.y
-                };
-
+                node.setScale(scale.x,scale.y)
+                node.setCenterOffset(centerOffset.x,centerOffset.y);
+                
                 go.drag.node.getLayer().draw();
 
                 if(!go.drag.moving) {

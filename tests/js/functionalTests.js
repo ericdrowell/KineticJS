@@ -1674,6 +1674,39 @@ Test.prototype.tests = {
         layer.add(group);
         stage.add(layer);
     },
+    'DRAG AND DROP - translate, rotate, scale and centerOffset shape, and then drag and drop': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+
+        var rect = new Kinetic.Rect({
+            x: 200,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'red',
+            stroke: 'black',
+            strokeWidth: 4,
+            draggable: true,
+            rotationDeg: 60,
+            centerOffset:{
+                x:50,
+                y:20
+            },
+            scale: {
+                x: 2,
+                y: 1
+            }
+        });
+
+        group.add(rect);
+        layer.add(group);
+        stage.add(layer);
+    },
     'STAGE - save image as png (click on circle to open new window)': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
