@@ -21,6 +21,7 @@ Kinetic.Stage = function(config) {
     this.nodeType = 'Stage';
     this.ids = {};
     this.names = {};
+    this.layerQueue = {};
 
     /*
      * if container is a string, assume it's an id for
@@ -87,6 +88,7 @@ Kinetic.Stage.prototype = {
     start: function() {
         var go = Kinetic.GlobalObject;
         go.addAnimation(this.anim);
+
         go._handleAnimation();
     },
     /**
@@ -868,6 +870,24 @@ Kinetic.Stage.prototype = {
         for(var n = 0; n < types.length; n++) {
             var baseEvent = types[n];
             this.content.addEventListener(baseEvent, handler, false);
+        }
+    },
+    /**
+     * queue layer
+     * @param {Kinetic.Layer} layer
+     */
+    _queueLayer: function(layer) {
+        var go = Kinetic.GlobalObject;
+        if(!(layer._id in this.layerQueue)) {
+            this.layerQueue[layer._id] = layer;
+
+            var anim = {
+                node: layer,
+                drawOnce: true
+            };
+
+            go.addAnimation(anim);
+            go._handleAnimation();
         }
     }
 };

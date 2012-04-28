@@ -94,17 +94,35 @@ Kinetic.GlobalObject = {
         }
     },
     _runFrames: function() {
+        var go = Kinetic.GlobalObject;
         var nodes = {};
+
         for(var n = 0; n < this.animations.length; n++) {
             var anim = this.animations[n];
-            if(anim.node && anim.node._id !== undefined) {
-                nodes[anim.node._id] = anim.node;
+            var node = anim.node;
+            
+            console.log(1);
+
+            if(node && node._id !== undefined) {
+                nodes[node._id] = anim.node;
             }
-            anim.func(this.frame);
+
+            if(anim.func !== undefined) {
+                anim.func(this.frame);
+            }
+
+            if(anim.drawOnce === true) {
+                var stage = node.getStage();
+                if(stage !== undefined) {
+                    stage.layerQueue[node._id] = undefined;
+                }
+
+                //go.removeAnimation(anim.id);
+            }
         }
 
         for(var key in nodes) {
-            nodes[key].draw();
+            nodes[key]._draw();
         }
     },
     _updateFrameObject: function() {
@@ -148,7 +166,7 @@ Kinetic.GlobalObject = {
         return !!(obj && obj.constructor && obj.call && obj.apply);
     },
     _getPoint: function(arg) {
-    	
+
         if(arg.length === 1) {
             return arg[0];
         }
@@ -1223,6 +1241,7 @@ Kinetic.Stage = function(config) {
     this.nodeType = 'Stage';
     this.ids = {};
     this.names = {};
+    this.layerQueue = {};
 
     /*
      * if container is a string, assume it's an id for
@@ -1289,6 +1308,7 @@ Kinetic.Stage.prototype = {
     start: function() {
         var go = Kinetic.GlobalObject;
         go.addAnimation(this.anim);
+
         go._handleAnimation();
     },
     /**
@@ -2071,6 +2091,24 @@ Kinetic.Stage.prototype = {
             var baseEvent = types[n];
             this.content.addEventListener(baseEvent, handler, false);
         }
+    },
+    /**
+     * queue layer
+     * @param {Kinetic.Layer} layer
+     */
+    _queueLayer: function(layer) {
+        var go = Kinetic.GlobalObject;
+        if(!(layer._id in this.layerQueue)) {
+            this.layerQueue[layer._id] = layer;
+
+            var anim = {
+                node: layer,
+                drawOnce: true
+            };
+
+            go.addAnimation(anim);
+            go._handleAnimation();
+        }
     }
 };
 // Extend Container and Node
@@ -2090,7 +2128,7 @@ Kinetic.GlobalObject.extend(Kinetic.Stage, Kinetic.Node);
  */
 Kinetic.Layer = function(config) {
     this.nodeType = 'Layer';
-    
+
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
     this.canvas.style.position = 'absolute';
@@ -2108,7 +2146,10 @@ Kinetic.Layer.prototype = {
      *  or shapes
      */
     draw: function() {
-        this._draw();
+        var stage = this.getStage();
+        if(stage) {
+            stage._queueLayer(this);
+        }
     },
     /**
      * clears the canvas context tied to the layer.  Clearing

@@ -11,7 +11,7 @@
  */
 Kinetic.Layer = function(config) {
     this.nodeType = 'Layer';
-    
+
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
     this.canvas.style.position = 'absolute';
@@ -29,7 +29,10 @@ Kinetic.Layer.prototype = {
      *  or shapes
      */
     draw: function() {
-        this._draw();
+        var stage = this.getStage();
+        if(stage) {
+            stage._queueLayer(this);
+        }
     },
     /**
      * clears the canvas context tied to the layer.  Clearing

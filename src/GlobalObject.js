@@ -66,17 +66,35 @@ Kinetic.GlobalObject = {
         }
     },
     _runFrames: function() {
+        var go = Kinetic.GlobalObject;
         var nodes = {};
+
         for(var n = 0; n < this.animations.length; n++) {
             var anim = this.animations[n];
-            if(anim.node && anim.node._id !== undefined) {
-                nodes[anim.node._id] = anim.node;
+            var node = anim.node;
+            
+            console.log(1);
+
+            if(node && node._id !== undefined) {
+                nodes[node._id] = anim.node;
             }
-            anim.func(this.frame);
+
+            if(anim.func !== undefined) {
+                anim.func(this.frame);
+            }
+
+            if(anim.drawOnce === true) {
+                var stage = node.getStage();
+                if(stage !== undefined) {
+                    stage.layerQueue[node._id] = undefined;
+                }
+
+                //go.removeAnimation(anim.id);
+            }
         }
 
         for(var key in nodes) {
-            nodes[key].draw();
+            nodes[key]._draw();
         }
     },
     _updateFrameObject: function() {
@@ -120,7 +138,7 @@ Kinetic.GlobalObject = {
         return !!(obj && obj.constructor && obj.call && obj.apply);
     },
     _getPoint: function(arg) {
-    	
+
         if(arg.length === 1) {
             return arg[0];
         }
