@@ -11,10 +11,17 @@ Kinetic.Rect = function(config) {
     this.setDefaultAttrs({
         width: 0,
         height: 0,
-        cornerRadius: 0
+        cornerRadius: 0,
+        cornerMask: 0
     });
 
     this.shapeType = "Rect";
+
+    // cornerMask: Mask Bit Layout for the Corners      
+    // 8--------1
+    // |        |
+    // |        |
+    // 4--------2
 
     config.drawFunc = function() {
         var context = this.getContext();
@@ -27,14 +34,30 @@ Kinetic.Rect = function(config) {
         else {
             // arcTo would be nicer, but browser support is patchy (Opera)
             context.moveTo(this.attrs.cornerRadius, 0);
-            context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
-            context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
-            context.lineTo(this.attrs.cornerRadius, this.attrs.height);
-            context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
-            context.lineTo(0, this.attrs.cornerRadius);
-            context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            if (this.attrs.cornerMask & 0x1) {
+               context.lineTo(this.attrs.width, 0);
+            } else {
+               context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
+               context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
+            }
+            if (this.attrs.cornerMask & 0x2) {
+               context.lineTo(this.attrs.width, this.attrs.height);
+            } else {
+               context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
+               context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
+            }
+            if (this.attrs.cornerMask & 0x4) {
+               context.lineTo(0, this.attrs.height);
+            } else {
+               context.lineTo(this.attrs.cornerRadius, this.attrs.height);
+               context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
+            }
+            if (this.attrs.cornerMask & 0x8) {
+               context.lineTo(0,0);
+            } else {
+               context.lineTo(0, this.attrs.cornerRadius);
+               context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            }
         }
         context.closePath();
         this.fillStroke();
@@ -102,6 +125,19 @@ Kinetic.Rect.prototype = {
      */
     getCornerRadius: function() {
         return this.attrs.cornerRadius;
+    },
+    /**
+     * set corner Mask
+     * @param {Number} Mask
+     */
+    setcornerMask: function(cornerMask) {
+        this.attrs.cornerMask = cornerMask;
+    },
+    /**
+     * get corner radius
+     */
+    getcornerMask: function() {
+        return this.attrs.cornerMask;
     },
 };
 
