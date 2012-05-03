@@ -1151,13 +1151,14 @@ Test.prototype.tests = {
             y: 109
         }];
 
-        var dashed = new Kinetic.Dashed({
+        var dashed = new Kinetic.Line({
             points: points,
             stroke: 'red',
             strokeWidth: 8,
             lineCap: 'round',
             lineJoin: 'round',
             draggable: true,
+            lineStyle: 'dashed',
             drawSize: 10,
             gapSize: 20
         });
