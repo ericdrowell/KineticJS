@@ -121,11 +121,11 @@ Kinetic.Line.prototype = {
     },
 
     /**
-     *  Makes an array with all the integer points on a line.
+     *  Makes an array with all the points on a line at integer intervals.
      *
      *  @param {Object} p1 X and Y of start point.
      *  @param {Object} p2 X and Y of end point.
-     *  @returns {Array} Array of all integer points in a line.
+     *  @returns {Array} Array of all points in a line at integer intervals.
      *  **/
     _getAllPoints: function(p1, p2)
     {
@@ -135,24 +135,75 @@ Kinetic.Line.prototype = {
         {
             var yMod = p1.y < p2.y ? 1 : -1;
 
-            for( var y = p1.y; y !== p2.y + yMod; y += yMod)
+            if(yMod > 0)
             {
-                allPoints.push({x: p1.x, y: y});
+                for( var y = p1.y; y <= p2.y; y += yMod)
+                {
+                    allPoints.push({x: p1.x, y: y});
+                }
+            }
+            else
+            {
+                for( var y = p1.y; y >= p2.y; y += yMod)
+                {
+                    allPoints.push({x: p1.x, y: y});
+                }
             }
         }
         else
         {
-            // increment or decrement x
-            var xMod = p1.x < p2.x ? 1 : -1;
-
             var m = (p1.y - p2.y) / (p1.x - p2.x); // slope
             var b = p1.y - p1.x * m; // y intercept
-            var y;
 
-            for( var x = p1.x; x !== p2.x + xMod; x += xMod)
+
+
+            // if the difference in Ys is greater, solve for y using x
+            if(Math.abs(p1.x - p2.x) > Math.abs(p1.y - p2.y))
             {
-                y = m * x + b;
-                allPoints.push({x: x, y: y});
+                // increment or decrement x
+                var xMod = p1.x < p2.x ? 1 : -1;
+                var y;
+
+                if(xMod > 0)
+                {
+                    for( var x = p1.x; x <= p2.x; x += xMod)
+                    {
+                        y = m * x + b;
+                        allPoints.push({x: x, y: y});
+                    }
+                }
+                else
+                {
+                    for( var x = p1.x; x >= p2.x; x += xMod)
+                    {
+                        y = m * x + b;
+                        allPoints.push({x: x, y: y});
+                    }
+                }
+            }
+            // else solve for x using y
+            else
+            {
+                // increment or decrement x
+                var yMod = p1.y < p2.y ? 1 : -1;
+                var x;
+
+                if(yMod > 0)
+                {
+                    for( var y = p1.y; y <= p2.y; y += yMod)
+                    {
+                        x = (y - b) / m;
+                        allPoints.push({x: x, y: y});
+                    }
+                }
+                else
+                {
+                    for( var y = p1.y; y >= p2.y; y += yMod)
+                    {
+                        x = (y - b) / m;
+                        allPoints.push({x: x, y: y});
+                    }
+                }
             }
         }
         return allPoints;
