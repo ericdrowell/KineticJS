@@ -1132,6 +1132,40 @@ Test.prototype.tests = {
         stage.add(layer);
 
     },
+    'SHAPES - add dashed line': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+
+        var points = [{
+            x: 73,
+            y: 160
+        }, {
+            x: 340,
+            y: 23
+        }, {
+            x: 500,
+            y: 109
+        }];
+
+        var dashed = new Kinetic.Dashed({
+            points: points,
+            stroke: 'red',
+            strokeWidth: 8,
+            lineCap: 'round',
+            lineJoin: 'round',
+            draggable: true,
+            drawSize: 10,
+            gapSize: 20
+        });
+
+        layer.add(dashed);
+        stage.add(layer);
+
+    },
     'SHAPES - add regular polygon triangle': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
