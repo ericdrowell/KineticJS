@@ -49,7 +49,6 @@ Kinetic.Line = function(config) {
                     y: this.attrs.points[n].y
                 });
 
-                // it may be better to remove this modifier altogether, the jump from 1 to 2 is weird
                 var distancePer = this._getDistance(
                 {
                     x: allPoints[0].x,
@@ -61,8 +60,8 @@ Kinetic.Line = function(config) {
                 });
 
                 // increment the index by this much for each stroke/skip
-                var drawInc = distancePer * this.attrs.drawSize;
-                var skipInc = distancePer * this.attrs.gapSize;
+                var drawInc =  Math.ceil(this.attrs.drawSize / distancePer); // 0 results in infinite loop
+                var skipInc = Math.ceil(this.attrs.gapSize / distancePer);
                 var incNow = drawInc;
 
                 for(var i = incNow, count = 0; i < allPoints.length; i += incNow, count++)
@@ -176,7 +175,7 @@ Kinetic.Line.prototype = {
         else if(b === 0)
             return a;
         else
-            return Math.floor(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
+            return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     }
 };
 
