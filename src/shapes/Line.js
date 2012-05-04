@@ -12,8 +12,9 @@ Kinetic.Line = function(config) {
         points: {},
         lineCap: 'butt',
         lineStyle: 'normal',
-        drawSize: 6,
-        gapSize: 6
+        drawSize: 6, // length of the dashes
+        gapSize: 6, // length of space between dashes
+        dashOffset: 0 // offset from start point to first dash - main purpose is for animation
     });
 
     this.shapeType = "Line";
@@ -64,7 +65,13 @@ Kinetic.Line = function(config) {
                 var skipInc = Math.ceil(this.attrs.gapSize / distancePer);
                 var incNow = drawInc;
 
-                for(var i = incNow, count = 0; i < allPoints.length; i += incNow, count++)
+                // move to the start point for this line, if necessary
+                if(this.attrs.dashOffset !== 0)
+                {
+                    context.moveTo(allPoints[this.attrs.dashOffset].x, allPoints[this.attrs.dashOffset].y);
+                }
+
+                for(var i = incNow + this.attrs.dashOffset, count = 0; i < allPoints.length; i += incNow, count++)
                 {
                     if(count % 2 === 0)
                         context.lineTo(allPoints[i].x, allPoints[i].y);
