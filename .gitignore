@@ -1,2 +1,5 @@
 .project
 jsdoc-toolkit
+node_modules
+tests/output
+npm-debug.log

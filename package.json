@@ -1,0 +1,23 @@
+{
+  "name": "kinetic",
+  "version": "3.9.4",
+  "description": "KineticJS, an HTML5 canvas library with event handling and independent layers for high performance animation",
+  "author": "Eric Rowell <eric@kineticjs.com>",
+  "contributors": [
+    {"name": "Eric Rowell", "email": "eric@kineticjs.com"},
+    {"name": "Brenton Partridge", "url": "https://github.com/bpartridge"}
+  ],
+  "scripts": {
+    "preinstall": "bundle install; thor build:dev core"
+  },
+  "main": "./dist/kinetic-core",
+  "keywords": ["canvas", "graphic", "graphics", "event", "layers", "shapes"],
+  "dependencies": {
+    "canvas": "0.12.x"
+  },
+  "devDependencies": {
+    "jsdom": "0.2.x",
+    "mkdirp": "*"
+  },
+  "license": "MIT"
+}

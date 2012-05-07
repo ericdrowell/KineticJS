@@ -19,7 +19,7 @@ Kinetic.Layer = function(config) {
     this.beforeDrawFunc = undefined;
     this.afterDrawFunc = undefined;
 
-    this.canvas = document.createElement('canvas');
+    this.canvas = Kinetic.createCanvas();
     this.context = this.canvas.getContext('2d');
     this.canvas.style.position = 'absolute';
 
