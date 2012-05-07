@@ -5,6 +5,11 @@ To build a development version of the library, run `thor build:dev VERSION`, whe
 
 If you add a file in the src directory, be sure to add the filename to the filename array in the Thorfile.
 
+#NodeJS support (experimental)
+KineticJS also runs outside of the browser in Node.js, using a headless canvas implementation for rendering. `npm install` will do the above steps through `thor build:dev core` as well as downloading the required libraries. To run unit tests, run `node tests/js/nodetestrunner.js` and view output PNGs in `tests/output`. 
+
+Usage: `Kinetic = require('kinetic')(window)` where `window` is either a browser window or a DOM from [JSDOM](https://github.com/tmpvar/jsdom) or equivalent.
+
 #Tests
 To run unit tests, open the `unitTests.html` file in the `tests/html` directory.  To run functional tests, open the `functionalTests.html` file.  The tests output the results to the console via `console.log()` so be sure to have it open.
 
