@@ -2957,6 +2957,8 @@ Test.prototype.tests = {
             x: 300,
             duration: 1,
             callback: function() {
+                log("transitionTo callback called as expected");
+
                 test(rect.getX() === 300, 'rect x is not 300');
 
                 test(go.animations.length === 0, 'should be no animations running');

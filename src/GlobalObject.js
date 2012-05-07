@@ -1,11 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 //  Global Object
 ///////////////////////////////////////////////////////////////////////
-/**
- * Kinetic Namespace
- * @namespace
- */
-var Kinetic = {};
+
 /**
  * Kinetic Global Object
  * @property {Object} GlobalObjet
@@ -100,7 +96,7 @@ Kinetic.GlobalObject = {
             this._updateFrameObject();
             this._runFrames();
             var that = this;
-            requestAnimFrame(function() {
+            Kinetic.requestAnimFrame.call(window, function() {
                 that._animationLoop();
             });
         }
@@ -147,9 +143,18 @@ Kinetic.GlobalObject = {
     }
 };
 
-window.requestAnimFrame = (function(callback) {
-    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-    function(callback) {
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
+Kinetic.setupRequestAnimFrame = function() {
+    if (typeof window !== 'undefined') {
+        Kinetic.requestAnimFrame = (function(callback) {
+            return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+            function(callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+        })();
+    }
+    else {
+        Kinetic.requestAnimFrame = function(callback) {setTimeout(callback, 1000 / 60)};
+    }
+}
+
+Kinetic.setupRequestAnimFrame();
