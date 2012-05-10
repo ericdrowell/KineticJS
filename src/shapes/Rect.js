@@ -23,8 +23,34 @@ Kinetic.Rect = function(config) {
         if(this.attrs.cornerRadius === 0) {
             // simple rect - don't bother doing all that complicated maths stuff.
             context.rect(0, 0, this.attrs.width, this.attrs.height);
-        }
-        else {
+        } else if (typeof(this.attrs.cornerRadius) === "object") {
+	    //	Mask for the Rounded Corners. Defined Keys for the objects are topRight, bottomRight, bottomLeft, topLeft 
+            context.moveTo(this.attrs.cornerRadius, 0);
+	    if ((typeof(this.attrs.cornerRadius.topRight) !== "undefined" ) && (isFinite(this.attrs.cornerRadius.topRight)) ) {
+		context.lineTo(this.attrs.width - this.attrs.cornerRadius.topRight, 0);	
+		context.arc(this.attrs.width - this.attrs.cornerRadius.topRight, this.attrs.cornerRadius.topRight, this.attrs.cornerRadius.topRight, Math.PI * 3 / 2, 0, false);
+	    } else {	
+		context.lineTo(this.attrs.width, 0);
+	    }		
+	    if ((typeof(this.attrs.cornerRadius.bottomRight) !== "undefined" ) && (isFinite(this.attrs.cornerRadius.bottomRight)) ) {
+		context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius.bottomRight);
+		context.arc(this.attrs.width - this.attrs.cornerRadius.bottomRight, this.attrs.height - this.attrs.cornerRadius.bottomRight, this.attrs.cornerRadius.bottomRight, 0, Math.PI / 2, false);
+	    } else {
+		context.lineTo(this.attrs.width, this.attrs.height);
+	    }		
+	    if ((typeof(this.attrs.cornerRadius.bottomLeft) !== "undefined" ) && (isFinite(this.attrs.cornerRadius.bottomLeft)) ) {
+		context.lineTo(this.attrs.cornerRadius.bottomLeft, this.attrs.height);
+		context.arc(this.attrs.cornerRadius.bottomLeft, this.attrs.height - this.attrs.cornerRadius.bottomLeft, this.attrs.cornerRadius.bottomLeft, Math.PI / 2, Math.PI, false);
+	    } else {
+		context.lineTo(0, this.attrs.height);
+	    }		
+	    if ((typeof(this.attrs.cornerRadius.topLeft) !== "undefined" ) && (isFinite(this.attrs.cornerRadius.topLeft)) ) {
+		context.lineTo(0, this.attrs.cornerRadius.topLeft);
+		context.arc(this.attrs.cornerRadius.topLeft, this.attrs.cornerRadius.topLeft, this.attrs.cornerRadius.topLeft, Math.PI, Math.PI * 3 / 2, false);
+	    } else {	
+		context.lineTo(0,0);
+	    }		
+        } else {
             // arcTo would be nicer, but browser support is patchy (Opera)
             context.moveTo(this.attrs.cornerRadius, 0);
             context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
