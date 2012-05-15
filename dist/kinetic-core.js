@@ -37,20 +37,26 @@ var Kinetic = {};
 // visible across the concatenated module.
 if (typeof window === 'undefined' && typeof require !== 'undefined') {
     try {
-        var KineticRequire = require; // to avoid Browserify including jsdom
-        var window = KineticRequire('jsdom').jsdom().createWindow();
-        Kinetic.window = window;
+        // Two cases here:
+        // For Browserify, we don't want require('jsdom') anywhere
+        // so that heavyweight library isn't sent to the browser.
+        // We also don't want "var window" to be evaluated in the browser.
+        // However, "var window" is necessary on Node.js to avoid polluting 
+        // the global namespace.
+        // This is the only combination that satisfies all these constraints.
+        var KineticRequire = require;
+        eval("var window = KineticRequire('jsdom').jsdom().createWindow();");
     } catch (e) {}
 }
 if (typeof window !== 'undefined' && typeof document === 'undefined') {
-    var document = window.document;
+    eval("var document = window.document;");
 }
 
 // We also need to do the same for the Image constructor.
 if (typeof Image === 'undefined' && typeof require !== 'undefined') {
     try {
-        var KineticRequire = require; // to avoid Browserify including jsdom
-        var Image = KineticRequire('canvas').Image;
+        var KineticRequire = require;
+        eval("var Image = KineticRequire('canvas').Image;");
     } catch (e) {}
 }
 
@@ -68,7 +74,7 @@ Kinetic.setWindow = function(win) {
 }
 
 Kinetic.getWindow = function() {
-    return window || Kinetic.window;
+    return window;
 }
 
 Kinetic.createCanvas = function() {

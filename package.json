@@ -11,7 +11,7 @@
     "preinstall": "bundle install; thor build:dev core; thor build:prod core"
   },
   "main": "./dist/kinetic-core",
-  "browserify": "./dist/kinetic-core.min",
+  "browserify": "./dist/kinetic-core",
   "keywords": ["canvas", "graphic", "graphics", "event", "layers", "shapes"],
   "dependencies": {
     "canvas": "0.12.x"
