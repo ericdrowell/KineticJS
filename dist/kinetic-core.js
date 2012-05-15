@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: May 07 2012
+ * Date: May 14 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -33,53 +33,48 @@
 var Kinetic = {};
 
 // In the browser, this shouldn't hurt anything.
-// In Node.js, we create "window" and "document" variables to be visible across the source code.
-var window = (typeof window === 'undefined') ? undefined : this;
-var document = (typeof document === 'undefined') ? undefined : this.document;
+// In Node.js, we ensure "window" and "document" variables to be
+// visible across the concatenated module.
+if (typeof window === 'undefined' && typeof require !== 'undefined') {
+    try {
+        var KineticRequire = require; // to avoid Browserify including jsdom
+        var window = KineticRequire('jsdom').jsdom().createWindow();
+        Kinetic.window = window;
+    } catch (e) {}
+}
+if (typeof window !== 'undefined' && typeof document === 'undefined') {
+    var document = window.document;
+}
+
+// We also need to do the same for the Image constructor.
+if (typeof Image === 'undefined' && typeof require !== 'undefined') {
+    try {
+        var KineticRequire = require; // to avoid Browserify including jsdom
+        var Image = KineticRequire('canvas').Image;
+    } catch (e) {}
+}
 
 /**
- * When the module is required, it returns a function that should instantly be passed a single argument,
- * a window that comes either from the browser or from something like jsdom.
- * It returns the Kinetic namespace.
+ * When the module is required, it returns the Kinetic namespace.
  */
 if (typeof module !== 'undefined') {
-    module.exports = function(win) {
-        window = win || window;
-        Kinetic.setupRequestAnimFrame();
-        document = window.document;
-        return Kinetic;
-    };
+    module.exports = Kinetic;
 }
 
-if (typeof window === 'undefined' && typeof require !== 'undefined') {
-    var Canvas = require('canvas');
-    Kinetic.createCanvas = function() {
-        // Merge a DOM (jsdom or browser DOM) node with a node-canvas implementation
-        var canvas = document.createElement('canvas');
-        canvas.impl = new Canvas();
-        for (var key in canvas.impl) {
-            (function(k){
-                if (k === 'undefined' || k === 'toString') return;
-                if (typeof canvas.impl[k] === 'function') {
-                    canvas[k] = function() {
-                        return canvas.impl[k].apply(canvas.impl, arguments);
-                    }
-                }
-                else {
-                    canvas.__defineSetter__(k, function(val) {canvas.impl[k] = val;});
-                    canvas.__defineGetter__(k, function() {return canvas.impl[k];});
-                }
-            })(key);
-        }
-        canvas.__defineGetter__
-        canvas.style = canvas.style || {};
-        return canvas;
-    }
+Kinetic.setWindow = function(win) {
+    if (win) Kinetic.window = window = win;
+    Kinetic.setupRequestAnimFrame();
+    document = window.document;
 }
-else {
-    Kinetic.createCanvas = function() {
-        return document.createElement('canvas');
-    }
+
+Kinetic.getWindow = function() {
+    return window || Kinetic.window;
+}
+
+Kinetic.createCanvas = function() {
+    var canvas = document.createElement('canvas');
+    canvas.style = canvas.style || {};
+    return canvas;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1461,7 +1456,8 @@ Kinetic.Stage.prototype = {
             var dataURL = layers[n].getCanvas().toDataURL();
             var imageObj = new Image();
             imageObj.onload = function() {
-                bufferContext.drawImage(this, 0, 0);
+                // node-canvas does not correctly set `this` to `imageObj` here
+                bufferContext.drawImage(imageObj, 0, 0);
                 n++;
                 if(n < layers.length) {
                     addLayer(n);

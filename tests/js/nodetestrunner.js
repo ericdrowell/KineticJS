@@ -1,5 +1,3 @@
-#!/usr/local/bin/node
-
 // This file should be executed with `node nodetestrunner.js`.
 
 var fs = require('fs');
@@ -9,9 +7,11 @@ var mkdirp = require('mkdirp'); // mkdir -p, but in node.js!
 document = jsdom.jsdom("<html><head></head><body></body></html>");
 window = document.createWindow();
 
-var Kinetic = require('../../dist/kinetic-core')(window);
+var Kinetic = require('../../dist/kinetic-core');
+Kinetic.setWindow(window);
 var Canvas = require('canvas'), Image = Canvas.Image;
 
+// Instead of quitting if a test fails, continue and print an error.
 eval(fs.readFileSync(__dirname + "/Test.js", "utf8"));
 test = function (condition, message) {
     if(!condition) {

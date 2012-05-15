@@ -153,7 +153,8 @@ Kinetic.Stage.prototype = {
             var dataURL = layers[n].getCanvas().toDataURL();
             var imageObj = new Image();
             imageObj.onload = function() {
-                bufferContext.drawImage(this, 0, 0);
+                // node-canvas does not correctly set `this` to `imageObj` here
+                bufferContext.drawImage(imageObj, 0, 0);
                 n++;
                 if(n < layers.length) {
                     addLayer(n);
