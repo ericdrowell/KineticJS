@@ -8,7 +8,7 @@
     {"name": "Brenton Partridge", "url": "https://github.com/bpartridge"}
   ],
   "scripts": {
-    "preinstall": "bundle install; thor build:dev core; thor build:prod core"
+    "preinstall": "bundle install --path vendor && thor build:dev core && thor build:prod core"
   },
   "main": "./dist/kinetic-core",
   "browserify": "./dist/kinetic-core",
