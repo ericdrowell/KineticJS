@@ -14,7 +14,7 @@
   "browserify": "./dist/kinetic-core",
   "keywords": ["canvas", "graphic", "graphics", "event", "layers", "shapes"],
   "dependencies": {
-    "canvas": "0.12.x"
+    "canvas": "https://github.com/bpartridge/node-canvas-heroku/tarball/master"
   },
   "devDependencies": {
     "jsdom": "0.2.x",
