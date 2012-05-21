@@ -654,20 +654,29 @@ Kinetic.Stage.prototype = {
         }, false);
         // mobile events
         this.content.addEventListener('touchstart', function(evt) {
-            evt.preventDefault();
+			evt.cancelBubble = true;
             that.touchStart = true;
             that._handleStageEvent(evt);
+			if (evt.cancelBubble) {
+				evt.preventDefault();
+			}
         }, false);
 
         this.content.addEventListener('touchmove', function(evt) {
-            evt.preventDefault();
+            evt.cancelBubble = true;
             that._handleStageEvent(evt);
+			if (evt.cancelBubble) {
+				evt.preventDefault();
+			}
         }, false);
 
         this.content.addEventListener('touchend', function(evt) {
-            evt.preventDefault();
+            evt.cancelBubble = true;
             that.touchEnd = true;
             that._handleStageEvent(evt);
+			if (evt.cancelBubble) {
+				evt.preventDefault();
+			}
         }, false);
     },
     /**
