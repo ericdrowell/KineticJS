@@ -226,6 +226,16 @@ Kinetic.Node.prototype = {
                                 that._setAttr(obj[key], 'width', size.width);
                                 that._setAttr(obj[key], 'height', size.height);
                                 break;
+                            case 'height':
+                                if (that.nodeType == 'Stage' && that.content) {
+                                    that.setSize(that.attrs['width'], val);
+                                    break;
+                                }
+                            case 'width':
+                                if (that.nodeType == 'Stage' && that.content) {
+                                    that.setSize(val, that.attrs['height']);
+                                    break;
+                                }                                
                             default:
                                 that._setAttr(obj, key, c[key]);
                                 break;
