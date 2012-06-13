@@ -26,6 +26,8 @@ Kinetic.Container.prototype = {
         while(this.children.length > 0) {
             this.remove(this.children[0]);
         }
+        
+        return this;
     },
     /**
      * add node to container
