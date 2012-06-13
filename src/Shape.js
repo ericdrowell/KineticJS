@@ -93,6 +93,8 @@ Kinetic.Shape.prototype = {
         if(appliedShadow) {
             this.stroke();
         }
+        
+        return this;
     },
     /**
      * helper method to fill the shape with a color, linear gradient,
@@ -174,6 +176,8 @@ Kinetic.Shape.prototype = {
         if(appliedShadow) {
             this.fill();
         }
+        
+        return this;
     },
     /**
      * helper method to fill text and appy shadows if needed
@@ -194,6 +198,8 @@ Kinetic.Shape.prototype = {
         if(appliedShadow) {
             this.fillText(text, x, y);
         }
+        
+        return this;
     },
     /**
      * helper method to stroke text and apply shadows
@@ -224,6 +230,8 @@ Kinetic.Shape.prototype = {
         if(appliedShadow) {
             this.strokeText(text, x, y);
         }
+        
+        return this;
     },
     /**
      * helper method to draw an image and apply
@@ -254,6 +262,8 @@ Kinetic.Shape.prototype = {
         if(appliedShadow) {
             this.drawImage.apply(this, arguments);
         }
+        
+        return this;
     },
     /**
      * helper method to set the line join of a shape
@@ -264,6 +274,8 @@ Kinetic.Shape.prototype = {
         if(this.attrs.lineJoin !== undefined) {
             context.lineJoin = this.attrs.lineJoin;
         }
+        
+        return this;
     },
     /**
      * apply shadow.  return true if shadow was applied
@@ -306,12 +318,16 @@ Kinetic.Shape.prototype = {
 
         var imageData = bufferLayerContext.getImageData(0, 0, w, h);
         this.data = imageData.data;
+        
+        return this;
     },
     /**
      * clear shape data
      */
     clearData: function() {
         this.data = [];
+        
+        return this;
     },
     /**
      * determines if point is in the shape
