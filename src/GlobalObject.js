@@ -336,6 +336,8 @@ Kinetic.GlobalObject = {
             var obj = {};
             obj[attr] = arg;
             this.setAttrs(obj);
+            
+            return this;
         };
     },
     _addGetter: function(constructor, attr) {
