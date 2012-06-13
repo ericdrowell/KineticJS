@@ -63,6 +63,8 @@ Kinetic.Stage.prototype = {
         this.anim = {
             func: func
         };
+        
+        return this;
     },
     /**
      * start animation
@@ -74,6 +76,8 @@ Kinetic.Stage.prototype = {
             go._handleAnimation();
             this.animRunning = true;
         }
+        
+        return this;
     },
     /**
      * stop animation
@@ -82,12 +86,16 @@ Kinetic.Stage.prototype = {
         var go = Kinetic.GlobalObject;
         go._removeAnimation(this.anim);
         this.animRunning = false;
+        
+        return this;
     },
     /**
      * draw children
      */
     draw: function() {
         this._drawChildren();
+        
+        return this;
     },
     /**
      * set stage size
@@ -96,6 +104,8 @@ Kinetic.Stage.prototype = {
         // set stage dimensions
         var size = Kinetic.GlobalObject._getSize(arguments);
         this.setAttrs(size);
+        
+        return this;
     },
     /**
      * return stage size
@@ -114,6 +124,8 @@ Kinetic.Stage.prototype = {
         for(var n = 0; n < layers.length; n++) {
             layers[n].clear();
         }
+        
+        return this;
     },
     /**
      * Creates a composite data URL and passes it to a callback. If MIME type is not
@@ -203,6 +215,8 @@ Kinetic.Stage.prototype = {
         // defaults
         this._setStageDefaultProperties();
         this.setAttrs(this.defaultNodeAttrs);
+        
+        return this;
     },
     /**
      * load stage with JSON string.  De-serializtion does not generate custom
@@ -251,6 +265,8 @@ Kinetic.Stage.prototype = {
 
         loadNode(this, obj);
         this.draw();
+        
+        return this;
     },
     /**
      * get mouse position for desktop apps
