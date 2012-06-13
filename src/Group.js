@@ -10,7 +10,7 @@
  * @param {Object} config
  */
 Kinetic.Group = function(config) {
-    this.nodeType = 'Group';;
+    this.nodeType = 'Group';
     
     // call super constructors
     Kinetic.Container.apply(this, []);
@@ -24,6 +24,8 @@ Kinetic.Group.prototype = {
         if(this.attrs.visible) {
             this._drawChildren();
         }
+        
+        return this;
     }
 };
 
