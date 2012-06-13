@@ -17,8 +17,15 @@ Kinetic.Text = function(config) {
         padding: 0,
         fontStyle: 'normal',
         width: 'auto',
-        detectionType: 'pixel'
+        detectionType: 'pixel',
+        wrap: {
+            activated: false,
+            spacing: 0,
+            //breakWords: false (to be done)
+        }
     });
+    
+    this.setText(this.attrs.text); // convert given text in array
 
     this.shapeType = "Text";
 
@@ -63,7 +70,7 @@ Kinetic.Text = function(config) {
         context.restore();
 
         var tx = p + x;
-        var ty = textHeight / 2 + p + y;
+        var ty = this.getLineHeight() / 2 + p + y;
 
         // clipping region for max width
         context.save();
@@ -75,8 +82,12 @@ Kinetic.Text = function(config) {
         }
 
         // draw text
-        this.fillText(this.attrs.text, tx, ty);
-        this.strokeText(this.attrs.text, tx, ty);
+        for(var i=0; i<this.attrs.text.length; i++) {
+            this.fillText(this.attrs.text[i], tx, ty);
+            this.strokeText(this.attrs.text[i], tx, ty);
+            
+            ty += this.getLineHeight();
+        }
 
         context.restore();
     };
@@ -100,10 +111,16 @@ Kinetic.Text.prototype = {
         return this.getTextSize().height;
     },
     /**
+     * get line height in pixels
+     */
+    getLineHeight: function() {
+        return parseInt(this.attrs.fontSize, 10) + this.attrs.wrap.spacing;
+    }
+    /**
      * get text size in pixels
      */
     getTextSize: function() {
-        var context = this.getContext();
+        var context = this.getContext(), length = this.attrs.text.length;
 
         /**
          * if the text hasn't been added a layer yet there
@@ -111,8 +128,7 @@ Kinetic.Text.prototype = {
          * a dummy context
          */
         if(!context) {
-            var dummyCanvas = document.createElement('canvas');
-            context = dummyCanvas.getContext('2d');
+            context = this._createDummyContext();
         }
 
         context.save();
@@ -121,16 +137,59 @@ Kinetic.Text.prototype = {
         context.restore();
         return {
             width: metrics.width,
-            height: parseInt(this.attrs.fontSize, 10)
+            height: this.getLineHeight() * length + this.attrs.wrap.spacing * (length - 1)
         };
+    },
+    
+    setText: function(t) { // exceptionnaly create setter for text because we need to wrap it if necessary
+        if(this.attrs.wrap.activated) {
+            this.attrs.text = this._wrapText(t);
+            return this;
+        }
+        
+        this.attrs.text = [t];
+        return this;
+    }
+    
+    _createDummyContext: function() {
+        var dummyCanvas = document.createElement('canvas');
+        return dummyCanvas.getContext('2d');
+    }
+    
+    _wrapText: function(t) {
+        var context = this.getContext(), curline = "", testline = "", lines = [], words = this.attrs.text.split(" ");
+
+        /**
+         * if the text hasn't been added a layer yet there
+         * will be no associated context.  Will have to create
+         * a dummy context
+         */
+        if(!context) {
+            context = this._createDummyContext();
+        }
+        	
+		for(i=0; i<words.length; i++) {
+			testline = curline + words[i] + " ";
+			
+			if(context.measureText(testline).width > this.attrs.width) {
+				lines.push(curline);
+				curline = words[i] + " ";
+			} else {
+				curline = testline;
+			}
+		}
+		
+		lines.push(curline);
+		
+		return lines;
     }
 };
 // extend Shape
 Kinetic.GlobalObject.extend(Kinetic.Text, Kinetic.Shape);
 
 // add setters and getters
-Kinetic.GlobalObject.addSetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width']);
-Kinetic.GlobalObject.addGetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width']);
+Kinetic.GlobalObject.addSetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', /* text have his special setter */, 'width', 'wrap']);
+Kinetic.GlobalObject.addGetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width', 'wrap']);
 
 /**
  * set font family
