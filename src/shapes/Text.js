@@ -21,7 +21,7 @@ Kinetic.Text = function(config) {
         wrap: {
             activated: false,
             spacing: 0,
-            //breakWords: false (to be done)
+            breakWords: false
         }
     });
     
@@ -157,7 +157,11 @@ Kinetic.Text.prototype = {
     }
     
     _wrapText: function(t) {
-        var context = this.getContext(), curline = "", testline = "", lines = [], words = this.attrs.text.split(" ");
+    	if(!this.attrs.wrap.activated) {
+    		return;
+    	}
+    	
+        var context = this.getContext(), curline = "", testline = "", lines = [], words = this.attrs.text.split(" "), i, j;
 
         /**
          * if the text hasn't been added a layer yet there
@@ -168,20 +172,34 @@ Kinetic.Text.prototype = {
             context = this._createDummyContext();
         }
         	
-		for(i=0; i<words.length; i++) {
-			testline = curline + words[i] + " ";
-			
-			if(context.measureText(testline).width > this.attrs.width) {
+	for(i=0; i<words.length; i++) {
+		testline = curline + words[i] + " ";
+		
+		if(context.measureText(testline).width > this.attrs.width) {
+			if(this.attrs.wrap.breakWords) {
+				for(j=0; j<words[i].length; i++) {
+					if(context.measureText(curline + words[i].substring(0, j)).width > this.attrs.width) {
+						if(j > 0) {
+							words[i] = words[i].substring(0, j-1) + "-";
+							curline += words[i];
+						}
+						
+						lines.push(curline);
+						curline = words[i].substring(j-1) + " ";
+					}
+				}
+			} else {
 				lines.push(curline);
 				curline = words[i] + " ";
-			} else {
-				curline = testline;
 			}
+		} else {
+			curline = testline;
 		}
-		
-		lines.push(curline);
-		
-		return lines;
+	}
+	
+	lines.push(curline);
+	
+	return lines;
     }
 };
 // extend Shape
