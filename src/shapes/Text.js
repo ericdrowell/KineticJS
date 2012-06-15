@@ -12,20 +12,20 @@ Kinetic.Text = function(config) {
         fontFamily: 'Calibri',
         text: '',
         fontSize: 12,
-        align: 'left',
-        verticalAlign: 'top',
         padding: 0,
         fontStyle: 'normal',
         width: 'auto',
         detectionType: 'pixel',
         wrap: {
             activated: false,
-            spacing: 0,
-            breakWords: false
-        }
+            spacing: 0
+        },
+	boxAlign: {
+		vertical: 'top',
+		horizontal: 'left'
+	},
+	textAlign: 'left'
     });
-    
-    this.setText(this.attrs.text); // convert given text in array
 
     this.shapeType = "Text";
 
@@ -40,7 +40,7 @@ Kinetic.Text = function(config) {
         var y = 0;
         var that = this;
 
-        switch (this.attrs.align) {
+        switch (this.attrs.boxAlign.horizontal) { // calculate spacing for relative coordinates
             case 'center':
                 x = textWidth / -2 - p;
                 break;
@@ -49,7 +49,7 @@ Kinetic.Text = function(config) {
                 break;
         }
 
-        switch (this.attrs.verticalAlign) {
+        switch (this.attrs.boxAlign.vertical) {
             case 'middle':
                 y = textHeight / -2 - p;
                 break;
@@ -83,6 +83,15 @@ Kinetic.Text = function(config) {
 
         // draw text
         for(var i=0; i<this.attrs.text.length; i++) {
+			switch(this.attrs.textAlign) { // calculate spacing for alignment (text)
+				case 'center':
+					tx = p/2 + x + textWidth / 2 - context.measureText(this.attrs.text[i]).width / 2;
+				break;
+				case 'right':
+					tx = p + x + textWidth - context.measureText(this.attrs.text[i]).width;
+				break;
+			}
+			
             this.fillText(this.attrs.text[i], tx, ty);
             this.strokeText(this.attrs.text[i], tx, ty);
             
@@ -91,8 +100,10 @@ Kinetic.Text = function(config) {
 
         context.restore();
     };
+	
     // call super constructor
     Kinetic.Shape.apply(this, [config]);
+	this.setText(this.attrs.text); // convert given text in array
 };
 /*
  * Text methods
@@ -115,7 +126,7 @@ Kinetic.Text.prototype = {
      */
     getLineHeight: function() {
         return parseInt(this.attrs.fontSize, 10) + this.attrs.wrap.spacing;
-    }
+    },
     /**
      * get text size in pixels
      */
@@ -149,12 +160,12 @@ Kinetic.Text.prototype = {
         
         this.attrs.text = [t];
         return this;
-    }
+    },
     
     _createDummyContext: function() {
         var dummyCanvas = document.createElement('canvas');
         return dummyCanvas.getContext('2d');
-    }
+    },
     
     _wrapText: function(t) {
     	if(!this.attrs.wrap.activated) {
@@ -171,42 +182,35 @@ Kinetic.Text.prototype = {
         if(!context) {
             context = this._createDummyContext();
         }
-        	
-	for(i=0; i<words.length; i++) {
-		testline = curline + words[i] + " ";
 		
-		if(context.measureText(testline).width > this.attrs.width) {
-			if(this.attrs.wrap.breakWords) {
-				for(j=0; j<words[i].length; i++) {
-					if(context.measureText(curline + words[i].substring(0, j)).width > this.attrs.width) {
-						if(j > 0) {
-							words[i] = words[i].substring(0, j-1) + "-";
-							curline += words[i];
-						}
-						
-						lines.push(curline);
-						curline = words[i].substring(j-1) + " ";
-					}
-				}
-			} else {
+		context.save();
+		context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+		
+		curline = words[0];
+        	
+		for(i=1; i<words.length; i++) {
+			testline = curline + " " + words[i];
+			
+			if(context.measureText(testline).width > this.attrs.width) {
 				lines.push(curline);
-				curline = words[i] + " ";
+				curline = words[i];
+			} else {
+				curline = testline;
 			}
-		} else {
-			curline = testline;
 		}
-	}
-	
-	lines.push(curline);
-	
-	return lines;
+		
+		lines.push(curline);
+		
+		context.restore();
+		
+		return lines;
     }
 };
 // extend Shape
 Kinetic.GlobalObject.extend(Kinetic.Text, Kinetic.Shape);
 
 // add setters and getters
-Kinetic.GlobalObject.addSetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', /* text have his special setter */, 'width', 'wrap']);
+Kinetic.GlobalObject.addSetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', /* text have his special setter */ 'width', 'wrap']);
 Kinetic.GlobalObject.addGetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width', 'wrap']);
 
 /**
