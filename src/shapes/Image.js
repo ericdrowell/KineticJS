@@ -14,7 +14,8 @@ Kinetic.Image = function(config) {
             y: 0,
             width: undefined,
             height: undefined
-        }
+        },
+        cornerRadius: 0
     });
 
     this.shapeType = "Image";
@@ -34,6 +35,22 @@ Kinetic.Image = function(config) {
             context.closePath();
             this.fill();
             this.stroke();
+            
+            // add corners if asked
+            if(this.attrs.cornerRadius > 0) {
+                context.beginPath();
+                    context.moveTo(this.attrs.cornerRadius, 0);
+                    context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
+                    context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
+                    context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
+                    context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
+                    context.lineTo(this.attrs.cornerRadius, this.attrs.height);
+                    context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
+                    context.lineTo(0, this.attrs.cornerRadius);
+                    context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+                context.closePath();
+                context.clip();
+            }
 
             // if cropping
             if(cropWidth !== undefined && cropHeight !== undefined) {

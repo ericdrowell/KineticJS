@@ -63,6 +63,8 @@ Kinetic.Layer.prototype = {
                 that.draw();
             }, 17);
         }
+        
+        return this;
     },
     /**
      * set throttle
@@ -70,6 +72,8 @@ Kinetic.Layer.prototype = {
      */
     setThrottle: function(throttle) {
         this.attrs.throttle = throttle;
+        
+        return this;
     },
     /**
      * get throttle
@@ -82,12 +86,16 @@ Kinetic.Layer.prototype = {
      */
     beforeDraw: function(func) {
         this.beforeDrawFunc = func;
+        
+        return this;
     },
     /**
      * set after draw function handler
      */
     afterDraw: function(func) {
         this.afterDrawFunc = func;
+        
+        return this;
     },
     /**
      * clears the canvas context tied to the layer.  Clearing
@@ -99,6 +107,8 @@ Kinetic.Layer.prototype = {
         var context = this.getContext();
         var canvas = this.getCanvas();
         context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        return this;
     },
     /**
      * get layer canvas

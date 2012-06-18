@@ -89,6 +89,8 @@ Kinetic.Node.prototype = {
                 handler: handler
             });
         }
+        
+        return this;
     },
     /**
      * remove event bindings from the node.  Pass in a string of
@@ -126,6 +128,8 @@ Kinetic.Node.prototype = {
                 delete this.eventListeners[baseEvent];
             }
         }
+        
+        return this;
     },
     /**
      * get attrs
@@ -157,6 +161,8 @@ Kinetic.Node.prototype = {
                 }
             }
         }
+        
+        return this;
     },
     /**
      * set attrs
@@ -265,6 +271,8 @@ Kinetic.Node.prototype = {
             }
             setAttrs(this.attrs, config, 0);
         }
+        
+        return this;
     },
     /**
      * determine if shape is visible or not.  Shape is visible only
@@ -284,6 +292,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: true
         });
+        
+        return this;
     },
     /**
      * hide node
@@ -292,6 +302,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: false
         });
+        
+        return this;
     },
     /**
      * get zIndex
@@ -353,6 +365,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             scale: arguments
         });
+        
+        return this;
     },
     /**
      * set node position
@@ -361,6 +375,8 @@ Kinetic.Node.prototype = {
     setPosition: function() {
         var pos = Kinetic.GlobalObject._getXY(arguments);
         this.setAttrs(pos);
+        
+        return this;
     },
     /**
      * get node position relative to container
@@ -421,6 +437,8 @@ Kinetic.Node.prototype = {
             x: scale.x,
             y: scale.y
         };
+        
+        return this;
     },
     /**
      * move node by an amount
@@ -443,6 +461,8 @@ Kinetic.Node.prototype = {
             x: x,
             y: y
         });
+        
+        return this;
     },
     /**
      * set node rotation in degrees
@@ -450,6 +470,8 @@ Kinetic.Node.prototype = {
      */
     setRotationDeg: function(deg) {
         this.setRotation(deg * Math.PI / 180);
+        
+        return this;
     },
     /**
      * get rotation in degrees
@@ -465,6 +487,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             rotation: this.getRotation() + theta
         });
+        
+        return this;
     },
     /**
      * rotate node by an amount in degrees
@@ -474,6 +498,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             rotation: this.getRotation() + (deg * Math.PI / 180)
         });
+        
+        return this;
     },
     /**
      * listen or don't listen to events
@@ -483,6 +509,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             listen: listen
         });
+        
+        return this;
     },
     /**
      * is listening or not
@@ -498,6 +526,8 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.push(this);
         this.parent._setChildrenIndices();
+        
+        return this;
     },
     /**
      * move node up
@@ -507,6 +537,8 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.splice(index + 1, 0, this);
         this.parent._setChildrenIndices();
+        
+        return this;
     },
     /**
      * move node down
@@ -518,6 +550,8 @@ Kinetic.Node.prototype = {
             this.parent.children.splice(index - 1, 0, this);
             this.parent._setChildrenIndices();
         }
+        
+        return this;
     },
     /**
      * move node to bottom
@@ -527,6 +561,8 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.unshift(this);
         this.parent._setChildrenIndices();
+        
+        return this;
     },
     /**
      * set zIndex
@@ -537,6 +573,8 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.splice(zIndex, 0, this);
         this.parent._setChildrenIndices();
+        
+        return this;
     },
     /**
      * get absolute alpha
@@ -559,6 +597,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             draggable: draggable
         });
+        
+        return this;
     },
     /**
      * determine if node is currently in drag and drop mode
@@ -582,6 +622,8 @@ Kinetic.Node.prototype = {
         this.index = newContainer.children.length - 1;
         this.parent = newContainer;
         newContainer._setChildrenIndices();
+        
+        return this;
     },
     /**
      * get parent container
@@ -622,6 +664,8 @@ Kinetic.Node.prototype = {
      */
     simulate: function(eventType) {
         this._handleEvent(eventType, {});
+        
+        return this;
     },
     /**
      * set offset
@@ -632,6 +676,8 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             offset: arguments
         });
+        
+        return this;
     },
     /**
      * transition node to another state.  Any property that can accept a real
