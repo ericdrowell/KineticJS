@@ -13,25 +13,30 @@ Kinetic.Text = function(config) {
         text: '',
         fontSize: 12,
         padding: 0,
-        fontStyle: 'normal',
+        fontStyle: {
+            bold: false,
+            italic: false,
+            underline: false
+        },
         width: 'auto',
         detectionType: 'pixel',
         wrap: {
             activated: false,
             spacing: 0
         },
-	boxAlign: {
-		vertical: 'top',
-		horizontal: 'left'
-	},
-	textAlign: 'left'
+        boxAlign: {
+            vertical: 'top',
+            horizontal: 'left'
+        },
+        textAlign: 'left'
     });
 
     this.shapeType = "Text";
 
     config.drawFunc = function() {
         var context = this.getContext();
-        context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
+        context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
         context.textBaseline = 'middle';
         var textHeight = this.getTextHeight();
         var textWidth = this.attrs.width === 'auto' ? this.getTextWidth() : this.attrs.width;
@@ -83,17 +88,23 @@ Kinetic.Text = function(config) {
 
         // draw text
         for(var i=0; i<this.attrs.text.length; i++) {
-			switch(this.attrs.textAlign) { // calculate spacing for alignment (text)
-				case 'center':
-					tx = p/2 + x + textWidth / 2 - context.measureText(this.attrs.text[i]).width / 2;
-				break;
-				case 'right':
-					tx = p + x + textWidth - context.measureText(this.attrs.text[i]).width;
-				break;
-			}
-			
+            var tmpspace = context.measureText(this.attrs.text[i]).width;
+            
+            switch(this.attrs.textAlign) { // calculate spacing for alignment (text)
+                case 'center':
+                    tx = p/2 + x + textWidth / 2 - tmpspace / 2;
+                break;
+                case 'right':
+                    tx = p + x + textWidth - tmpspace;
+                break;
+            }
+            
             this.fillText(this.attrs.text[i], tx, ty);
             this.strokeText(this.attrs.text[i], tx, ty);
+            
+            if(this.attrs.fontStyle.underline) {
+                context.fillRect(tx, ty + parseInt(this.attrs.fontSize, 10) / 2, tmpspace, 1);
+            }
             
             ty += this.getLineHeight();
         }
@@ -132,6 +143,7 @@ Kinetic.Text.prototype = {
      */
     getTextSize: function() {
         var context = this.getContext(), length = this.attrs.text.length;
+        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
 
         /**
          * if the text hasn't been added a layer yet there
@@ -143,7 +155,7 @@ Kinetic.Text.prototype = {
         }
 
         context.save();
-        context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+        context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
         var metrics = context.measureText(this.attrs.text);
         context.restore();
         return {
@@ -173,7 +185,8 @@ Kinetic.Text.prototype = {
     	}
     	
         var context = this.getContext(), curline = "", testline = "", lines = [], words = this.attrs.text.split(" "), i, j;
-
+        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
+        
         /**
          * if the text hasn't been added a layer yet there
          * will be no associated context.  Will have to create
@@ -184,7 +197,7 @@ Kinetic.Text.prototype = {
         }
 		
 		context.save();
-		context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+		context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
 		
 		curline = words[0];
         	
