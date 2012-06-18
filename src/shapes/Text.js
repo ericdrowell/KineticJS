@@ -103,7 +103,7 @@ Kinetic.Text = function(config) {
             this.strokeText(this.attrs.text[i], tx, ty);
             
             if(this.attrs.fontStyle.underline) {
-                context.fillRect(tx, ty + parseInt(this.attrs.fontSize, 10) / 2, tmpspace, 1);
+                context.fillRect(tx, ty + parseInt(this.attrs.fontSize, 10) / 2 + 3, tmpspace, 1);
             }
             
             ty += this.getLineHeight();
