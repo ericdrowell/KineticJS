@@ -596,6 +596,12 @@ Kinetic.Node.prototype = {
         this._handleEvent(eventType, {});
     },
     /**
+     * trigger for code consistency with certain libraries
+     */
+    trigger: function() {
+        this.simulate.apply(this, arguments);
+    },
+    /**
      * set offset
      * @param {Number} x
      * @param {Number} y
