@@ -35,8 +35,7 @@ Kinetic.Text = function(config) {
 
     config.drawFunc = function() {
         var context = this.getContext();
-        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
-        context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+        context.font = this._makeStyle();
         context.textBaseline = 'middle';
         var textHeight = this.getTextHeight();
         var textWidth = this.attrs.width === 'auto' ? this.getTextWidth() : this.attrs.width;
@@ -66,7 +65,21 @@ Kinetic.Text = function(config) {
         // draw path
         context.save();
         context.beginPath();
-        context.rect(x, y, textWidth + p * 2, textHeight + p * 2);
+        
+        if(this.attrs.cornerRadius == 0) {
+            context.rect(x, y, textWidth + p * 2, textHeight + p * 2);
+        } else {
+            // see Kinetic.Rect for more infos on corners
+            context.moveTo(this.attrs.cornerRadius, 0);
+            context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
+            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
+            context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
+            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
+            context.lineTo(this.attrs.cornerRadius, this.attrs.height);
+            context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
+            context.lineTo(0, this.attrs.cornerRadius);
+            context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+        }
         context.closePath();
 
         this.fill();
@@ -143,7 +156,6 @@ Kinetic.Text.prototype = {
      */
     getTextSize: function() {
         var context = this.getContext(), length = this.attrs.text.length;
-        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
 
         /**
          * if the text hasn't been added a layer yet there
@@ -155,7 +167,7 @@ Kinetic.Text.prototype = {
         }
 
         context.save();
-        context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+        context.font = this._makeStyle();
         var metrics = context.measureText(this.attrs.text);
         context.restore();
         return {
@@ -163,45 +175,51 @@ Kinetic.Text.prototype = {
             height: this.getLineHeight() * length + this.attrs.wrap.spacing * (length - 1)
         };
     },
-    
-    setText: function(t) { // exceptionnaly create setter for text because we need to wrap it if necessary
-        if(this.attrs.wrap.activated) {
-            this.attrs.text = this._wrapText(t);
-            return this;
-        }
-        
-        this.attrs.text = [t];
+    /**
+     * exceptionnaly create setter for text because we need to wrap it if necessary
+     */
+    setText: function(t) {
+        this.attrs.text = this._wrapText(t);
         return this;
     },
-    
+    /**
+     * create fake context for text measuring
+     */
     _createDummyContext: function() {
         var dummyCanvas = document.createElement('canvas');
         return dummyCanvas.getContext('2d');
     },
-    
+    /**
+     * make style chain from attributes
+     */
+    _makeStyle: function() {
+        return ((this.attrs.fontStyle.bold) ? 'bold' : '') + ((this.attrs.fontStyle.italic) ? 'italic' : '') + ' ' +
+               this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+    }
+    /**
+     * wrap given text and returns array
+     */
     _wrapText: function(t) {
-    	if(!this.attrs.wrap.activated) {
-    		return;
+    	if(!this.attrs.wrap.activated || t.length == 0) {
+    		return t;
     	}
     	
-        var context = this.getContext(), curline = "", testline = "", lines = [], words = this.attrs.text.split(" "), i, j;
-        var style = ((this.attrs.fontStyle.bold) ? 'bold ' : '') + ((this.attrs.fontStyle.italic) ? 'italic': '');
-        
-        /**
-         * if the text hasn't been added a layer yet there
-         * will be no associated context.  Will have to create
-         * a dummy context
-         */
-        if(!context) {
-            context = this._createDummyContext();
-        }
+        var context = this.getContext() || this._createDummyContext();
+        var curline = "";
+        var testline = "";
+        var lines = [];
+        var words = this.attrs.text.split(" ");
 		
 		context.save();
-		context.font = style + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+		context.font = this._makeStyle();
+        
+        if(words.length == 1) {
+            return [words[0]];
+        }
 		
 		curline = words[0];
         	
-		for(i=1; i<words.length; i++) {
+		for(var i=1; i<words.length; i++) {
 			testline = curline + " " + words[i];
 			
 			if(context.measureText(testline).width > this.attrs.width) {
