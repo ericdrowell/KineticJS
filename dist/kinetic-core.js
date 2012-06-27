@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Jun 24 2012
+ * Date: Jun 27 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -3882,6 +3882,7 @@ Kinetic.Text = function(config) {
         text: '',
         fontSize: 12,
         align: 'left',
+        textAlign: 'left',
         verticalAlign: 'top',
         padding: 0,
         fontStyle: 'normal',
@@ -3931,8 +3932,14 @@ Kinetic.Text = function(config) {
 
         context.restore();
 
-        var tx = p + x;
         var ty = textHeight / 2 + p + y;
+        var offset = this.getTextWidth() - this.attrs.width;
+
+        switch(this.attrs.textAlign) {
+            case 'center': var tx = (p + x + offset) / 2; break;
+            case 'left': var tx = p + x; break;
+            case 'right': var tx = (p + x + offset); break;
+        }
 
         // clipping region for max width
         context.save();
@@ -3989,7 +3996,7 @@ Kinetic.Text.prototype = {
 Kinetic.GlobalObject.extend(Kinetic.Text, Kinetic.Shape);
 
 // add setters and getters
-Kinetic.GlobalObject.addSettersGetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width']);
+Kinetic.GlobalObject.addSettersGetters(Kinetic.Text, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth', 'padding', 'align', 'verticalAlign', 'text', 'width', 'textAlign']);
 
 /**
  * set font family
