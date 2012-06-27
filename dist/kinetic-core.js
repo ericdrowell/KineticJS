@@ -3933,7 +3933,7 @@ Kinetic.Text = function(config) {
         context.restore();
 
         var ty = textHeight / 2 + p + y;
-        var offset = this.getTextWidth() - this.attrs.width;
+        var offset = textWidth - this.getTextWidth();
 
         switch(this.attrs.textAlign) {
             case 'center': var tx = (p + x + offset) / 2; break;
