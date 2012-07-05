@@ -33,6 +33,10 @@ Kinetic.Node = Kinetic.Class.extend({
 
         this.setDefaultAttrs(this.defaultNodeAttrs);
         this.eventListeners = {};
+		
+		this.on('stylerChange', function() {
+			this.setAttrs(this.attrs.styler.getProperties());
+		});
 
         this.setAttrs(config);
 
@@ -57,6 +61,7 @@ Kinetic.Node = Kinetic.Class.extend({
                 }
             }
         });
+		
         /*
          * simulate draggable change event
          * to init drag and drop logic from the
@@ -806,7 +811,7 @@ Kinetic.Node._addGetter = function(constructor, attr) {
     };
 };
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening']);
+Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening', 'styler']);
 Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 
 /**
