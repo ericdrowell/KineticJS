@@ -8,15 +8,15 @@
 /**
  * Styler constructor
  */
-Kinetic.Styler = function(properties) {
-	this.properties = this._updateProperties(properties);
+Kinetic.Styler = function(config) {
+	this.config = this._updateConfig(config);
 };
 
 /**
  * Styler methods
  */
 Kinetic.Styler.prototype = {
-	_updateProperties: function(p) {
+	_updateConfig: function(p) {
 		if(p instanceof Array) {
 			var back = {};
 			
@@ -30,11 +30,11 @@ Kinetic.Styler.prototype = {
 		}
 	},
 	
-	setProperties: function(p) {
-		this.properties = this._updateProperties(properties);
+	getConfig: function() {
+		return this.config;
 	},
 	
-	getProperties: function() {
-		return this.properties;
+	setConfig: function() {
+		this.config = this._updateConfig(config);
 	}
 };

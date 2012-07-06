@@ -35,7 +35,7 @@ Kinetic.Node = Kinetic.Class.extend({
         this.eventListeners = {};
 		
 		this.on('stylerChange', function() {
-			this.setAttrs(this.attrs.styler.getProperties());
+			this.setAttrs(this.attrs.styler.getConfig());
 		});
 
         this.setAttrs(config);
@@ -576,6 +576,15 @@ Kinetic.Node = Kinetic.Class.extend({
     simulate: function(eventType) {
         this._handleEvent(eventType, {});
     },
+	/**
+	 * clone self
+	 * @param {Object} params
+	 */
+	clone: function(params) {
+		var newclass = new this.constructor(this.attrs);
+		newclass.setAttrs(params);
+		return newclass;
+	},
     /**
      * transition node to another state.  Any property that can accept a real
      *  number can be transitioned, including x, y, rotation, alpha, strokeWidth,
