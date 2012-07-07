@@ -33,10 +33,6 @@ Kinetic.Node = Kinetic.Class.extend({
 
         this.setDefaultAttrs(this.defaultNodeAttrs);
         this.eventListeners = {};
-		
-		this.on('stylerChange', function() {
-			this.setAttrs(this.attrs.styler.getConfig());
-		});
 
         this.setAttrs(config);
 
@@ -581,7 +577,23 @@ Kinetic.Node = Kinetic.Class.extend({
 	 * @param {Object} params
 	 */
 	clone: function(params) {
-		var newclass = new this.constructor(this.attrs);
+		var copyFunc = function(obj) {
+			if(typeof(obj) !== "object" || obj == null) {
+				return obj;
+			}
+			
+			var newclass = new this.constructor();
+			
+			for(var attr in obj) {
+				if(obj.hasOwnProperty(attr)) {
+					newclass[attr] = copyFunc(obj[attr]); // recursive loop to copy deep-objects
+				}
+			}
+			
+			return newclass;
+		};
+		
+		var newclass = copyFunc(this);
 		newclass.setAttrs(params);
 		return newclass;
 	},
