@@ -56,6 +56,7 @@ Kinetic.Node = Kinetic.Class.extend({
                 }
             }
         });
+		
         /*
          * simulate draggable change event
          * to init drag and drop logic from the
@@ -570,6 +571,31 @@ Kinetic.Node = Kinetic.Class.extend({
     simulate: function(eventType) {
         this._handleEvent(eventType, {});
     },
+	/**
+	 * clone self
+	 * @param {Object} params
+	 */
+	clone: function(params) {
+		var copyFunc = function(obj) {
+			if(typeof(obj) !== "object" || obj == null) {
+				return obj;
+			}
+			
+			var newclass = new this.constructor();
+			
+			for(var attr in obj) {
+				if(obj.hasOwnProperty(attr)) {
+					newclass[attr] = copyFunc(obj[attr]); // recursive loop to copy deep-objects
+				}
+			}
+			
+			return newclass;
+		};
+		
+		var newclass = copyFunc(this);
+		newclass.setAttrs(params);
+		return newclass;
+	},
     /**
      * transition node to another state.  Any property that can accept a real
      *  number can be transitioned, including x, y, rotation, alpha, strokeWidth,
@@ -844,7 +870,7 @@ Kinetic.Node._addGetter = function(constructor, attr) {
     };
 };
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening']);
+Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening', 'styler']);
 Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 
 /**

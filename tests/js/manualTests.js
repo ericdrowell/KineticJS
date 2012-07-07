@@ -1542,5 +1542,73 @@ Test.prototype.tests = {
 
         layer.add(Ellipse);
         stage.add(layer);
-    }
+    },
+	'CLONE - Clone nodes with their event handlers and properties': function(containerId) {
+		var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+		
+		var bubble = new Kinetic.Shape({
+			drawFunc: function() {
+				var context = this.getContext(), r = this.attrs.cornerRadius, w = this.attrs.width, h = this.attrs.height;
+				context.beginPath();
+				context.moveTo(r, 0);
+				context.lineTo(w - r, 0);
+				context.quadraticCurveTo(w, 0, w, r);
+				context.lineTo(w, h / 2 - 20);
+				context.lineTo(w + 25, h / 2);
+				context.lineTo(w, h / 2 + 20);
+				context.lineTo(w, h - r);
+				context.quadraticCurveTo(w, h, w - r, h);
+				context.lineTo(r, h);
+				context.quadraticCurveTo(0, h, 0, h - r);
+				context.lineTo(0, r);
+				context.quadraticCurveTo(0, 0, r, 0);
+				context.closePath();
+
+				this.fill();
+				this.stroke();
+			}
+		});
+		
+		bubble.on('mouseover', function() {
+			alert('Bubble in ' + this.attrs.x + 'x' + this.attrs.y + ' hovered');
+		});
+		
+		bubble.on('mouseout', function() {
+			alert('Dont leave me !');
+		});
+		
+		var ownbubble1 = bubble.clone();
+		var ownbubble2 = ownbubble1.clone();
+		
+		ownbubble1.setAttrs({
+			x: 189,
+			y: 20,
+			width: 200,
+			height: 100,
+			fill: "red",
+			stroke: "black",
+			strokeWidth: 2,
+			cornerRadius: 20
+		});
+		
+		ownbubble2.setAttrs({
+			x: 189,
+			y: 130,
+			width: 200,
+			height: 100,
+			fill: "red",
+			stroke: "black",
+			strokeWidth: 2,
+			cornerRadius: 20
+		});
+		
+		layer.add(ownbubble1);
+		layer.add(ownbubble2);
+		stage.add(layer);
+	}
 };
