@@ -39,6 +39,12 @@ Kinetic.Image = Kinetic.Shape.extend({
         };
         // call super constructor
         this._super(config);
+        
+        this.on('imageChange.kinetic', function() {
+            this._updateImage();
+        })
+        
+        this._updateImage();
     },
     /**
      * set width and height
@@ -55,6 +61,25 @@ Kinetic.Image = Kinetic.Shape.extend({
             width: this.attrs.width,
             height: this.attrs.height
         };
+    },
+    /**
+     * update image when changing : if a it's a string, create an image, elsewhere do nothing
+     */
+    _updateImage: function() {
+        var that = this;
+        
+        if(typeof(this.attrs.image) == "string") {
+            var src = this.attrs.image;
+            
+            this.attrs.image = new Image();
+            
+            this.attrs.image.onerror = function() {
+                that.attrs.image = null;
+            };
+            
+            this.attrs.image.src = src;
+            return;
+        }
     }
 });
 
