@@ -11,7 +11,7 @@ Kinetic.Image = Kinetic.Shape.extend({
     init: function(config) {
         this.shapeType = "Image";
         config.drawFunc = function() {
-            if(!!this.attrs.image) {
+            if(!!this.attrs.image && this.ready) {
                 var width = !!this.attrs.width ? this.attrs.width : this.attrs.image.width;
                 var height = !!this.attrs.height ? this.attrs.height : this.attrs.image.height;
                 var canvas = this.getCanvas();
@@ -79,6 +79,23 @@ Kinetic.Image = Kinetic.Shape.extend({
             
             this.attrs.image.src = src;
             return;
+        }
+        
+        this._checkReady(); // begin to check if the image is ready to draw
+    },
+    /**
+     * check if the image is loaded
+     */
+    _checkReady: function() {
+        if(!!this.attrs.image) {
+            if(this.attrs.image.complete) {
+                this.ready = true;
+                this.getLayer().draw();
+                return;
+            } else {
+                this.ready = false;
+                setTimeout(this._checkReady, 1000); // check again in 1s
+            }
         }
     }
 });
