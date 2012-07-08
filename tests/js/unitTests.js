@@ -4048,6 +4048,34 @@ Test.prototype.tests = {
         test(clicks[0] === 'circle', 'circle event should be fired first');
         test(clicks[1] === 'layer', 'layer event should be fired second');
     },
+    'NODE - change id': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Ellipse({
+            id: 'first',
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myCircle'
+        });
+        
+        stage.add(layer);
+        layer.add(circle);
+        layer.draw();
+        
+        test(layer.get('#first')[0] === circle, 'select node by ID');
+        circle.setId('second');
+        test(layer.get('#first').length === 0, 'remove ID from stage ID cache after ID change');
+        test(layer.get('#second')[0] === circle, 'select node by ID after ID change');
+        
+    },
     'STAGE - add layer then shape': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
