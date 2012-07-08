@@ -78,7 +78,6 @@ Kinetic.Image = Kinetic.Shape.extend({
             };
             
             this.attrs.image.src = src;
-            return;
         }
         
         this._checkReady(); // begin to check if the image is ready to draw
@@ -90,8 +89,10 @@ Kinetic.Image = Kinetic.Shape.extend({
         if(!!this.attrs.image) {
             if(this.attrs.image.complete) {
                 this.ready = true;
-                this.getLayer().draw();
-                return;
+                
+				if(this.getParent() !== undefined) { // redraw image if it has a parent
+					this.getLayer().draw();
+				}
             } else {
                 this.ready = false;
                 setTimeout(this._checkReady, 1000); // check again in 1s
