@@ -255,6 +255,20 @@ Kinetic.Node = Kinetic.Class.extend({
             setAttrs(this.attrs, config, 0);
         }
     },
+    getId: function() {
+        return this.attrs.id;
+    },
+    setId: function(newId) {
+        var stage = this.getStage();
+
+        if (stage !== undefined) {
+            stage._removeId(this);
+        }
+        this.attrs.id = newId;
+        if (stage !== undefined) {
+            stage._addId(this);
+        }
+    },
     /**
      * determine if shape is visible or not.  Shape is visible only
      * if it's visible and all of its ancestors are visible.  If one ancestor
@@ -844,7 +858,7 @@ Kinetic.Node._addGetter = function(constructor, attr) {
     };
 };
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening']);
+Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'detectionType', 'rotation', 'alpha', 'name', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening']);
 Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 
 /**
