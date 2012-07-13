@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Jul 11 2012
+ * Date: Jul 13 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1178,6 +1178,10 @@ Kinetic.Node = Kinetic.Class.extend({
         if(this.attrs.scale.x !== 1 || this.attrs.scale.y !== 1) {
             m.scale(this.attrs.scale.x, this.attrs.scale.y);
         }
+        // center offset
+        if(this.attrs.offset.x !== 0 || this.attrs.offset.y !== 0) {
+            m.translate(-1 * this.attrs.offset.x, -1 * this.attrs.offset.y);
+        }
 
         return m;
     },
@@ -1830,8 +1834,13 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @param {function} func
      */
     onFrame: function(func) {
+        var id = undefined;
+		if (this.anim) { 
+		id = this.anim.id; 
+		}
         this.anim = {
-            func: func
+            func: func,
+			id: id // set anim.id
         };
     },
     /**
@@ -3362,11 +3371,6 @@ Kinetic.Shape = Kinetic.Node.extend({
             for(var n = 0; n < family.length; n++) {
                 var node = family[n];
                 var t = node.getTransform();
-
-                // center offset
-                if(node.attrs.offset.x !== 0 || node.attrs.offset.y !== 0) {
-                    t.translate(-1 * node.attrs.offset.x, -1 * node.attrs.offset.y);
-                }
 
                 var m = t.getMatrix();
                 context.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
