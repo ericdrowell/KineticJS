@@ -11,7 +11,7 @@ Kinetic.Image = Kinetic.Shape.extend({
     init: function(config) {
         this.shapeType = "Image";
         config.drawFunc = function() {
-            if(!!this.attrs.image) {
+            if(!!this.attrs.image && this.ready) {
                 var width = !!this.attrs.width ? this.attrs.width : this.attrs.image.width;
                 var height = !!this.attrs.height ? this.attrs.height : this.attrs.image.height;
                 var canvas = this.getCanvas();
@@ -39,6 +39,12 @@ Kinetic.Image = Kinetic.Shape.extend({
         };
         // call super constructor
         this._super(config);
+        
+        this.on('imageChange.kinetic', function() {
+            this._updateImage();
+        })
+        
+        this._updateImage();
     },
     /**
      * set width and height
@@ -59,6 +65,43 @@ Kinetic.Image = Kinetic.Shape.extend({
             width: this.attrs.width,
             height: this.attrs.height
         };
+    },
+    /**
+     * update image when changing : if a it's a string, create an image, elsewhere do nothing
+     */
+    _updateImage: function() {
+        var that = this;
+        
+        if(typeof(this.attrs.image) == "string") {
+            var src = this.attrs.image;
+            
+            this.attrs.image = new Image();
+            
+            this.attrs.image.onerror = function() {
+                that.attrs.image = null;
+            };
+            
+            this.attrs.image.src = src;
+        }
+        
+        this._checkReady(); // begin to check if the image is ready to draw
+    },
+    /**
+     * check if the image is loaded
+     */
+    _checkReady: function() {
+        if(!!this.attrs.image) {
+            if(this.attrs.image.complete) {
+                this.ready = true;
+                
+				if(this.getParent() !== undefined) { // redraw image if it has a parent
+					this.getLayer().draw();
+				}
+            } else {
+                this.ready = false;
+                setTimeout(this._checkReady, 1000); // check again in 1s
+            }
+        }
     }
 });
 
