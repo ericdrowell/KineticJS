@@ -23,7 +23,6 @@ Kinetic.Shape = Kinetic.Node.extend({
             detectionType: 'path'
         });
 
-        this.data = [];
         this.nodeType = 'Shape';
         this.appliedShadow = false;
 
@@ -297,29 +296,6 @@ Kinetic.Shape = Kinetic.Node.extend({
         return false;
     },
     /**
-     * save shape data when using pixel detection.
-     */
-    saveData: function() {
-        var stage = this.getStage();
-        var w = stage.attrs.width;
-        var h = stage.attrs.height;
-
-        var bufferLayer = stage.bufferLayer;
-        var bufferLayerContext = bufferLayer.getContext();
-
-        bufferLayer.clear();
-        this._draw(bufferLayer);
-
-        var imageData = bufferLayerContext.getImageData(0, 0, w, h);
-        this.data = imageData.data;
-    },
-    /**
-     * clear shape data
-     */
-    clearData: function() {
-        this.data = [];
-    },
-    /**
      * determines if point is in the shape
      * @param {Object|Array} point point can be an object containing
      *  an x and y property, or it can be an array with two elements
@@ -330,6 +306,7 @@ Kinetic.Shape = Kinetic.Node.extend({
         var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
         var stage = this.getStage();
 
+        // path detection
         if(this.attrs.detectionType === 'path') {
             var pathLayer = stage.pathLayer;
             var pathLayerContext = pathLayer.getContext();
@@ -338,11 +315,16 @@ Kinetic.Shape = Kinetic.Node.extend({
 
             return pathLayerContext.isPointInPath(pos.x, pos.y);
         }
-        else {
+
+        // pixel detection
+        if(this.imageData) {
             var w = stage.attrs.width;
-            var alpha = this.data[((w * pos.y) + pos.x) * 4 + 3];
-            return (!!alpha);
+            var alpha = this.imageData.data[((w * pos.y) + pos.x) * 4 + 3];
+            return (alpha);
         }
+
+        // default
+        return false;
     },
     _draw: function(layer) {
         if(layer && this.attrs.drawFunc) {
@@ -386,7 +368,7 @@ Kinetic.Shape = Kinetic.Node.extend({
 });
 
 // add getters and setters
-Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc']);
+Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc', 'filter']);
 
 /**
  * set fill which can be a color, linear gradient object,

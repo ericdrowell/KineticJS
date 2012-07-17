@@ -78,8 +78,8 @@ Kinetic.Container = Kinetic.Node.extend({
         if(child && child.index !== undefined && this.children[child.index]._id == child._id) {
             var stage = this.getStage();
             if(stage !== undefined) {
-                stage._removeId(child);
-                stage._removeName(child);
+                stage._removeId(child.getId());
+                stage._removeName(child.getName(), child._id);
             }
 
             var go = Kinetic.Global;
@@ -211,18 +211,18 @@ Kinetic.Container = Kinetic.Node.extend({
     /**
      * draw children
      */
-    _drawChildren: function() {
+    _drawChildren: function(layer) {
         var stage = this.getStage();
         var children = this.children;
         for(var n = 0; n < children.length; n++) {
             var child = children[n];
             if(child.nodeType === 'Shape') {
                 if(child.isVisible() && stage.isVisible()) {
-                    child._draw(child.getLayer());
+                    child._draw( layer ? layer : child.getLayer());
                 }
             }
             else {
-                child.draw();
+                child.draw(layer);
             }
         }
     },

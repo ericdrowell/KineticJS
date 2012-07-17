@@ -37,31 +37,25 @@ Kinetic.Node = Kinetic.Class.extend({
 
         // bind events
         this.on('draggableChange.kinetic', function() {
-            if(this.attrs.draggable) {
-                this._listenDrag();
-            }
-            else {
-                // remove event listeners
-                this._dragCleanup();
-
-                /*
-                 * force drag and drop to end
-                 * if this node is currently in
-                 * drag and drop mode
-                 */
-                var stage = this.getStage();
-                var go = Kinetic.Global;
-                if(stage && go.drag.node && go.drag.node._id === this._id) {
-                    stage._endDrag();
-                }
+            this._onDraggableChange();
+        });
+        var that = this;
+        this.on('idChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeId(evt.oldVal);
+                stage._addId(that);
             }
         });
-        /*
-         * simulate draggable change event
-         * to init drag and drop logic from the
-         * above event binder
-         */
-        this.simulate('draggableChange');
+        this.on('nameChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeName(evt.oldVal, that._id);
+                stage._addName(that);
+            }
+        });
+
+        this._onDraggableChange();
     },
     /**
      * bind events to the node.  KineticJS supports mouseover, mousemove,
@@ -187,6 +181,15 @@ Kinetic.Node = Kinetic.Class.extend({
             function setAttrs(obj, c, level) {
                 for(var key in c) {
                     var val = c[key];
+                    var oldVal = obj[key];
+
+                    /*
+                     * only fire change event for root
+                     * level attrs
+                     */
+                    if(level === 0) {
+                        that._fireBeforeChangeEvent(key, oldVal, val);
+                    }
 
                     // if obj doesn't have the val property, then create it
                     if(obj[key] === undefined && val !== undefined) {
@@ -258,7 +261,7 @@ Kinetic.Node = Kinetic.Class.extend({
                      * level attrs
                      */
                     if(level === 0) {
-                        that._fireChangeEvent(key);
+                        that._fireChangeEvent(key, oldVal, val);
                     }
                 }
             }
@@ -792,8 +795,96 @@ Kinetic.Node = Kinetic.Class.extend({
         node.setAttrs(obj);
         return node;
     },
-    _fireChangeEvent: function(attr) {
-        this._handleEvent(attr + 'Change', {});
+    /**
+     * save image data
+     * @name saveImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    saveImageData: function() {
+        try {
+            var stage = this.getStage();
+            var bufferLayer = stage.bufferLayer;
+            var bufferLayerContext = bufferLayer.getContext();
+            var width = stage.getWidth();
+            var height = stage.getHeight();
+
+            bufferLayer.clear();
+            this._draw(bufferLayer);
+            var imageData = bufferLayerContext.getImageData(0, 0, width, height);
+            this.imageData = imageData;
+        }
+        catch(e) {
+            Kinetic.Global.warn('Image data could not saved because canvas is dirty.');
+        }
+    },
+    /**
+     * clear image data
+     * @name clearImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    clearImageData: function() {
+        delete this.imageData;
+    },
+    /**
+     * get image data
+     * @name getImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    getImageData: function() {
+        return this.imageData;
+    },
+    /**
+     * Creates a composite data URL. If MIME type is not
+     * specified, then "image/png" will result. For "image/jpeg", specify a quality
+     * level as quality (range 0.0 - 1.0)
+     * @name toDataURL
+     * @methodOf Kinetic.Stage.prototype
+     * @param {String} [mimeType]
+     * @param {Number} [quality]
+     */
+    toDataURL: function(mimeType, quality) {
+        var bufferLayer = this.getStage().bufferLayer;
+        var bufferCanvas = bufferLayer.getCanvas();
+        var bufferContext = bufferLayer.getContext();
+        bufferLayer.clear();
+        this._draw(bufferLayer);
+
+        try {
+            // If this call fails (due to browser bug, like in Firefox 3.6),
+            // then revert to previous no-parameter image/png behavior
+            return bufferLayer.getCanvas().toDataURL(mimeType, quality);
+        }
+        catch(e) {
+            return bufferLayer.getCanvas().toDataURL();
+        }
+    },
+    /**
+     * converts node into an image.  Since the toImage
+     *  method is asynchronous, a callback is required
+     * @name toImage
+     * @methodOf Kinetic.Stage.prototype
+     */
+    toImage: function(callback) {
+        Kinetic.Type._getImage(this.toDataURL(), function(img) {
+            callback(img);
+        });
+    },
+    _setImageData: function(imageData) {
+        if(imageData && imageData.data) {
+            this.imageData = imageData;
+        }
+    },
+    _fireBeforeChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent('before' + attr.toUpperCase() + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
+    },
+    _fireChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent(attr + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
     },
     _setAttr: function(obj, attr, val) {
         if(val !== undefined) {
@@ -822,6 +913,26 @@ Kinetic.Node = Kinetic.Class.extend({
             go.drag.node = this;
             go.drag.offset.x = pos.x - this.getAbsoluteTransform().getTranslation().x;
             go.drag.offset.y = pos.y - this.getAbsoluteTransform().getTranslation().y;
+        }
+    },
+    _onDraggableChange: function() {
+        if(this.attrs.draggable) {
+            this._listenDrag();
+        }
+        else {
+            // remove event listeners
+            this._dragCleanup();
+
+            /*
+             * force drag and drop to end
+             * if this node is currently in
+             * drag and drop mode
+             */
+            var stage = this.getStage();
+            var go = Kinetic.Global;
+            if(stage && go.drag.node && go.drag.node._id === this._id) {
+                stage._endDrag();
+            }
         }
     },
     /**
@@ -898,7 +1009,6 @@ Kinetic.Node._addSetter = function(constructor, attr) {
     var that = this;
     var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
     constructor.prototype[method] = function() {
-        var arg;
         if(arguments.length == 1) {
             arg = arguments[0];
         }

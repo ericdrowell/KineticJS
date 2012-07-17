@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Jul 13 2012
+ * Date: Jul 17 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -34,6 +34,7 @@
  * @namespace
  */
 var Kinetic = {};
+Kinetic.Filters = {};
 Kinetic.Global = {
     BUBBLE_WHITELIST: ['mousedown', 'mousemove', 'mouseup', 'mouseover', 'mouseout', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend', 'tap', 'dbltap', 'dragstart', 'dragmove', 'dragend'],
     stages: [],
@@ -47,6 +48,11 @@ Kinetic.Global = {
             y: 0
         },
         lastDrawTime: 0
+    },
+    warn: function(str) {
+        if(console && console.warn) {
+            console.warn('Kinetic warning: ' + str);
+        }
     },
     _pullNodes: function(stage) {
         var tempNodes = this.tempNodes;
@@ -79,14 +85,17 @@ Kinetic.Type = {
     _isFunction: function(obj) {
         return !!(obj && obj.constructor && obj.call && obj.apply);
     },
-    _isArray: function(obj) {
-        return Object.prototype.toString.call(obj) == '[object Array]';
-    },
     _isObject: function(obj) {
         return (!!obj && obj.constructor == Object);
     },
+    _isArray: function(obj) {
+        return Object.prototype.toString.call(obj) == '[object Array]';
+    },
     _isNumber: function(obj) {
         return Object.prototype.toString.call(obj) == '[object Number]';
+    },
+    _isString: function(obj) {
+        return Object.prototype.toString.call(obj) == '[object String]';
     },
     /*
      * other utils
@@ -268,6 +277,48 @@ Kinetic.Type = {
             }
 
             return arr;
+        }
+    },
+    /*
+     * arg can be an image object or image data
+     */
+    _getImage: function(arg, callback) {
+        // if arg is null or undefined
+        if(!arg) {
+            callback(null);
+        }
+
+        // if arg is already an image object
+        else if(this._isElement(arg)) {
+            callback(arg);
+        }
+
+        // if arg is a string, then it's a data url
+        else if(this._isString(arg)) {
+            var imageObj = new Image();
+            imageObj.onload = function() {
+                callback(imageObj);
+            }
+            imageObj.src = arg;
+        }
+
+        //if arg is an object that contains the data property, it's an image object
+        else if(arg.data) {
+            var canvas = document.createElement('canvas');
+            canvas.width = arg.width;
+            canvas.height = arg.height;
+            var context = canvas.getContext('2d');
+            context.putImageData(arg, 0, 0);
+            var dataUrl = canvas.toDataURL();
+            var imageObj = new Image();
+            imageObj.onload = function() {
+                callback(imageObj);
+            }
+            imageObj.src = dataUrl;
+        }
+
+        else {
+            callback(null);
         }
     }
 };
@@ -467,31 +518,25 @@ Kinetic.Node = Kinetic.Class.extend({
 
         // bind events
         this.on('draggableChange.kinetic', function() {
-            if(this.attrs.draggable) {
-                this._listenDrag();
-            }
-            else {
-                // remove event listeners
-                this._dragCleanup();
-
-                /*
-                 * force drag and drop to end
-                 * if this node is currently in
-                 * drag and drop mode
-                 */
-                var stage = this.getStage();
-                var go = Kinetic.Global;
-                if(stage && go.drag.node && go.drag.node._id === this._id) {
-                    stage._endDrag();
-                }
+            this._onDraggableChange();
+        });
+        var that = this;
+        this.on('idChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeId(evt.oldVal);
+                stage._addId(that);
             }
         });
-        /*
-         * simulate draggable change event
-         * to init drag and drop logic from the
-         * above event binder
-         */
-        this.simulate('draggableChange');
+        this.on('nameChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeName(evt.oldVal, that._id);
+                stage._addName(that);
+            }
+        });
+
+        this._onDraggableChange();
     },
     /**
      * bind events to the node.  KineticJS supports mouseover, mousemove,
@@ -617,6 +662,15 @@ Kinetic.Node = Kinetic.Class.extend({
             function setAttrs(obj, c, level) {
                 for(var key in c) {
                     var val = c[key];
+                    var oldVal = obj[key];
+
+                    /*
+                     * only fire change event for root
+                     * level attrs
+                     */
+                    if(level === 0) {
+                        that._fireBeforeChangeEvent(key, oldVal, val);
+                    }
 
                     // if obj doesn't have the val property, then create it
                     if(obj[key] === undefined && val !== undefined) {
@@ -688,7 +742,7 @@ Kinetic.Node = Kinetic.Class.extend({
                      * level attrs
                      */
                     if(level === 0) {
-                        that._fireChangeEvent(key);
+                        that._fireChangeEvent(key, oldVal, val);
                     }
                 }
             }
@@ -1222,8 +1276,96 @@ Kinetic.Node = Kinetic.Class.extend({
         node.setAttrs(obj);
         return node;
     },
-    _fireChangeEvent: function(attr) {
-        this._handleEvent(attr + 'Change', {});
+    /**
+     * save image data
+     * @name saveImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    saveImageData: function() {
+        try {
+            var stage = this.getStage();
+            var bufferLayer = stage.bufferLayer;
+            var bufferLayerContext = bufferLayer.getContext();
+            var width = stage.getWidth();
+            var height = stage.getHeight();
+
+            bufferLayer.clear();
+            this._draw(bufferLayer);
+            var imageData = bufferLayerContext.getImageData(0, 0, width, height);
+            this.imageData = imageData;
+        }
+        catch(e) {
+            Kinetic.Global.warn('Image data could not saved because canvas is dirty.');
+        }
+    },
+    /**
+     * clear image data
+     * @name clearImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    clearImageData: function() {
+        delete this.imageData;
+    },
+    /**
+     * get image data
+     * @name getImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    getImageData: function() {
+        return this.imageData;
+    },
+    /**
+     * Creates a composite data URL. If MIME type is not
+     * specified, then "image/png" will result. For "image/jpeg", specify a quality
+     * level as quality (range 0.0 - 1.0)
+     * @name toDataURL
+     * @methodOf Kinetic.Stage.prototype
+     * @param {String} [mimeType]
+     * @param {Number} [quality]
+     */
+    toDataURL: function(mimeType, quality) {
+        var bufferLayer = this.getStage().bufferLayer;
+        var bufferCanvas = bufferLayer.getCanvas();
+        var bufferContext = bufferLayer.getContext();
+        bufferLayer.clear();
+        this._draw(bufferLayer);
+
+        try {
+            // If this call fails (due to browser bug, like in Firefox 3.6),
+            // then revert to previous no-parameter image/png behavior
+            return bufferLayer.getCanvas().toDataURL(mimeType, quality);
+        }
+        catch(e) {
+            return bufferLayer.getCanvas().toDataURL();
+        }
+    },
+    /**
+     * converts node into an image.  Since the toImage
+     *  method is asynchronous, a callback is required
+     * @name toImage
+     * @methodOf Kinetic.Stage.prototype
+     */
+    toImage: function(callback) {
+        Kinetic.Type._getImage(this.toDataURL(), function(img) {
+            callback(img);
+        });
+    },
+    _setImageData: function(imageData) {
+        if(imageData && imageData.data) {
+            this.imageData = imageData;
+        }
+    },
+    _fireBeforeChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent('before' + attr.toUpperCase() + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
+    },
+    _fireChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent(attr + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
     },
     _setAttr: function(obj, attr, val) {
         if(val !== undefined) {
@@ -1252,6 +1394,26 @@ Kinetic.Node = Kinetic.Class.extend({
             go.drag.node = this;
             go.drag.offset.x = pos.x - this.getAbsoluteTransform().getTranslation().x;
             go.drag.offset.y = pos.y - this.getAbsoluteTransform().getTranslation().y;
+        }
+    },
+    _onDraggableChange: function() {
+        if(this.attrs.draggable) {
+            this._listenDrag();
+        }
+        else {
+            // remove event listeners
+            this._dragCleanup();
+
+            /*
+             * force drag and drop to end
+             * if this node is currently in
+             * drag and drop mode
+             */
+            var stage = this.getStage();
+            var go = Kinetic.Global;
+            if(stage && go.drag.node && go.drag.node._id === this._id) {
+                stage._endDrag();
+            }
         }
     },
     /**
@@ -1328,7 +1490,6 @@ Kinetic.Node._addSetter = function(constructor, attr) {
     var that = this;
     var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
     constructor.prototype[method] = function() {
-        var arg;
         if(arguments.length == 1) {
             arg = arguments[0];
         }
@@ -1601,8 +1762,8 @@ Kinetic.Container = Kinetic.Node.extend({
         if(child && child.index !== undefined && this.children[child.index]._id == child._id) {
             var stage = this.getStage();
             if(stage !== undefined) {
-                stage._removeId(child);
-                stage._removeName(child);
+                stage._removeId(child.getId());
+                stage._removeName(child.getName(), child._id);
             }
 
             var go = Kinetic.Global;
@@ -1734,18 +1895,18 @@ Kinetic.Container = Kinetic.Node.extend({
     /**
      * draw children
      */
-    _drawChildren: function() {
+    _drawChildren: function(layer) {
         var stage = this.getStage();
         var children = this.children;
         for(var n = 0; n < children.length; n++) {
             var child = children[n];
             if(child.nodeType === 'Shape') {
                 if(child.isVisible() && stage.isVisible()) {
-                    child._draw(child.getLayer());
+                    child._draw( layer ? layer : child.getLayer());
                 }
             }
             else {
-                child.draw();
+                child.draw(layer);
             }
         }
     },
@@ -1870,8 +2031,8 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @name draw
      * @methodOf Kinetic.Stage.prototype
      */
-    draw: function() {
-        this._drawChildren();
+    draw: function(layer) {
+        this._draw(layer);
     },
     /**
      * set stage size
@@ -1904,48 +2065,6 @@ Kinetic.Stage = Kinetic.Container.extend({
         for(var n = 0; n < layers.length; n++) {
             layers[n].clear();
         }
-    },
-    /**
-     * Creates a composite data URL and passes it to a callback. If MIME type is not
-     * specified, then "image/png" will result. For "image/jpeg", specify a quality
-     * level as quality (range 0.0 - 1.0)
-     * @name toDataURL
-     * @methodOf Kinetic.Stage.prototype
-     * @param {function} callback
-     * @param {String} mimeType (optional)
-     * @param {Number} quality (optional)
-     */
-    toDataURL: function(callback, mimeType, quality) {
-        var bufferLayer = this.bufferLayer;
-        var bufferContext = bufferLayer.getContext();
-        var layers = this.children;
-        var that = this;
-
-        function addLayer(n) {
-            var dataURL = layers[n].getCanvas().toDataURL();
-            var imageObj = new Image();
-            imageObj.onload = function() {
-                bufferContext.drawImage(this, 0, 0);
-                n++;
-                if(n < layers.length) {
-                    addLayer(n);
-                }
-                else {
-                    try {
-                        // If this call fails (due to browser bug, like in Firefox 3.6),
-                        // then revert to previous no-parameter image/png behavior
-                        callback(bufferLayer.getCanvas().toDataURL(mimeType, quality));
-                    }
-                    catch(exception) {
-                        callback(bufferLayer.getCanvas().toDataURL());
-                    }
-                }
-            };
-            imageObj.src = dataURL;
-        }
-
-        bufferLayer.clear();
-        addLayer(0);
     },
     /**
      * serialize stage and children as a JSON object
@@ -2099,6 +2218,85 @@ Kinetic.Stage = Kinetic.Container.extend({
      */
     getDOM: function() {
         return this.content;
+    },
+    /**
+     * Creates a composite data URL and requires a callback because the stage
+     *  toDataURL method is asynchronous. If MIME type is not
+     *  specified, then "image/png" will result. For "image/jpeg", specify a quality
+     *  level as quality (range 0.0 - 1.0).  Note that this method works
+     *  differently from toDataURL() for other nodes because it generates an absolute dataURL
+     *  based on what's draw onto the canvases for each layer, rather than drawing
+     *  the current state of each node
+     * @name toDataURL
+     * @methodOf Kinetic.Stage.prototype
+     * @param {Function} callback
+     * @param {String} [mimeType]
+     * @param {Number} [quality]
+     */
+    toDataURL: function(callback, mimeType, quality) {
+        /*
+         * we need to create a temp layer rather than using
+         * the bufferLayer because the stage toDataURL method
+         * is asynchronous, which means that other parts of the
+         * code base could be updating or clearing the bufferLayer
+         * while the stage toDataURL method is processing
+         */
+        var tempLayer = new Kinetic.Layer();
+        tempLayer.getCanvas().width = this.attrs.width;
+        tempLayer.getCanvas().height = this.attrs.height;
+        tempLayer.parent = this;
+        var tempCanvas = tempLayer.getCanvas();
+        var tempContext = tempLayer.getContext();
+
+        var layers = this.children;
+
+        function drawLayer(n) {
+            var layer = layers[n];
+            var layerUrl;
+            try {
+                // If this call fails (due to browser bug, like in Firefox 3.6),
+                // then revert to previous no-parameter image/png behavior
+                layerUrl = layer.getCanvas().toDataURL(mimeType, quality);
+            }
+            catch(e) {
+                layerUrl = layer.getCanvas().toDataURL();
+            }
+
+            var imageObj = new Image();
+            imageObj.onload = function() {
+                tempContext.drawImage(imageObj, 0, 0);
+
+                if(n < layers.length - 1) {
+                    drawLayer(n + 1);
+                }
+                else {
+                    try {
+                        // If this call fails (due to browser bug, like in Firefox 3.6),
+                        // then revert to previous no-parameter image/png behavior
+                        callback(tempLayer.getCanvas().toDataURL(mimeType, quality));
+                    }
+                    catch(e) {
+                        callback(tempLayer.getCanvas().toDataURL());
+                    }
+                }
+            };
+            imageObj.src = layerUrl;
+        }
+        drawLayer(0);
+    },
+    /**
+     * converts stage into an image.  Since the stage toImage() method
+     *  is asynchronous, a callback function is required
+     * @name toImage
+     * @methodOf Kinetic.Stage.prototype
+     * @param {Function} callback
+     */
+    toImage: function(callback) {
+        this.toDataURL(function(dataUrl) {
+            Kinetic.Type._getImage(dataUrl, function(img) {
+                callback(img);
+            });
+        });
     },
     _resizeDOM: function() {
         var width = this.attrs.width;
@@ -2693,9 +2891,9 @@ Kinetic.Stage = Kinetic.Container.extend({
             this.ids[node.attrs.id] = node;
         }
     },
-    _removeId: function(node) {
-        if(node.attrs.id !== undefined) {
-            delete this.ids[node.attrs.id];
+    _removeId: function(id) {
+        if(id !== undefined) {
+            delete this.ids[id];
         }
     },
     _addName: function(node) {
@@ -2707,18 +2905,18 @@ Kinetic.Stage = Kinetic.Container.extend({
             this.names[name].push(node);
         }
     },
-    _removeName: function(node) {
-        if(node.attrs.name !== undefined) {
-            var nodes = this.names[node.attrs.name];
+    _removeName: function(name, _id) {
+        if(name !== undefined) {
+            var nodes = this.names[name];
             if(nodes !== undefined) {
                 for(var n = 0; n < nodes.length; n++) {
                     var no = nodes[n];
-                    if(no._id === node._id) {
+                    if(no._id === _id) {
                         nodes.splice(n, 1);
                     }
                 }
                 if(nodes.length === 0) {
-                    delete this.names[node.attrs.name];
+                    delete this.names[name];
                 }
             }
         }
@@ -2765,6 +2963,9 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.names = {};
         this.anim = undefined;
         this.animRunning = false;
+    },
+    _draw: function(layer) {
+        this._drawChildren(layer);
     }
 });
 
@@ -2847,7 +3048,7 @@ Kinetic.Layer = Kinetic.Container.extend({
      * @name draw
      * @methodOf Kinetic.Layer.prototype
      */
-    draw: function() {
+    draw: function(layer) {
         var throttle = this.attrs.throttle;
         var date = new Date();
         var time = date.getTime();
@@ -2855,7 +3056,7 @@ Kinetic.Layer = Kinetic.Container.extend({
         var tt = 1000 / throttle;
 
         if(timeDiff >= tt || throttle > 200) {
-            this._draw();
+            this._draw(layer);
 
             if(this.drawTimeout !== undefined) {
                 clearTimeout(this.drawTimeout);
@@ -2872,7 +3073,7 @@ Kinetic.Layer = Kinetic.Container.extend({
              * wait 17ms before trying again (60fps)
              */
             this.drawTimeout = setTimeout(function() {
-                that.draw();
+                that.draw(layer);
             }, 17);
         }
     },
@@ -2922,9 +3123,31 @@ Kinetic.Layer = Kinetic.Container.extend({
         return this.context;
     },
     /**
+     * Creates a composite data URL. If MIME type is not
+     * specified, then "image/png" will result. For "image/jpeg", specify a quality
+     * level as quality (range 0.0 - 1.0).  Note that this method works
+     * differently from toDataURL() for other nodes because it generates an absolute dataURL
+     * based on what's draw on the layer, rather than drawing
+     * the current state of each child node
+     * @name toDataURL
+     * @methodOf Kinetic.Stage.prototype
+     * @param {String} [mimeType]
+     * @param {Number} [quality]
+     */
+    toDataURL: function(mimeType, quality) {
+        try {
+            // If this call fails (due to browser bug, like in Firefox 3.6),
+            // then revert to previous no-parameter image/png behavior
+            return this.getCanvas().toDataURL(mimeType, quality);
+        }
+        catch(e) {
+            return this.getCanvas().toDataURL();
+        }
+    },
+    /**
      * private draw children
      */
-    _draw: function() {
+    _draw: function(layer) {
         var date = new Date();
         var time = date.getTime();
         this.lastDrawTime = time;
@@ -2935,7 +3158,8 @@ Kinetic.Layer = Kinetic.Container.extend({
         }
 
         if(this.attrs.clearBeforeDraw) {
-            this.clear();
+            var clearLayer = layer ? layer : this;
+            clearLayer.clear();
         }
 
         if(this.isVisible()) {
@@ -2945,7 +3169,7 @@ Kinetic.Layer = Kinetic.Container.extend({
             }
 
             // draw children
-            this._drawChildren();
+            this._drawChildren(layer);
         }
 
         // after draw  handler
@@ -3001,9 +3225,12 @@ Kinetic.Group = Kinetic.Container.extend({
         // call super constructor
         this._super(config);
     },
-    draw: function() {
+    draw: function(layer) {
+        this._draw(layer);
+    },
+    _draw: function(layer) {
         if(this.attrs.visible) {
-            this._drawChildren();
+            this._drawChildren(layer);
         }
     }
 });
@@ -3033,7 +3260,6 @@ Kinetic.Shape = Kinetic.Node.extend({
             detectionType: 'path'
         });
 
-        this.data = [];
         this.nodeType = 'Shape';
         this.appliedShadow = false;
 
@@ -3307,29 +3533,6 @@ Kinetic.Shape = Kinetic.Node.extend({
         return false;
     },
     /**
-     * save shape data when using pixel detection.
-     */
-    saveData: function() {
-        var stage = this.getStage();
-        var w = stage.attrs.width;
-        var h = stage.attrs.height;
-
-        var bufferLayer = stage.bufferLayer;
-        var bufferLayerContext = bufferLayer.getContext();
-
-        bufferLayer.clear();
-        this._draw(bufferLayer);
-
-        var imageData = bufferLayerContext.getImageData(0, 0, w, h);
-        this.data = imageData.data;
-    },
-    /**
-     * clear shape data
-     */
-    clearData: function() {
-        this.data = [];
-    },
-    /**
      * determines if point is in the shape
      * @param {Object|Array} point point can be an object containing
      *  an x and y property, or it can be an array with two elements
@@ -3340,6 +3543,7 @@ Kinetic.Shape = Kinetic.Node.extend({
         var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
         var stage = this.getStage();
 
+        // path detection
         if(this.attrs.detectionType === 'path') {
             var pathLayer = stage.pathLayer;
             var pathLayerContext = pathLayer.getContext();
@@ -3348,11 +3552,16 @@ Kinetic.Shape = Kinetic.Node.extend({
 
             return pathLayerContext.isPointInPath(pos.x, pos.y);
         }
-        else {
+
+        // pixel detection
+        if(this.imageData) {
             var w = stage.attrs.width;
-            var alpha = this.data[((w * pos.y) + pos.x) * 4 + 3];
-            return (!!alpha);
+            var alpha = this.imageData.data[((w * pos.y) + pos.x) * 4 + 3];
+            return (alpha);
         }
+
+        // default
+        return false;
     },
     _draw: function(layer) {
         if(layer && this.attrs.drawFunc) {
@@ -3396,7 +3605,7 @@ Kinetic.Shape = Kinetic.Node.extend({
 });
 
 // add getters and setters
-Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc']);
+Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc', 'filter']);
 
 /**
  * set fill which can be a color, linear gradient object,
@@ -3682,14 +3891,18 @@ Kinetic.Node.addGettersSetters(Kinetic.Ellipse, ['radius']);
  * @constructor
  * @augments Kinetic.Shape
  * @param {Object} config
+ * @param {ImageObject} config.image
+ * @param {Number} [config.width]
+ * @param {Number} [config.height]
+ * @param {Object} [config.crop]
  */
 Kinetic.Image = Kinetic.Shape.extend({
     init: function(config) {
         this.shapeType = "Image";
         config.drawFunc = function() {
             if(!!this.attrs.image) {
-                var width = !!this.attrs.width ? this.attrs.width : this.attrs.image.width;
-                var height = !!this.attrs.height ? this.attrs.height : this.attrs.image.height;
+                var width = this.getWidth();
+                var height = this.getHeight();
                 var canvas = this.getCanvas();
                 var context = this.getContext();
 
@@ -3715,6 +3928,11 @@ Kinetic.Image = Kinetic.Shape.extend({
         };
         // call super constructor
         this._super(config);
+
+        var that = this;
+        this.on('filterChange', function() {
+            that._applyFilter();
+        });
     },
     /**
      * set width and height
@@ -3735,11 +3953,94 @@ Kinetic.Image = Kinetic.Shape.extend({
             width: this.attrs.width,
             height: this.attrs.height
         };
+    },
+    /**
+     * get width
+     * @name getWidth
+     * @methodOf Kinetic.Image.prototype
+     */
+    getWidth: function() {
+        if(this.attrs.width) {
+            return this.attrs.width;
+        }
+        if(this.attrs.image) {
+            return this.attrs.image.width;
+        }
+        return 0;
+    },
+    /**
+     * get height
+     * @name getHeight
+     * @methodOf Kinetic.Image.prototype
+     */
+    getHeight: function() {
+        if(this.attrs.height) {
+            return this.attrs.height;
+        }
+        if(this.attrs.image) {
+            return this.attrs.image.height;
+        }
+        return 0;
+    },
+    /**
+     * apply filter
+     * @name applyFilter
+     * @methodOf Kinetic.Image.prototype
+     * @param {Object} config
+     * @param {Function} config.filter filter function
+     * @param {Function} [config.callback] callback function to be called once
+     *  filter has been applied
+     */
+    applyFilter: function(config) {
+        try {
+            // save transformation state
+            var x = this.getX();
+            var y = this.getY();
+            var rotation = this.getRotation();
+            var scaleX = this.getScale().x;
+            var scaleY = this.getScale().y;
+            var offsetX = this.getOffset().x;
+            var offsetY = this.getOffset().y;
+
+            // reset transformation state
+            this.attrs.x = 0;
+            this.attrs.y = 0;
+            this.attrs.rotation = 0;
+            this.attrs.scale.x = 1;
+            this.attrs.scale.y = 1;
+            this.attrs.offset.x = 0;
+            this.attrs.offset.y = 0;
+
+            this.saveImageData();
+
+            // restore transformation state
+            this.attrs.x = x;
+            this.attrs.y = y;
+            this.attrs.rotation = rotation;
+            this.attrs.scale.x = scaleX;
+            this.attrs.scale.y = scaleY;
+            this.attrs.offset.x = offsetX;
+            this.attrs.offset.y = offsetY;
+
+            config.filter.call(this, config);
+            var that = this;
+            Kinetic.Type._getImage(this.getImageData(), function(imageObj) {
+                that.setImage(imageObj);
+
+                if(config.callback) {
+                    config.callback();
+                }
+            });
+        }
+        catch(e) {
+            Kinetic.Global.warn('Unable to apply filter.');
+        }
     }
 });
 
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Image, ['height', 'width', 'image', 'crop']);
+Kinetic.Node.addGettersSetters(Kinetic.Image, ['image', 'crop', 'filter']);
+Kinetic.Node.addSetters(Kinetic.Image, ['width', 'height']);
 
 /**
  * set width
@@ -3770,26 +4071,27 @@ Kinetic.Node.addGettersSetters(Kinetic.Image, ['height', 'width', 'image', 'crop
  */
 
 /**
+ * set filter
+ * @name setFilter
+ * @methodOf Kinetic.Image.prototype
+ * @param {Object} config
+ */
+
+/**
  * get crop
  * @name getCrop
  * @methodOf Kinetic.Image.prototype
  */
 
 /**
- * get width
- * @name getWidth
- * @methodOf Kinetic.Image.prototype
- */
-
-/**
- * get height
- * @name getHeight
- * @methodOf Kinetic.Image.prototype
- */
-
-/**
  * get image
  * @name getImage
+ * @methodOf Kinetic.Image.prototype
+ */
+
+/**
+ * get filter
+ * @name getFilter
  * @methodOf Kinetic.Image.prototype
  */
 ///////////////////////////////////////////////////////////////////////
@@ -5615,6 +5917,20 @@ Kinetic.Tweens = {
     },
     'linear': function(t, b, c, d) {
         return c * t / d + b;
+    }
+};
+
+Kinetic.Filters.Grayscale = function() {
+    var data = this.imageData.data;
+    for(var i = 0; i < data.length; i += 4) {
+        var brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
+        // red
+        data[i] = brightness;
+        // green
+        data[i + 1] = brightness;
+        // blue
+        data[i + 2] = brightness;
+        // i+3 is alpha (the fourth element)
     }
 };
 

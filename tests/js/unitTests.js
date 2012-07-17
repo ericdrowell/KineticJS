@@ -358,31 +358,28 @@ Test.prototype.tests = {
             id: 'myTriangle'
         });
 
-        stage.add(layer);
-        layer.add(group);
         group.add(triangle);
+        layer.add(group);
+        stage.add(layer);
+
+        var startDataUrl = layer.toDataURL();
+
+        warn(startDataUrl === urls[0], 'start data url is incorrect');
+        test(triangle.getId() === 'myTriangle', 'triangle id should be myTriangle');
+
+        //console.log(stage.toJSON())
+        var expectedJson = '{"attrs":{"width":578,"height":200,"throttle":80,"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"throttle":80,"clearBeforeDraw":true,"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Group","children":[{"attrs":{"detectionType":"path","visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
+        test(stage.toJSON() === expectedJson, "problem serializing stage with custom shape");
+
+        /*
+         * test redrawing layer after serialization
+         * drawing should be the same
+         */
         layer.draw();
 
-        stage.toDataURL(function(startDataUrl) {
-            warn(startDataUrl === urls[0], 'start data url is incorrect');
+        var endDataUrl = layer.toDataURL();
+        warn(endDataUrl === urls[0], 'end data url is incorrect');
 
-            test(triangle.getId() === 'myTriangle', 'triangle id should be myTriangle');
-
-            //console.log(stage.toJSON())
-
-            var expectedJson = '{"attrs":{"width":578,"height":200,"throttle":80,"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"throttle":80,"clearBeforeDraw":true,"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Group","children":[{"attrs":{"detectionType":"path","visible":true,"listening":true,"alpha":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
-            test(stage.toJSON() === expectedJson, "problem serializing stage with custom shape");
-
-            /*
-             * test redrawing layer after serialization
-             * drawing should be the same
-             */
-            layer.draw();
-
-            stage.toDataURL(function(endDataUrl) {
-                warn(endDataUrl === urls[0], 'end data url is incorrect');
-            });
-        });
     },
     'STAGE - load stage with custom shape using json': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -650,7 +647,49 @@ Test.prototype.tests = {
 
         test(stage.ids.myCircle === undefined, 'circle still in hash');
         test(stage.names.myRect === undefined, 'rect still in hash');
+    },
+    'STAGE - test ids and names hashes': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Ellipse({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            id: 'myCircle'
+        });
 
+        var rect = new Kinetic.Rect({
+            x: 300,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'purple',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myRect'
+        });
+
+        layer.add(circle);
+        layer.add(rect);
+        stage.add(layer);
+
+        test(stage.ids['myCircle'].getId() === 'myCircle', 'circle id not in ids hash');
+        test(stage.names['myRect'][0].getName() === 'myRect', 'rect name not in names hash');
+
+        circle.setId('newCircleId');
+        test(stage.ids['newCircleId'].getId() === 'newCircleId', 'circle not in ids hash');
+        test(stage.ids['myCircle'] === undefined, 'old circle id key is still in ids hash');
+
+        rect.setName('newRectName');
+        test(stage.names['newRectName'][0].getName() === 'newRectName', 'new rect name not in names hash');
+        test(stage.names['myRect'] === undefined, 'old rect name is still in names hash');
     },
     'STAGE - set shape and layer alpha to 0.5': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -969,7 +1008,7 @@ Test.prototype.tests = {
 
         layer.draw();
     },
-    'LAYER - set clearBeforeDraw to false': function(containerId) {
+    'LAYER - set clearBeforeDraw to false, and test toDataURL for stage, layer, group, and shape': function(containerId) {
         var urls = dataUrls['LAYER - set clearBeforeDraw to false'];
 
         var stage = new Kinetic.Stage({
@@ -983,6 +1022,8 @@ Test.prototype.tests = {
             throttle: 999
         });
 
+        var group = new Kinetic.Group();
+
         var circle = new Kinetic.Ellipse({
             x: 100,
             y: stage.getHeight() / 2,
@@ -992,7 +1033,8 @@ Test.prototype.tests = {
             strokeWidth: 4
         });
 
-        layer.add(circle);
+        group.add(circle);
+        layer.add(group);
         stage.add(layer);
 
         for(var n = 0; n < 20; n++) {
@@ -1001,8 +1043,11 @@ Test.prototype.tests = {
         }
 
         stage.toDataURL(function(dataUrl) {
-            warn(urls[0] === dataUrl, 'data url is incorrect');
-        });
+            warn(urls[0] === dataUrl, 'stage data url is incorrect');
+        })
+        warn(urls[0] === layer.toDataURL(), 'layer data url is incorrect');
+        warn(urls[1] === group.toDataURL(), 'group data url is incorrect');
+        warn(urls[1] === circle.toDataURL(), 'shape data url is incorrect');
     },
     'LAYER - throttling': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1946,6 +1991,39 @@ Test.prototype.tests = {
         };
         imageObj.src = '../darth-vader.jpg';
     },
+    'SHAPE - filter image': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var stage = new Kinetic.Stage({
+                container: containerId,
+                width: 578,
+                height: 200
+            });
+            var layer = new Kinetic.Layer({
+                throttle: 999
+            });
+            darth = new Kinetic.Image({
+                x: 10,
+                y: 10,
+                image: imageObj,
+                draggable: true
+            });
+
+            layer.add(darth);
+            stage.add(layer);
+
+            test(darth.getWidth() === 438, 'image width should be 438');
+            test(darth.getHeight() === 300, 'image height should be 300');
+
+            darth.applyFilter({
+                filter: Kinetic.Filters.Grayscale,
+                callback: function() {
+                    layer.draw();
+                }
+            });
+        };
+        imageObj.src = '../darth-vader.jpg';
+    },
     'SHAPE - set image fill to color then image': function(containerId) {
         var imageObj = new Image();
         imageObj.onload = function() {
@@ -2099,6 +2177,59 @@ Test.prototype.tests = {
         };
         imageObj.src = '../scorpion-sprite.png';
     },
+    'Node - shape caching': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+
+        var points = [{
+            x: 73,
+            y: 192
+        }, {
+            x: 73,
+            y: 160
+        }, {
+            x: 340,
+            y: 23
+        }, {
+            x: 500,
+            y: 109
+        }, {
+            x: 499,
+            y: 139
+        }, {
+            x: 342,
+            y: 93
+        }];
+
+        var poly = new Kinetic.Polygon({
+            points: points,
+            fill: 'green',
+            stroke: 'blue',
+            strokeWidth: 5
+        });
+
+        group.add(poly);
+        layer.add(group);
+        stage.add(layer);
+
+        poly.toImage(function(imageObj) {
+            test(Kinetic.Type._isElement(imageObj), 'shape toImage() should be an image object');
+        });
+        group.toImage(function(imageObj) {
+            test(Kinetic.Type._isElement(imageObj), 'group toImage() should be an image object');
+        });
+        layer.toImage(function(imageObj) {
+            test(Kinetic.Type._isElement(imageObj), 'layer toImage() should be an image object');
+        });
+        stage.toImage(function(imageObj) {
+            test(Kinetic.Type._isElement(imageObj), 'stage toImage() should be an image object');
+        });
+    },
     'SHAPE - add polygon': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -2178,10 +2309,10 @@ Test.prototype.tests = {
         layer.add(line);
         stage.add(layer);
 
-        line.saveData();
+        line.saveImageData();
 
         line.on('dragend', function() {
-            line.saveData();
+            line.saveImageData();
         });
 
         line.setPoints([1, 2, 3, 4]);
@@ -2710,8 +2841,7 @@ Test.prototype.tests = {
         layer.add(rect);
         stage.add(layer);
     },
-    'SHAPE - test pixel detection setter and getter': function(containerId) {
-
+    'NODE - test pixel detection setter and getter': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -2743,13 +2873,13 @@ Test.prototype.tests = {
         });
 
         star.on('dragend', function() {
-            this.saveData();
+            this.saveImageData();
         });
 
         layer.add(star);
         stage.add(layer);
 
-        star.saveData();
+        star.saveImageData();
 
         test(star.getDetectionType() === 'pixel', 'detection type should be pixel');
         star.setDetectionType('path');
@@ -3252,8 +3382,10 @@ Test.prototype.tests = {
         var shadowChanged = 0;
         var radiusChanged = 0;
 
-        rect.on('widthChange', function() {
+        rect.on('widthChange', function(evt) {
             widthChanged++;
+            test(evt.oldVal === 200, 'old width should be 200');
+            test(evt.newVal === 210, 'new width should be 210');
         });
 
         rect.on('shadowChange', function() {
@@ -3655,7 +3787,7 @@ Test.prototype.tests = {
     },
     'NODE - test getPosition and getAbsolutePosition for transformed parent with center offset': function(containerId) {
         var side = 100;
-        var diagonal = Math.sqrt(side*side*2);
+        var diagonal = Math.sqrt(side * side * 2);
 
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -3672,9 +3804,9 @@ Test.prototype.tests = {
             name: 'groupName',
             id: 'groupId',
             rotationDeg: 45,
-            offset: [side/2, side/2],
-            x: diagonal/2,
-            y: diagonal/2
+            offset: [side / 2, side / 2],
+            x: diagonal / 2,
+            y: diagonal / 2
         });
         var rect = new Kinetic.Rect({
             x: 0,
@@ -3703,7 +3835,7 @@ Test.prototype.tests = {
         stage.add(layer);
 
         test(Math.round(marker.getAbsolutePosition().x) === Math.round(diagonal), 'marker absolute position x should be about ' + Math.round(diagonal) + ' but is about ' + Math.round(marker.getAbsolutePosition().x));
-        test(Math.round(marker.getAbsolutePosition().y) === Math.round(diagonal/2), 'marker absolute position y should be about ' + Math.round(diagonal/2) + ' but is about ' + Math.round(marker.getAbsolutePosition().y));
+        test(Math.round(marker.getAbsolutePosition().y) === Math.round(diagonal / 2), 'marker absolute position y should be about ' + Math.round(diagonal / 2) + ' but is about ' + Math.round(marker.getAbsolutePosition().y));
     },
     'NODE - test get() selector by adding shape, then group, then layer': function(containerId) {
         var stage = new Kinetic.Stage({

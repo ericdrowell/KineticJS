@@ -90,8 +90,8 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @name draw
      * @methodOf Kinetic.Stage.prototype
      */
-    draw: function() {
-        this._drawChildren();
+    draw: function(layer) {
+        this._draw(layer);
     },
     /**
      * set stage size
@@ -124,48 +124,6 @@ Kinetic.Stage = Kinetic.Container.extend({
         for(var n = 0; n < layers.length; n++) {
             layers[n].clear();
         }
-    },
-    /**
-     * Creates a composite data URL and passes it to a callback. If MIME type is not
-     * specified, then "image/png" will result. For "image/jpeg", specify a quality
-     * level as quality (range 0.0 - 1.0)
-     * @name toDataURL
-     * @methodOf Kinetic.Stage.prototype
-     * @param {function} callback
-     * @param {String} mimeType (optional)
-     * @param {Number} quality (optional)
-     */
-    toDataURL: function(callback, mimeType, quality) {
-        var bufferLayer = this.bufferLayer;
-        var bufferContext = bufferLayer.getContext();
-        var layers = this.children;
-        var that = this;
-
-        function addLayer(n) {
-            var dataURL = layers[n].getCanvas().toDataURL();
-            var imageObj = new Image();
-            imageObj.onload = function() {
-                bufferContext.drawImage(this, 0, 0);
-                n++;
-                if(n < layers.length) {
-                    addLayer(n);
-                }
-                else {
-                    try {
-                        // If this call fails (due to browser bug, like in Firefox 3.6),
-                        // then revert to previous no-parameter image/png behavior
-                        callback(bufferLayer.getCanvas().toDataURL(mimeType, quality));
-                    }
-                    catch(exception) {
-                        callback(bufferLayer.getCanvas().toDataURL());
-                    }
-                }
-            };
-            imageObj.src = dataURL;
-        }
-
-        bufferLayer.clear();
-        addLayer(0);
     },
     /**
      * serialize stage and children as a JSON object
@@ -319,6 +277,85 @@ Kinetic.Stage = Kinetic.Container.extend({
      */
     getDOM: function() {
         return this.content;
+    },
+    /**
+     * Creates a composite data URL and requires a callback because the stage
+     *  toDataURL method is asynchronous. If MIME type is not
+     *  specified, then "image/png" will result. For "image/jpeg", specify a quality
+     *  level as quality (range 0.0 - 1.0).  Note that this method works
+     *  differently from toDataURL() for other nodes because it generates an absolute dataURL
+     *  based on what's draw onto the canvases for each layer, rather than drawing
+     *  the current state of each node
+     * @name toDataURL
+     * @methodOf Kinetic.Stage.prototype
+     * @param {Function} callback
+     * @param {String} [mimeType]
+     * @param {Number} [quality]
+     */
+    toDataURL: function(callback, mimeType, quality) {
+        /*
+         * we need to create a temp layer rather than using
+         * the bufferLayer because the stage toDataURL method
+         * is asynchronous, which means that other parts of the
+         * code base could be updating or clearing the bufferLayer
+         * while the stage toDataURL method is processing
+         */
+        var tempLayer = new Kinetic.Layer();
+        tempLayer.getCanvas().width = this.attrs.width;
+        tempLayer.getCanvas().height = this.attrs.height;
+        tempLayer.parent = this;
+        var tempCanvas = tempLayer.getCanvas();
+        var tempContext = tempLayer.getContext();
+
+        var layers = this.children;
+
+        function drawLayer(n) {
+            var layer = layers[n];
+            var layerUrl;
+            try {
+                // If this call fails (due to browser bug, like in Firefox 3.6),
+                // then revert to previous no-parameter image/png behavior
+                layerUrl = layer.getCanvas().toDataURL(mimeType, quality);
+            }
+            catch(e) {
+                layerUrl = layer.getCanvas().toDataURL();
+            }
+
+            var imageObj = new Image();
+            imageObj.onload = function() {
+                tempContext.drawImage(imageObj, 0, 0);
+
+                if(n < layers.length - 1) {
+                    drawLayer(n + 1);
+                }
+                else {
+                    try {
+                        // If this call fails (due to browser bug, like in Firefox 3.6),
+                        // then revert to previous no-parameter image/png behavior
+                        callback(tempLayer.getCanvas().toDataURL(mimeType, quality));
+                    }
+                    catch(e) {
+                        callback(tempLayer.getCanvas().toDataURL());
+                    }
+                }
+            };
+            imageObj.src = layerUrl;
+        }
+        drawLayer(0);
+    },
+    /**
+     * converts stage into an image.  Since the stage toImage() method
+     *  is asynchronous, a callback function is required
+     * @name toImage
+     * @methodOf Kinetic.Stage.prototype
+     * @param {Function} callback
+     */
+    toImage: function(callback) {
+        this.toDataURL(function(dataUrl) {
+            Kinetic.Type._getImage(dataUrl, function(img) {
+                callback(img);
+            });
+        });
     },
     _resizeDOM: function() {
         var width = this.attrs.width;
@@ -913,9 +950,9 @@ Kinetic.Stage = Kinetic.Container.extend({
             this.ids[node.attrs.id] = node;
         }
     },
-    _removeId: function(node) {
-        if(node.attrs.id !== undefined) {
-            delete this.ids[node.attrs.id];
+    _removeId: function(id) {
+        if(id !== undefined) {
+            delete this.ids[id];
         }
     },
     _addName: function(node) {
@@ -927,18 +964,18 @@ Kinetic.Stage = Kinetic.Container.extend({
             this.names[name].push(node);
         }
     },
-    _removeName: function(node) {
-        if(node.attrs.name !== undefined) {
-            var nodes = this.names[node.attrs.name];
+    _removeName: function(name, _id) {
+        if(name !== undefined) {
+            var nodes = this.names[name];
             if(nodes !== undefined) {
                 for(var n = 0; n < nodes.length; n++) {
                     var no = nodes[n];
-                    if(no._id === node._id) {
+                    if(no._id === _id) {
                         nodes.splice(n, 1);
                     }
                 }
                 if(nodes.length === 0) {
-                    delete this.names[node.attrs.name];
+                    delete this.names[name];
                 }
             }
         }
@@ -985,6 +1022,9 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.names = {};
         this.anim = undefined;
         this.animRunning = false;
+    },
+    _draw: function(layer) {
+        this._drawChildren(layer);
     }
 });
 
