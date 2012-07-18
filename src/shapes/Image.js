@@ -33,7 +33,7 @@ Kinetic.Image = Kinetic.Shape.extend({
                     var cropY = this.attrs.crop.y ? this.attrs.crop.y : 0;
                     var cropWidth = this.attrs.crop.width;
                     var cropHeight = this.attrs.crop.height;
-                    this.drawImage(this.attrs.image, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
+                    this.drawImage(this.attrs.image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
                 }
                 // no cropping
                 else {
