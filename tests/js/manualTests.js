@@ -325,7 +325,7 @@ Test.prototype.tests = {
             layer.add(darth);
             stage.add(layer);
         };
-        imageObj.src = '../darth-vader.jpg';
+        imageObj.src = '../assets/darth-vader.jpg';
     },
     'EVENTS - star pixel detection': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -359,12 +359,12 @@ Test.prototype.tests = {
         });
 
         star.on('dragend', function() {
-            this.saveData();
+            this.saveImageData();
         });
 
         layer.add(star);
         stage.add(layer);
-        star.saveData();
+        star.saveImageData();
     },
     'EVENTS - drag events click': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -821,14 +821,14 @@ Test.prototype.tests = {
 
         /*
          Ellipse.on('dragend', function() {
-         Ellipse.saveData();
+         Ellipse.savePixels();
          });
          */
 
         layer.add(Ellipse).add(Ellipse2);
         stage.add(layer);
 
-        //Ellipse.saveData();
+        //Ellipse.savePixels();
     },
     'DRAG AND DROP - drag and drop stage': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1349,8 +1349,7 @@ Test.prototype.tests = {
             rect.rotate(0.01);
             layer.draw();
         });
-        //stage.start();
-
+        stage.start();
     },
     'STAGE - hide stage': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1468,14 +1467,7 @@ Test.prototype.tests = {
         });
 
         Ellipse.on('click', function() {
-            stage.toDataURL(function(dataUrl) {
-                /*
-                 * here you can do anything you like with the data url.
-                 * In this tutorial we'll just open the url with the browser
-                 * so that you can see the result as an image
-                 */
-                window.open(dataUrl);
-            });
+            window.open(layer.toDataURL());
         });
 
         layer.add(Ellipse);
@@ -1499,14 +1491,7 @@ Test.prototype.tests = {
         });
 
         Ellipse.on('click', function() {
-            stage.toDataURL(function(dataUrl) {
-                /*
-                 * here you can do anything you like with the data url.
-                 * In this tutorial we'll just open the url with the browser
-                 * so that you can see the result as an image
-                 */
-                window.open(dataUrl);
-            }, 'image/jpeg', 0);
+            window.open(layer.toDataURL('image/jpeg', 0));
         });
 
         layer.add(Ellipse);
@@ -1530,14 +1515,7 @@ Test.prototype.tests = {
         });
 
         Ellipse.on('click', function() {
-            stage.toDataURL(function(dataUrl) {
-                /*
-                 * here you can do anything you like with the data url.
-                 * In this tutorial we'll just open the url with the browser
-                 * so that you can see the result as an image
-                 */
-                window.open(dataUrl);
-            }, 'image/jpeg', 1);
+            window.open(layer.toDataURL('image/jpeg', 1));
         });
 
         layer.add(Ellipse);

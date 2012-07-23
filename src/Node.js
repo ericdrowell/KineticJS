@@ -37,39 +37,33 @@ Kinetic.Node = Kinetic.Class.extend({
 
         // bind events
         this.on('draggableChange.kinetic', function() {
-            if(this.attrs.draggable) {
-                this._listenDrag();
-            }
-            else {
-                // remove event listeners
-                this._dragCleanup();
-
-                /*
-                 * force drag and drop to end
-                 * if this node is currently in
-                 * drag and drop mode
-                 */
-                var stage = this.getStage();
-                var go = Kinetic.Global;
-                if(stage && go.drag.node && go.drag.node._id === this._id) {
-                    stage._endDrag();
-                }
+            this._onDraggableChange();
+        });
+        var that = this;
+        this.on('idChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeId(evt.oldVal);
+                stage._addId(that);
             }
         });
-        /*
-         * simulate draggable change event
-         * to init drag and drop logic from the
-         * above event binder
-         */
-        this.simulate('draggableChange');
+        this.on('nameChange.kinetic', function(evt) {
+            var stage = that.getStage();
+            if(stage) {
+                stage._removeName(evt.oldVal, that._id);
+                stage._addName(that);
+            }
+        });
+
+        this._onDraggableChange();
     },
     /**
      * bind events to the node.  KineticJS supports mouseover, mousemove,
-     * mouseout, mousedown, mouseup, click, dblclick, touchstart, touchmove,
-     * touchend, tap, dbltap, dragstart, dragmove, and dragend.  Pass in a string
-     * of event types delimmited by a space to bind multiple events at once
-     * such as 'mousedown mouseup mousemove'. include a namespace to bind an
-     * event by name such as 'click.foobar'.
+     *  mouseout, mousedown, mouseup, click, dblclick, touchstart, touchmove,
+     *  touchend, tap, dbltap, dragstart, dragmove, and dragend.  Pass in a string
+     *  of event types delimmited by a space to bind multiple events at once
+     *  such as 'mousedown mouseup mousemove'. include a namespace to bind an
+     *  event by name such as 'click.foobar'.
      * @name on
      * @methodOf Kinetic.Node.prototype
      * @param {String} typesStr
@@ -101,10 +95,10 @@ Kinetic.Node = Kinetic.Class.extend({
     },
     /**
      * remove event bindings from the node.  Pass in a string of
-     * event types delimmited by a space to remove multiple event
-     * bindings at once such as 'mousedown mouseup mousemove'.
-     * include a namespace to remove an event binding by name
-     * such as 'click.foobar'.
+     *  event types delimmited by a space to remove multiple event
+     *  bindings at once such as 'mousedown mouseup mousemove'.
+     *  include a namespace to remove an event binding by name
+     *  such as 'click.foobar'.
      * @name off
      * @methodOf Kinetic.Node.prototype
      * @param {String} typesStr
@@ -147,7 +141,8 @@ Kinetic.Node = Kinetic.Class.extend({
         return this.attrs;
     },
     /**
-     * set default attrs
+     * set default attrs.  This method should only be used if
+     *  you're creating a custom node
      * @name setDefaultAttrs
      * @methodOf Kinetic.Node.prototype
      * @param {Object} confic
@@ -187,6 +182,15 @@ Kinetic.Node = Kinetic.Class.extend({
             function setAttrs(obj, c, level) {
                 for(var key in c) {
                     var val = c[key];
+                    var oldVal = obj[key];
+
+                    /*
+                     * only fire change event for root
+                     * level attrs
+                     */
+                    if(level === 0) {
+                        that._fireBeforeChangeEvent(key, oldVal, val);
+                    }
 
                     // if obj doesn't have the val property, then create it
                     if(obj[key] === undefined && val !== undefined) {
@@ -258,7 +262,7 @@ Kinetic.Node = Kinetic.Class.extend({
                      * level attrs
                      */
                     if(level === 0) {
-                        that._fireChangeEvent(key);
+                        that._fireChangeEvent(key, oldVal, val);
                     }
                 }
             }
@@ -267,8 +271,8 @@ Kinetic.Node = Kinetic.Class.extend({
     },
     /**
      * determine if shape is visible or not.  Shape is visible only
-     * if it's visible and all of its ancestors are visible.  If one ancestor
-     * is invisible, this means that the shape is also invisible
+     *  if it's visible and all of its ancestors are visible.  If an ancestor
+     *  is invisible, this means that the shape is also invisible
      * @name isVisible
      * @methodOf Kinetic.Node.prototype
      */
@@ -289,7 +293,7 @@ Kinetic.Node = Kinetic.Class.extend({
         });
     },
     /**
-     * hide node
+     * hide node.  Hidden nodes are no longer detectable
      * @name hide
      * @methodOf Kinetic.Node.prototype
      */
@@ -307,8 +311,8 @@ Kinetic.Node = Kinetic.Class.extend({
         return this.index;
     },
     /**
-     * get absolute z-index by taking into account
-     * all parent and sibling indices
+     * get absolute z-index which takes into account sibling
+     *  and parent indices
      * @name getAbsoluteZIndex
      * @methodOf Kinetic.Node.prototype
      */
@@ -360,7 +364,8 @@ Kinetic.Node = Kinetic.Class.extend({
      * set node position
      * @name setPosition
      * @methodOf Kinetic.Node.prototype
-     * @param {Object} point
+     * @param {Number} x
+     * @param {Number} y
      */
     setPosition: function() {
         var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
@@ -378,15 +383,18 @@ Kinetic.Node = Kinetic.Class.extend({
         };
     },
     /**
-     * get absolute position relative to stage
+     * get absolute position
      * @name getAbsolutePosition
      * @methodOf Kinetic.Node.prototype
      */
     getAbsolutePosition: function() {
-        return this.getAbsoluteTransform().getTranslation();
+        var trans = this.getAbsoluteTransform();
+        var o = this.getOffset();
+        trans.translate(o.x, o.y);
+        return trans.getTranslation();
     },
     /**
-     * set absolute position relative to stage
+     * set absolute position
      * @name setAbsolutePosition
      * @methodOf Kinetic.Node.prototype
      * @param {Object} pos object containing an x and
@@ -394,28 +402,16 @@ Kinetic.Node = Kinetic.Class.extend({
      */
     setAbsolutePosition: function() {
         var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
-        /*
-         * save rotation and scale and
-         * then remove them from the transform
-         */
-        var rot = this.attrs.rotation;
-        var scale = {
-            x: this.attrs.scale.x,
-            y: this.attrs.scale.y
-        };
-        var offset = {
-            x: this.attrs.offset.x,
-            y: this.attrs.offset.y
-        };
-
-        this.attrs.rotation = 0;
-        this.attrs.scale = {
-            x: 1,
-            y: 1
-        };
+        var trans = this._clearTransform();
+        // don't clear translation
+        this.attrs.x = trans.x;
+        this.attrs.y = trans.y;
+        delete trans.x;
+        delete trans.y;
 
         // unravel transform
         var it = this.getAbsoluteTransform();
+
         it.invert();
         it.translate(pos.x, pos.y);
         pos = {
@@ -424,18 +420,14 @@ Kinetic.Node = Kinetic.Class.extend({
         };
 
         this.setPosition(pos.x, pos.y);
-
-        // restore rotation and scale
-        this.rotate(rot);
-        this.attrs.scale = {
-            x: scale.x,
-            y: scale.y
-        };
+        this._setTransform(trans);
     },
     /**
      * move node by an amount
      * @name move
      * @methodOf Kinetic.Node.prototype
+     * @param {Number} x
+     * @param {Number} y
      */
     move: function() {
         var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
@@ -487,7 +479,7 @@ Kinetic.Node = Kinetic.Class.extend({
         });
     },
     /**
-     * move node to top
+     * move node to the top of its siblings
      * @name moveToTop
      * @methodOf Kinetic.Node.prototype
      */
@@ -522,7 +514,7 @@ Kinetic.Node = Kinetic.Class.extend({
         }
     },
     /**
-     * move node to bottom
+     * move node to the bottom of its siblings
      * @name moveToBottom
      * @methodOf Kinetic.Node.prototype
      */
@@ -536,7 +528,7 @@ Kinetic.Node = Kinetic.Class.extend({
      * set zIndex
      * @name setZIndex
      * @methodOf Kinetic.Node.prototype
-     * @param {int} zIndex
+     * @param {Integer} zIndex
      */
     setZIndex: function(zIndex) {
         var index = this.index;
@@ -639,7 +631,7 @@ Kinetic.Node = Kinetic.Class.extend({
      * @name transitionTo
      * @methodOf Kinetic.Node.prototype
      * @param {Object} config
-     * @config {Number} [duration] duration that the transition runs in seconds
+     * @config {Number} duration duration that the transition runs in seconds
      * @config {String} [easing] easing function.  can be linear, ease-in, ease-out, ease-in-out,
      *  back-ease-in, back-ease-out, back-ease-in-out, elastic-ease-in, elastic-ease-out,
      *  elastic-ease-in-out, bounce-ease-out, bounce-ease-in, bounce-ease-in-out,
@@ -703,8 +695,8 @@ Kinetic.Node = Kinetic.Class.extend({
         return trans;
     },
     /**
-     * get transform of the node while taking into
-     * account the transforms of its parents
+     * get absolute transform of the node which takes into
+     *  account its parent transforms
      * @name getAbsoluteTransform
      * @methodOf Kinetic.Node.prototype
      */
@@ -724,15 +716,13 @@ Kinetic.Node = Kinetic.Class.extend({
         for(var n = 0; n < family.length; n++) {
             var node = family[n];
             var m = node.getTransform();
-
             am.multiply(m);
         }
 
         return am;
     },
     /**
-     * get transform of the node while not taking
-     * into account the transforms of its parents
+     * get transform of the node
      * @name getTransform
      * @methodOf Kinetic.Node.prototype
      */
@@ -748,6 +738,9 @@ Kinetic.Node = Kinetic.Class.extend({
         if(this.attrs.scale.x !== 1 || this.attrs.scale.y !== 1) {
             m.scale(this.attrs.scale.x, this.attrs.scale.y);
         }
+        if(this.attrs.offset && (this.attrs.offset.x !== 0 || this.attrs.offset.y !== 0)) {
+            m.translate(-1 * this.attrs.offset.x, -1 * this.attrs.offset.y);
+        }
 
         return m;
     },
@@ -755,8 +748,7 @@ Kinetic.Node = Kinetic.Class.extend({
      * clone node
      * @name clone
      * @methodOf Kinetic.Node.prototype
-     * @param {Object} config used to override cloned
-     *  attrs
+     * @param {Object} attrs override attrs
      */
     clone: function(obj) {
         // instantiate new node
@@ -788,8 +780,150 @@ Kinetic.Node = Kinetic.Class.extend({
         node.setAttrs(obj);
         return node;
     },
-    _fireChangeEvent: function(attr) {
-        this._handleEvent(attr + 'Change', {});
+    /**
+     * save image data
+     * @name saveImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    saveImageData: function(width, height) {
+        try {
+            var canvas;
+            if(width && height) {
+                canvas = new Kinetic.Canvas(width, height);
+            }
+            else {
+                var stage = this.getStage();
+                canvas = stage.bufferCanvas;
+            }
+
+            var context = canvas.getContext();
+            canvas.clear();
+            this._draw(canvas);
+            var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
+            this.imageData = imageData;
+        }
+        catch(e) {
+            Kinetic.Global.warn('Image data could not saved because canvas is dirty.');
+        }
+    },
+    /**
+     * clear image data
+     * @name clearImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    clearImageData: function() {
+        delete this.imageData;
+    },
+    /**
+     * get image data
+     * @name getImageData
+     * @methodOf Kinetic.Node.prototype
+     */
+    getImageData: function() {
+        return this.imageData;
+    },
+    /**
+     * Creates a composite data URL. If MIME type is not
+     * specified, then "image/png" will result. For "image/jpeg", specify a quality
+     * level as quality (range 0.0 - 1.0)
+     * @name toDataURL
+     * @methodOf Kinetic.Node.prototype
+     * @param {Object} config
+     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+     *  "image/png" is the default
+     * @param {Number} [config.width] data url image width
+     * @param {Number} [config.height] data url image height
+     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
+     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
+     *  is very high quality
+     */
+    toDataURL: function(config) {
+        var mimeType = config && config.mimeType ? config.mimeType : null;
+        var quality = config && config.quality ? config.quality : null;
+        var canvas;
+        if(config && config.width && config.height) {
+            canvas = new Kinetic.Canvas(config.width, config.height);
+        }
+        else {
+            canvas = this.getStage().bufferCanvas;
+        }
+
+        var context = canvas.getContext();
+        canvas.clear();
+        this._draw(canvas);
+        return canvas.toDataURL(mimeType, quality);
+    },
+    /**
+     * converts node into an image.  Since the toImage
+     *  method is asynchronous, a callback is required
+     * @name toImage
+     * @methodOf Kinetic.Stage.prototype
+     * @param {Object} config
+     * @param {Function} callback since the toImage() method is asynchonrous, the
+     *  resulting image object is passed into the callback function
+     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+     *  "image/png" is the default
+     * @param {Number} [config.width] data url image width
+     * @param {Number} [config.height] data url image height
+     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
+     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
+     *  is very high quality
+     */
+    toImage: function(config) {
+        Kinetic.Type._getImage(this.toDataURL(config), function(img) {
+            config.callback(img);
+        });
+    },
+    _clearTransform: function() {
+        var trans = {
+            x: this.attrs.x,
+            y: this.attrs.y,
+            rotation: this.attrs.rotation,
+            scale: {
+                x: this.attrs.scale.x,
+                y: this.attrs.scale.y
+            },
+            offset: {
+                x: this.attrs.offset.x,
+                y: this.attrs.offset.y
+            }
+        };
+
+        this.attrs.x = 0;
+        this.attrs.y = 0;
+        this.attrs.rotation = 0;
+        this.attrs.scale = {
+            x: 1,
+            y: 1
+        };
+        this.attrs.offset = {
+            x: 0,
+            y: 0
+        };
+
+        return trans;
+    },
+    _setTransform: function(trans) {
+        for(var key in trans) {
+            this.attrs[key] = trans[key];
+        }
+    },
+    _setImageData: function(imageData) {
+        if(imageData && imageData.data) {
+            this.imageData = imageData;
+        }
+    },
+    _fireBeforeChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent('before' + attr.toUpperCase() + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
+    },
+    _fireChangeEvent: function(attr, oldVal, newVal) {
+        this._handleEvent(attr + 'Change', {
+            oldVal: oldVal,
+            newVal: newVal
+        });
     },
     _setAttr: function(obj, attr, val) {
         if(val !== undefined) {
@@ -815,9 +949,30 @@ Kinetic.Node = Kinetic.Class.extend({
         if(pos) {
             var m = this.getTransform().getTranslation();
             var am = this.getAbsoluteTransform().getTranslation();
+            var ap = this.getAbsolutePosition();
             go.drag.node = this;
-            go.drag.offset.x = pos.x - this.getAbsoluteTransform().getTranslation().x;
-            go.drag.offset.y = pos.y - this.getAbsoluteTransform().getTranslation().y;
+            go.drag.offset.x = pos.x - ap.x;
+            go.drag.offset.y = pos.y - ap.y;
+        }
+    },
+    _onDraggableChange: function() {
+        if(this.attrs.draggable) {
+            this._listenDrag();
+        }
+        else {
+            // remove event listeners
+            this._dragCleanup();
+
+            /*
+             * force drag and drop to end
+             * if this node is currently in
+             * drag and drop mode
+             */
+            var stage = this.getStage();
+            var go = Kinetic.Global;
+            if(stage && go.drag.node && go.drag.node._id === this._id) {
+                stage._endDrag();
+            }
         }
     },
     /**
@@ -894,7 +1049,6 @@ Kinetic.Node._addSetter = function(constructor, attr) {
     var that = this;
     var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
     constructor.prototype[method] = function() {
-        var arg;
         if(arguments.length == 1) {
             arg = arguments[0];
         }
@@ -935,7 +1089,7 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  * set detection type
  * @name setDetectionType
  * @methodOf Kinetic.Node.prototype
- * @param {String} type can be "path" or "pixel"
+ * @param {String} type can be path or pixel
  */
 
 /**
@@ -947,8 +1101,8 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 
 /**
  * set alpha.  Alpha values range from 0 to 1.
- * A node with an alpha of 0 is fully transparent, and a node
- * with an alpha of 1 is fully opaque
+ *  A node with an alpha of 0 is fully transparent, and a node
+ *  with an alpha of 1 is fully opaque
  * @name setAlpha
  * @methodOf Kinetic.Node.prototype
  * @param {Object} alpha
@@ -962,14 +1116,14 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  */
 
 /**
- * set drag constraint
+ * set drag constraint.
  * @name setDragConstraint
  * @methodOf Kinetic.Node.prototype
- * @param {String} constraint
+ * @param {String} constraint can be vertical, horizontal, or none
  */
 
 /**
- * set drag bounds
+ * set drag bounds.
  * @name setDragBounds
  * @methodOf Kinetic.Node.prototype
  * @param {Object} bounds
@@ -994,8 +1148,8 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  */
 
 /**
- * set offset
- * @name setOffset
+ * set offset.  A node's offset defines the positition and rotation point
+ * @name setOffset 
  * @methodOf Kinetic.Node.prototype
  * @param {Number} x
  * @param {Number} y
@@ -1004,7 +1158,8 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 /**
  * set node scale.
  * @name setScale
- * @param {Number|Array|Object|List} scale
+ * @param {Number} x
+ * @param {Number} y
  * @methodOf Kinetic.Node.prototype
  */
 
@@ -1027,7 +1182,7 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  */
 
 /**
- * get detection type
+ * get detection type.  Can be path or pixel
  * @name getDetectionType
  * @methodOf Kinetic.Node.prototype
  */
@@ -1039,9 +1194,7 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  */
 
 /**
- * get alpha.  Alpha values range from 0 to 1.
- * A node with an alpha of 0 is fully transparent, and a node
- * with an alpha of 1 is fully opaque
+ * get alpha.
  * @name getAlpha
  * @methodOf Kinetic.Node.prototype
  */

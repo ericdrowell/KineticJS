@@ -78,8 +78,8 @@ Kinetic.Container = Kinetic.Node.extend({
         if(child && child.index !== undefined && this.children[child.index]._id == child._id) {
             var stage = this.getStage();
             if(stage !== undefined) {
-                stage._removeId(child);
-                stage._removeName(child);
+                stage._removeId(child.getId());
+                stage._removeName(child.getName(), child._id);
             }
 
             var go = Kinetic.Global;
@@ -211,18 +211,18 @@ Kinetic.Container = Kinetic.Node.extend({
     /**
      * draw children
      */
-    _drawChildren: function() {
+    _drawChildren: function(canvas) {
         var stage = this.getStage();
         var children = this.children;
         for(var n = 0; n < children.length; n++) {
             var child = children[n];
             if(child.nodeType === 'Shape') {
                 if(child.isVisible() && stage.isVisible()) {
-                    child._draw(child.getLayer());
+                    child._draw(canvas);
                 }
             }
             else {
-                child.draw();
+                child.draw(canvas);
             }
         }
     },
@@ -230,27 +230,8 @@ Kinetic.Container = Kinetic.Node.extend({
      * set children indices
      */
     _setChildrenIndices: function() {
-        /*
-         * if reordering Layers, remove all canvas elements
-         * from the container except the buffer and backstage canvases
-         * and then readd all the layers
-         */
-        if(this.nodeType === 'Stage') {
-            var canvases = this.content.children;
-            var bufferCanvas = canvases[0];
-            var backstageCanvas = canvases[1];
-
-            this.content.innerHTML = '';
-            this.content.appendChild(bufferCanvas);
-            this.content.appendChild(backstageCanvas);
-        }
-
         for(var n = 0; n < this.children.length; n++) {
             this.children[n].index = n;
-
-            if(this.nodeType === 'Stage') {
-                this.content.appendChild(this.children[n].canvas);
-            }
         }
     }
 });

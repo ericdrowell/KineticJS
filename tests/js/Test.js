@@ -1,6 +1,18 @@
 var numTests = 0;
 var testCounter = null;
+var before, after;
 
+function startTimer() {
+    var date = new Date();
+    before = date.getTime();
+
+}
+function endTimer(str) {
+    var date = new Date();
+    after = date.getTime();
+    var diff = after - before;
+    console.log(str + ': ' + diff + 'ms');
+}
 function warn(condition, message) {
     test(condition, message, true);
 }
@@ -9,7 +21,7 @@ function test(condition, message, warn) {
         if(warn) {
             testCounter.style.backgroundColor = 'orange';
             testCounter.style.color = 'black';
-            console.warn(message + ' (NOTE: use Google Chrome for data url comparisons)');
+            console.warn(message + ' (NOTE: use Google Chrome for data url comparisons, run on web server for caching and filtering)');
         }
         else {
             testCounter.style.backgroundColor = 'red';

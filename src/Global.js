@@ -7,6 +7,7 @@
  */
 var Kinetic = {};
 Kinetic.version = "@version";
+Kinetic.Filters = {};
 Kinetic.Global = {
     BUBBLE_WHITELIST: ['mousedown', 'mousemove', 'mouseup', 'mouseover', 'mouseout', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend', 'tap', 'dbltap', 'dragstart', 'dragmove', 'dragend'],
     stages: [],
@@ -20,6 +21,11 @@ Kinetic.Global = {
             y: 0
         },
         lastDrawTime: 0
+    },
+    warn: function(str) {
+        if(console && console.warn) {
+            console.warn('Kinetic warning: ' + str);
+        }
     },
     _pullNodes: function(stage) {
         var tempNodes = this.tempNodes;
