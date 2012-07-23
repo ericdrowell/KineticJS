@@ -90,13 +90,15 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @name draw
      * @methodOf Kinetic.Stage.prototype
      */
-    draw: function(layer) {
-        this._draw(layer);
+    draw: function(canvas) {
+        this._draw(canvas);
     },
     /**
      * set stage size
      * @name setSize
      * @methodOf Kinetic.Stage.prototype
+     * @param {Number} width
+     * @param {Number} height
      */
     setSize: function() {
         // set stage dimensions
@@ -104,7 +106,7 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.setAttrs(size);
     },
     /**
-     * return stage size
+     * get stage size
      * @name getSize
      * @methodOf Kinetic.Stage.prototype
      */
@@ -126,7 +128,8 @@ Kinetic.Stage = Kinetic.Container.extend({
         }
     },
     /**
-     * serialize stage and children as a JSON object
+     * serialize stage and children as a JSON object and return
+     *  the result as a json string
      * @name toJSON
      * @methodOf Kinetic.Stage.prototype
      */
@@ -271,7 +274,7 @@ Kinetic.Stage = Kinetic.Container.extend({
     },
     /**
      * get stage DOM node, which is a div element
-     * with the class name "kineticjs-content"
+     *  with the class name "kineticjs-content"
      * @name getDOM
      * @methodOf Kinetic.Stage.prototype
      */
@@ -288,55 +291,43 @@ Kinetic.Stage = Kinetic.Container.extend({
      *  the current state of each node
      * @name toDataURL
      * @methodOf Kinetic.Stage.prototype
-     * @param {Function} callback
-     * @param {String} [mimeType]
-     * @param {Number} [quality]
+     * @param {Object} config
+     * @param {Function} config.callback since the stage toDataURL() method is asynchronous,
+     *  the data url string will be passed into the callback
+     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+     *  "image/png" is the default
+     * @param {Number} [config.width] data url image width
+     * @param {Number} [config.height] data url image height
+     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
+     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
+     *  is very high quality
      */
-    toDataURL: function(callback, mimeType, quality) {
+    toDataURL: function(config) {
+        var mimeType = config && config.mimeType ? config.mimeType : null;
+        var quality = config && config.quality ? config.quality : null;
         /*
-         * we need to create a temp layer rather than using
-         * the bufferLayer because the stage toDataURL method
-         * is asynchronous, which means that other parts of the
-         * code base could be updating or clearing the bufferLayer
-         * while the stage toDataURL method is processing
+         * need to create a canvas element rather than using the buffer canvas
+         * because this method is asynchonous which means that other parts of the
+         * code could modify the buffer canvas before it's finished
          */
-        var tempLayer = new Kinetic.Layer();
-        tempLayer.getCanvas().width = this.attrs.width;
-        tempLayer.getCanvas().height = this.attrs.height;
-        tempLayer.parent = this;
-        var tempCanvas = tempLayer.getCanvas();
-        var tempContext = tempLayer.getContext();
-
+        var width = config && config.width ? config.width : this.attrs.width;
+        var height = config && config.height ? config.height : this.attrs.height;
+        var canvas = new Kinetic.Canvas(width, height);
+        var context = canvas.getContext();
         var layers = this.children;
 
         function drawLayer(n) {
             var layer = layers[n];
-            var layerUrl;
-            try {
-                // If this call fails (due to browser bug, like in Firefox 3.6),
-                // then revert to previous no-parameter image/png behavior
-                layerUrl = layer.getCanvas().toDataURL(mimeType, quality);
-            }
-            catch(e) {
-                layerUrl = layer.getCanvas().toDataURL();
-            }
-
+            var layerUrl = layer.getCanvas().toDataURL(mimeType, quality);
             var imageObj = new Image();
             imageObj.onload = function() {
-                tempContext.drawImage(imageObj, 0, 0);
+                context.drawImage(imageObj, 0, 0);
 
                 if(n < layers.length - 1) {
                     drawLayer(n + 1);
                 }
                 else {
-                    try {
-                        // If this call fails (due to browser bug, like in Firefox 3.6),
-                        // then revert to previous no-parameter image/png behavior
-                        callback(tempLayer.getCanvas().toDataURL(mimeType, quality));
-                    }
-                    catch(e) {
-                        callback(tempLayer.getCanvas().toDataURL());
-                    }
+                    config.callback(canvas.toDataURL(mimeType, quality));
                 }
             };
             imageObj.src = layerUrl;
@@ -348,13 +339,24 @@ Kinetic.Stage = Kinetic.Container.extend({
      *  is asynchronous, a callback function is required
      * @name toImage
      * @methodOf Kinetic.Stage.prototype
-     * @param {Function} callback
+     * @param {Object} config
+     * @param {Function} callback since the toImage() method is asynchonrous, the
+     *  resulting image object is passed into the callback function
+     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+     *  "image/png" is the default
+     * @param {Number} [config.width] data url image width
+     * @param {Number} [config.height] data url image height
+     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
+     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
+     *  is very high quality
      */
-    toImage: function(callback) {
-        this.toDataURL(function(dataUrl) {
-            Kinetic.Type._getImage(dataUrl, function(img) {
-                callback(img);
-            });
+    toImage: function(config) {
+        this.toDataURL({
+            callback: function(dataUrl) {
+                Kinetic.Type._getImage(dataUrl, function(img) {
+                    config.callback(img);
+                });
+            }
         });
     },
     _resizeDOM: function() {
@@ -365,18 +367,15 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.content.style.width = width + 'px';
         this.content.style.height = height + 'px';
 
-        // set buffer layer and path layer sizes
-        this.bufferLayer.getCanvas().width = width;
-        this.bufferLayer.getCanvas().height = height;
-        this.pathLayer.getCanvas().width = width;
-        this.pathLayer.getCanvas().height = height;
+        // set buffer canvas and path canvas sizes
+        this.bufferCanvas.setSize(width, height);
+        this.pathCanvas.setSize(width, height);
 
         // set user defined layer dimensions
         var layers = this.children;
         for(var n = 0; n < layers.length; n++) {
             var layer = layers[n];
-            layer.getCanvas().width = width;
-            layer.getCanvas().height = height;
+            layer.getCanvas().setSize(width, height);
             layer.draw();
         }
     },
@@ -400,12 +399,11 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @param {Layer} layer
      */
     _add: function(layer) {
-        layer.canvas.width = this.attrs.width;
-        layer.canvas.height = this.attrs.height;
+        layer.canvas.setSize(this.attrs.width, this.attrs.height);
 
         // draw layer and append canvas to container
         layer.draw();
-        this.content.appendChild(layer.canvas);
+        this.content.appendChild(layer.canvas.element);
 
         /*
          * set layer last draw time to zero
@@ -608,7 +606,7 @@ Kinetic.Stage = Kinetic.Container.extend({
 
         this._setMousePosition(evt);
         this._setTouchPosition(evt);
-        this.pathLayer.clear();
+        this.pathCanvas.clear();
 
         /*
          * loop through layers.  If at any point an event
@@ -786,39 +784,10 @@ Kinetic.Stage = Kinetic.Container.extend({
      * get container position
      */
     _getContentPosition: function() {
-        var obj = this.content;
-        var top = 0;
-        var left = 0;
-        while(obj && obj.tagName !== 'BODY') {
-            top += obj.offsetTop - obj.scrollTop;
-            left += obj.offsetLeft - obj.scrollLeft;
-            obj = obj.offsetParent;
-        }
+        var rect = this.content.getBoundingClientRect(), root = document.documentElement;
         return {
-            top: top,
-            left: left
-        };
-    },
-    /**
-     * modify path context
-     * @param {CanvasContext} context
-     */
-    _modifyPathContext: function(context) {
-        context.stroke = function() {
-        };
-        context.fill = function() {
-        };
-        context.fillRect = function(x, y, width, height) {
-            context.rect(x, y, width, height);
-        };
-        context.strokeRect = function(x, y, width, height) {
-            context.rect(x, y, width, height);
-        };
-        context.drawImage = function() {
-        };
-        context.fillText = function() {
-        };
-        context.strokeText = function() {
+            top: rect.top + root.scrollTop,
+            left: rect.left + root.scrollLeft
         };
     },
     /**
@@ -915,34 +884,15 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.content.className = 'kineticjs-content';
         this.attrs.container.appendChild(this.content);
 
-        // default layers
-        this.bufferLayer = new Kinetic.Layer({
-            name: 'bufferLayer'
+        this.bufferCanvas = new Kinetic.Canvas({
+            width: this.attrs.width,
+            height: this.attrs.height
         });
-        this.pathLayer = new Kinetic.Layer({
-            name: 'pathLayer'
+        this.pathCanvas = new Kinetic.Canvas({
+            width: this.attrs.width,
+            height: this.attrs.height
         });
-
-        // set parents
-        this.bufferLayer.parent = this;
-        this.pathLayer.parent = this;
-
-        // customize back stage context
-        this._modifyPathContext(this.pathLayer.context);
-
-        // hide canvases
-        this.bufferLayer.getCanvas().style.display = 'none';
-        this.pathLayer.getCanvas().style.display = 'none';
-
-        // add buffer layer
-        this.bufferLayer.canvas.className = 'kineticjs-buffer-layer';
-        this.content.appendChild(this.bufferLayer.canvas);
-
-        // add path layer
-        this.pathLayer.canvas.className = 'kineticjs-path-layer';
-        this.content.appendChild(this.pathLayer.canvas);
-
-        this.setSize(this.attrs.width, this.attrs.height);
+        this.pathCanvas.strip();
         this._resizeDOM();
     },
     _addId: function(node) {
@@ -1023,8 +973,8 @@ Kinetic.Stage = Kinetic.Container.extend({
         this.anim = undefined;
         this.animRunning = false;
     },
-    _draw: function(layer) {
-        this._drawChildren(layer);
+    _draw: function(canvas) {
+        this._drawChildren(canvas);
     }
 });
 
@@ -1044,7 +994,7 @@ Kinetic.Node.addGettersSetters(Kinetic.Stage, ['width', 'height', 'throttle']);
  */
 
 /**
- * get throttle
+ * get event throttle for event detections per second.
  * @name getThrottle
  * @methodOf Kinetic.Stage.prototype
  */
@@ -1064,11 +1014,14 @@ Kinetic.Node.addGettersSetters(Kinetic.Stage, ['width', 'height', 'throttle']);
  */
 
 /**
- * set throttle.  Increasing the throttle will increase
+ * set throttle for event detections per second.  Increasing the throttle will increase
  *  the number of mousemove and touchmove event detections,
  *  and decreasing the throttle will decrease the number
- *  of mousemove and touchmove events which improves performance
+ *  of mousemove and touchmove events which improves performance.  The event
+ *  throttling is defaulted to 80 event detections per second
  * @name setThrottle
  * @methodOf Kinetic.Stage.prototype
  * @param {Number} throttle
+ * @example
+ * <a href="http://www.html5canvastutorials.com/kineticjs/html5-canvas-load-stage-with-json-string-with-kineticjs/">simple load example</a>
  */

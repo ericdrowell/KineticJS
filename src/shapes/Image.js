@@ -14,18 +14,16 @@
 Kinetic.Image = Kinetic.Shape.extend({
     init: function(config) {
         this.shapeType = "Image";
-        config.drawFunc = function() {
+        config.drawFunc = function(context) {
             if(!!this.attrs.image) {
                 var width = this.getWidth();
                 var height = this.getHeight();
-                var canvas = this.getCanvas();
-                var context = this.getContext();
 
                 context.beginPath();
                 context.rect(0, 0, width, height);
                 context.closePath();
-                this.fill();
-                this.stroke();
+                this.fill(context);
+                this.stroke(context);
 
                 // if cropping
                 if(this.attrs.crop && this.attrs.crop.width && this.attrs.crop.height) {
@@ -37,17 +35,12 @@ Kinetic.Image = Kinetic.Shape.extend({
                 }
                 // no cropping
                 else {
-                    this.drawImage(this.attrs.image, 0, 0, width, height);
+                    this.drawImage(context, this.attrs.image, 0, 0, width, height);
                 }
             }
         };
         // call super constructor
         this._super(config);
-
-        var that = this;
-        this.on('filterChange', function() {
-            that._applyFilter();
-        });
     },
     /**
      * set width and height
@@ -55,7 +48,7 @@ Kinetic.Image = Kinetic.Shape.extend({
      * @methodOf Kinetic.Image.prototype
      */
     setSize: function() {
-        var size = Kinetic.GlobalObject._getSize(Array.prototype.slice.call(arguments));
+        var size = Kinetic.Type._getSize(Array.prototype.slice.call(arguments));
         this.setAttrs(size);
     },
     /**
@@ -108,34 +101,9 @@ Kinetic.Image = Kinetic.Shape.extend({
      */
     applyFilter: function(config) {
         try {
-            // save transformation state
-            var x = this.getX();
-            var y = this.getY();
-            var rotation = this.getRotation();
-            var scaleX = this.getScale().x;
-            var scaleY = this.getScale().y;
-            var offsetX = this.getOffset().x;
-            var offsetY = this.getOffset().y;
-
-            // reset transformation state
-            this.attrs.x = 0;
-            this.attrs.y = 0;
-            this.attrs.rotation = 0;
-            this.attrs.scale.x = 1;
-            this.attrs.scale.y = 1;
-            this.attrs.offset.x = 0;
-            this.attrs.offset.y = 0;
-
-            this.saveImageData();
-
-            // restore transformation state
-            this.attrs.x = x;
-            this.attrs.y = y;
-            this.attrs.rotation = rotation;
-            this.attrs.scale.x = scaleX;
-            this.attrs.scale.y = scaleY;
-            this.attrs.offset.x = offsetX;
-            this.attrs.offset.y = offsetY;
+            var trans = this._clearTransform();
+            this.saveImageData(this.getWidth(), this.getHeight());
+            this._setTransform(trans);
 
             config.filter.call(this, config);
             var that = this;

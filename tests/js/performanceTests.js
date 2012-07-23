@@ -25,7 +25,7 @@ Test.prototype.tests = {
         var imageData = context.getImageData(7, 7, 106, 106);
         endTimer('create image data');
 
-        layer.clear();
+        layer.canvas.clear();
 
         startTimer();
         for(var n = 0; n < 10000; n++) {
@@ -62,7 +62,7 @@ Test.prototype.tests = {
 
         var imageObj = new Image();
         imageObj.onload = function() {
-            layer.clear();
+            layer.canvas.clear();
 
             startTimer();
             for(var n = 0; n < 10000; n++) {
@@ -91,7 +91,13 @@ Test.prototype.tests = {
                 strokeWidth: 5,
                 numPoints: 5,
                 x: Math.random() * stage.getWidth(),
-                y: Math.random() * stage.getHeight()
+                y: Math.random() * stage.getHeight(),
+                shadow: {
+                    offset: 5,
+                    color: 'black',
+                    blur: 5,
+                    alpha: 0.5
+                }
             });
 
             layer.add(star);
@@ -117,29 +123,36 @@ Test.prototype.tests = {
             strokeWidth: 5,
             numPoints: 5,
             x: 70,
-            y: 70
+            y: 70,
+            shadow: {
+                offset: 5,
+                color: 'black',
+                blur: 5,
+                alpha: 0.5
+            }
         });
 
         layer.add(star);
         stage.add(layer);
 
-        console.log('call toImage')
-        star.toImage(function(img) {
-            startTimer();
-            for(var n = 0; n < 1000; n++) {
-                var image = new Kinetic.Image({
-                    image: img,
-                    x: Math.random() * stage.getWidth(),
-                    y: Math.random() * stage.getHeight(),
-                    offset: 70
-                });
+        star.toImage({
+            callback: function(img) {
+                startTimer();
+                for(var n = 0; n < 1000; n++) {
+                    var image = new Kinetic.Image({
+                        image: img,
+                        x: Math.random() * stage.getWidth(),
+                        y: Math.random() * stage.getHeight(),
+                        offset: 70
+                    });
 
-                layer.add(image);
+                    layer.add(image);
+                }
+
+                layer.draw();
+
+                endTimer('draw 1,000 cached stars');
             }
-
-            layer.draw();
-
-            endTimer('draw 1,000 cached stars');
         });
     }
 };

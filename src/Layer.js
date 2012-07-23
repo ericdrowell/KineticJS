@@ -20,9 +20,8 @@ Kinetic.Layer = Kinetic.Container.extend({
         this.beforeDrawFunc = undefined;
         this.afterDrawFunc = undefined;
 
-        this.canvas = document.createElement('canvas');
-        this.context = this.canvas.getContext('2d');
-        this.canvas.style.position = 'absolute';
+        this.canvas = new Kinetic.Canvas();
+        this.canvas.getElement().style.position = 'absolute';
 
         // call super constructor
         this._super(config);
@@ -33,7 +32,7 @@ Kinetic.Layer = Kinetic.Container.extend({
      * @name draw
      * @methodOf Kinetic.Layer.prototype
      */
-    draw: function(layer) {
+    draw: function(canvas) {
         var throttle = this.attrs.throttle;
         var date = new Date();
         var time = date.getTime();
@@ -41,7 +40,7 @@ Kinetic.Layer = Kinetic.Container.extend({
         var tt = 1000 / throttle;
 
         if(timeDiff >= tt || throttle > 200) {
-            this._draw(layer);
+            this._draw(canvas);
 
             if(this.drawTimeout !== undefined) {
                 clearTimeout(this.drawTimeout);
@@ -58,7 +57,7 @@ Kinetic.Layer = Kinetic.Container.extend({
              * wait 17ms before trying again (60fps)
              */
             this.drawTimeout = setTimeout(function() {
-                that.draw(layer);
+                that.draw(canvas);
             }, 17);
         }
     },
@@ -79,19 +78,6 @@ Kinetic.Layer = Kinetic.Container.extend({
         this.afterDrawFunc = func;
     },
     /**
-     * clears the canvas context tied to the layer.  Clearing
-     *  a layer does not remove its children.  The nodes within
-     *  the layer will be redrawn whenever the .draw() method
-     *  is used again.
-     * @name clear
-     * @methodOf Kinetic.Layer.prototype
-     */
-    clear: function() {
-        var context = this.getContext();
-        var canvas = this.getCanvas();
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    },
-    /**
      * get layer canvas
      * @name getCanvas
      * @methodOf Kinetic.Layer.prototype
@@ -100,12 +86,20 @@ Kinetic.Layer = Kinetic.Container.extend({
         return this.canvas;
     },
     /**
-     * get layer context
+     * get layer canvas context
      * @name getContext
      * @methodOf Kinetic.Layer.prototype
      */
     getContext: function() {
-        return this.context;
+        return this.canvas.context;
+    },
+    /**
+     * clear canvas tied to the layer
+     * @name clear
+     * @methodOf Kinetic.Layer.prototype
+     */
+    clear: function() {
+        this.getCanvas().clear();
     },
     /**
      * Creates a composite data URL. If MIME type is not
@@ -115,24 +109,41 @@ Kinetic.Layer = Kinetic.Container.extend({
      * based on what's draw on the layer, rather than drawing
      * the current state of each child node
      * @name toDataURL
-     * @methodOf Kinetic.Stage.prototype
-     * @param {String} [mimeType]
-     * @param {Number} [quality]
+     * @methodOf Kinetic.Layer.prototype
+     * @param {Object} config
+     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+     *  "image/png" is the default
+     * @param {Number} [config.width] data url image width
+     * @param {Number} [config.height] data url image height
+     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
+     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
+     *  is very high quality
      */
-    toDataURL: function(mimeType, quality) {
-        try {
-            // If this call fails (due to browser bug, like in Firefox 3.6),
-            // then revert to previous no-parameter image/png behavior
-            return this.getCanvas().toDataURL(mimeType, quality);
+    toDataURL: function(config) {
+        var canvas;
+        var mimeType = config && config.mimeType ? config.mimeType : null;
+        var quality = config && config.quality ? config.quality : null;
+
+        if(config && config.width && config.height) {
+            canvas = new Kinetic.Canvas(config.width, config.height);
         }
-        catch(e) {
-            return this.getCanvas().toDataURL();
+        else {
+            canvas = this.getCanvas();
         }
+        return canvas.toDataURL(mimeType, quality);
     },
     /**
      * private draw children
      */
-    _draw: function(layer) {
+    _draw: function(canvas) {
+        /*
+         * if canvas is not defined, then use the canvas
+         * tied to the layer
+         */
+        if(!canvas) {
+            canvas = this.getCanvas();
+        }
+
         var date = new Date();
         var time = date.getTime();
         this.lastDrawTime = time;
@@ -143,8 +154,7 @@ Kinetic.Layer = Kinetic.Container.extend({
         }
 
         if(this.attrs.clearBeforeDraw) {
-            var clearLayer = layer ? layer : this;
-            clearLayer.clear();
+            canvas.clear();
         }
 
         if(this.isVisible()) {
@@ -154,7 +164,7 @@ Kinetic.Layer = Kinetic.Container.extend({
             }
 
             // draw children
-            this._drawChildren(layer);
+            this._drawChildren(canvas);
         }
 
         // after draw  handler
