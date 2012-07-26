@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Jul 24 2012
+ * Date: Jul 26 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -2782,8 +2782,13 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @param {function} func
      */
     onFrame: function(func) {
+        var id = undefined;
+		if (this.anim) { 
+		id = this.anim.id; 
+		}
         this.anim = {
-            func: func
+            func: func,
+			id: id // set anim.id
         };
     },
     /**
@@ -4735,7 +4740,7 @@ Kinetic.Image = Kinetic.Shape.extend({
                     var cropY = this.attrs.crop.y ? this.attrs.crop.y : 0;
                     var cropWidth = this.attrs.crop.width;
                     var cropHeight = this.attrs.crop.height;
-                    this.drawImage(context, this.attrs.image, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
+                    this.drawImage(this.attrs.image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
                 }
                 // no cropping
                 else {

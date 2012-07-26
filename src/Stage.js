@@ -78,8 +78,13 @@ Kinetic.Stage = Kinetic.Container.extend({
      * @param {function} func
      */
     onFrame: function(func) {
+        var id = undefined;
+		if (this.anim) { 
+		id = this.anim.id; 
+		}
         this.anim = {
-            func: func
+            func: func,
+			id: id // set anim.id
         };
     },
     /**
