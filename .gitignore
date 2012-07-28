@@ -1,2 +1,8 @@
 .project
 jsdoc-toolkit
+bin
+obj
+*.sln
+*.suo
+*.csproj
+*.user
