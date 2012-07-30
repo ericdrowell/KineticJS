@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Jul 18 2012
+ * Date: Jul 30 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -760,6 +760,15 @@ Kinetic.Node = Kinetic.Class.extend({
         if(this.attrs.visible && this.getParent() && !this.getParent().isVisible()) {
             return false;
         }
+		//no dibujamos elementos que estan fuera de la pantalla
+		if (this.nodeType == 'Shape'){
+			var p = this.getAbsolutePosition();			
+			if (p.x > -50 && p.y > -50 && p.x < 1700 && p.y < 1700){
+				return true;
+			}else {
+				return false;
+			}			
+		}
         return this.attrs.visible;
     },
     /**
@@ -1901,7 +1910,7 @@ Kinetic.Container = Kinetic.Node.extend({
         for(var n = 0; n < children.length; n++) {
             var child = children[n];
             if(child.nodeType === 'Shape') {
-                if(child.isVisible() && stage.isVisible()) {
+	 			if(child.isVisible() && stage.isVisible()) {
                     child._draw( layer ? layer : child.getLayer());
                 }
             }

@@ -217,7 +217,7 @@ Kinetic.Container = Kinetic.Node.extend({
         for(var n = 0; n < children.length; n++) {
             var child = children[n];
             if(child.nodeType === 'Shape') {
-                if(child.isVisible() && stage.isVisible()) {
+	 			if(child.isVisible() && stage.isVisible()) {
                     child._draw( layer ? layer : child.getLayer());
                 }
             }

@@ -279,6 +279,15 @@ Kinetic.Node = Kinetic.Class.extend({
         if(this.attrs.visible && this.getParent() && !this.getParent().isVisible()) {
             return false;
         }
+		//no dibujamos elementos que estan fuera de la pantalla
+		if (this.nodeType == 'Shape'){
+			var p = this.getAbsolutePosition();			
+			if (p.x > -50 && p.y > -50 && p.x < 1700 && p.y < 1700){
+				return true;
+			}else {
+				return false;
+			}			
+		}
         return this.attrs.visible;
     },
     /**
