@@ -63,12 +63,6 @@ Kinetic.Plugins.Path = Kinetic.Shape.extend({
                     break;
             }
         }
-        
-        // JoeAx - check for lineCap attr
-        if (!!this.attrs.lineCap) {
-            context.lineCap = this.attrs.lineCap;
-        }
-        
         this.fill(context);
         this.stroke(context);
     },
