@@ -10,7 +10,7 @@ Kinetic.Animation = function(config) {
     }
     this.id = Kinetic.Animation.animIdCounter++;
 };
-Kinetic.Animation.animations = [];
+Kinetic.Animation.animations = {};
 Kinetic.Animation.animIdCounter = 0;
 Kinetic.Animation.animRunning = false;
 Kinetic.Animation.frame = {
@@ -19,17 +19,10 @@ Kinetic.Animation.frame = {
     lastTime: new Date().getTime()
 };
 Kinetic.Animation._addAnimation = function(anim) {
-    this.animations.push(anim);
+    this.animations[anim.id] = anim;
 };
 Kinetic.Animation._removeAnimation = function(anim) {
-    var id = anim.id;
-    var animations = this.animations;
-    for(var n = 0; n < animations.length; n++) {
-        if(animations[n].id === id) {
-            this.animations.splice(n, 1);
-            return false;
-        }
-    }
+    delete this.animations[anim.id];
 };
 Kinetic.Animation._runFrames = function() {
     var nodes = {};
@@ -40,8 +33,8 @@ Kinetic.Animation._runFrames = function() {
      *  drawing the same node multiple times.  The node property
      *  can be the stage itself or a layer
      */
-    for(var n = 0; n < this.animations.length; n++) {
-        var anim = this.animations[n];
+    for(var key in this.animations) {
+        var anim = this.animations[key];
         if(anim.node && anim.node._id !== undefined) {
             nodes[anim.node._id] = anim.node;
         }
@@ -62,7 +55,7 @@ Kinetic.Animation._updateFrameObject = function() {
     this.frame.time += this.frame.timeDiff;
 };
 Kinetic.Animation._animationLoop = function() {
-    if(this.animations.length > 0) {
+    if(this._hasAnimations()) {
         this._updateFrameObject();
         this._runFrames();
         var that = this;
@@ -74,6 +67,12 @@ Kinetic.Animation._animationLoop = function() {
         this.animRunning = false;
         this.frame.lastTime = 0;
     }
+};
+Kinetic.Animation._hasAnimations = function() {
+    for(var key in this.animations) {
+        return true;
+    }
+    return false;
 };
 Kinetic.Animation._handleAnimation = function() {
     var that = this;

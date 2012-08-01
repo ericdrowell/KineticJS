@@ -4499,36 +4499,36 @@ Test.prototype.tests = {
             layer.draw();
         });
         var a = Kinetic.Animation;
-        
-        test(a.animations.length === 0, 'should be no animations running');
-        test(stage.animRunning === false, 'animRunning should be false');
+
+        //test(a.animations.length === 0, 'should be no animations running');
+        //test(stage.animRunning === false, 'animRunning should be false');
 
         stage.start();
-        test(a.animations.length === 1, 'should be 1 animation running');
-        test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
+        test(a._hasAnimations(), 'should be 1 animation running');
+        //test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
+        //test(stage.animRunning === true, 'animRunning should be true');
+
+        stage.stop();
+        test(!a._hasAnimations(), 'should be no animations running');
+        //test(stage.animRunning === false, 'animRunning should be false');
+
+        stage.start();
+        test(a._hasAnimations(), 'should be 1 animation running');
+        //test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
+        //test(stage.animRunning === true, 'animRunning should be true');
+
+        stage.start();
+        test(a._hasAnimations(), 'should be 1 animation running');
+        //test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
         test(stage.animRunning === true, 'animRunning should be true');
 
         stage.stop();
-        test(a.animations.length === 0, 'should be no animations running');
-        test(stage.animRunning === false, 'animRunning should be false');
-
-        stage.start();
-        test(a.animations.length === 1, 'should be 1 animation running');
-        test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
-        test(stage.animRunning === true, 'animRunning should be true');
-
-        stage.start();
-        test(a.animations.length === 1, 'should be 1 animation running');
-        test(a.animations[0].id === stage.anim.id, 'animation id is incorrect');
-        test(stage.animRunning === true, 'animRunning should be true');
-        
-        stage.stop();
-        test(a.animations.length === 0, 'should be no animations running');
+        test(!a._hasAnimations(), 'should be no animations running');
         test(stage.animRunning === false, 'animRunning should be false');
 
         stage.stop();
-        test(a.animations.length === 0, 'should be no animations running');
-        test(stage.animRunning === false, 'animRunning should be false');  
+        test(!a._hasAnimations(), 'should be no animations running');
+        test(stage.animRunning === false, 'animRunning should be false');
     },
     ////////////////////////////////////////////////////////////////////////
     //  TRANSITION tests
