@@ -102,6 +102,7 @@ Kinetic.Image = Kinetic.Shape.extend({
      */
     applyFilter: function(config) {
         try {
+            if(!this.attrs.originalImage) this.attrs.originalImage = this.attrs.image;
             var trans = this._clearTransform();
             this.saveImageData(this.getWidth(), this.getHeight());
             this._setTransform(trans);
@@ -118,6 +119,16 @@ Kinetic.Image = Kinetic.Shape.extend({
         }
         catch(e) {
             Kinetic.Global.warn('Unable to apply filter.');
+        }
+    },
+    clearFilter:function(config){
+        try{
+            this.setImage(this.attrs.originalImage);
+            if(config.callback){
+                config.callback();
+            }
+        }catch(e){
+             Kinetic.Global.warn('Unable to clear filter.');
         }
     }
 });
