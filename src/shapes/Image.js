@@ -121,6 +121,14 @@ Kinetic.Image = Kinetic.Shape.extend({
             Kinetic.Global.warn('Unable to apply filter.');
         }
     },
+    /**
+     * clear filter
+     * @name clearFilter
+     * @methodOf Kinetic.Image.prototype
+     * @param {Object} config
+     * @param {Function} [config.callback] callback function to be called once
+     *  filter has been cleared
+     */
     clearFilter:function(config){
         try{
             this.setImage(this.attrs.originalImage);
