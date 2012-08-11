@@ -12,7 +12,8 @@ Kinetic.Rect = Kinetic.Shape.extend({
         this.setDefaultAttrs({
             width: 0,
             height: 0,
-            cornerRadius: 0
+            cornerRadius: 0,
+            roundCorners: {topLeft: true, topRight: true, bottomLeft: true, bottomRight: true}
         });
         this.shapeType = "Rect";
         config.drawFunc = this.drawFunc;
@@ -20,27 +21,59 @@ Kinetic.Rect = Kinetic.Shape.extend({
         this._super(config);
     },
     drawFunc: function(context) {
+        this.drawPath(context, this.attrs.width, this.attrs.height, this.attrs.cornerRadius, this.attrs.roundCorners);
+        this.fill(context);
+        this.stroke(context);
+    },
+    drawPath: function(context, width, height, cornerRadius, roundCorners) {
         context.beginPath();
-        if(this.attrs.cornerRadius === 0) {
+        if(cornerRadius === 0) {
             // simple rect - don't bother doing all that complicated maths stuff.
-            context.rect(0, 0, this.attrs.width, this.attrs.height);
+            context.rect(0, 0, width, height);
         }
         else {
             // arcTo would be nicer, but browser support is patchy (Opera)
-            context.moveTo(this.attrs.cornerRadius, 0);
-            context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
-            context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
-            context.lineTo(this.attrs.cornerRadius, this.attrs.height);
-            context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
-            context.lineTo(0, this.attrs.cornerRadius);
-            context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            if( roundCorners.topLeft === true ) {
+                context.moveTo(cornerRadius, 0);
+            }
+            else {
+                context.moveTo(0, 0);
+            }
+            
+            if( roundCorners.topRight === true ) {
+                context.lineTo(width - cornerRadius, 0);
+                context.arc(width - cornerRadius, cornerRadius, cornerRadius, Math.PI * 3 / 2, 0, false);
+            }
+            else {
+                context.lineTo(width,0);
+            }
+            
+            if( roundCorners.bottomRight === true ) {
+                context.lineTo(width, height - cornerRadius);
+                context.arc(width - cornerRadius, height - cornerRadius, cornerRadius, 0, Math.PI / 2, false);
+            }
+            else {
+                context.lineTo(width, height);
+            }
+            
+            if( roundCorners.bottomLeft === true ) {
+                context.lineTo(cornerRadius, height);
+                context.arc(cornerRadius, height - cornerRadius, cornerRadius, Math.PI / 2, Math.PI, false);
+            }
+            else {
+                context.lineTo(0, height);
+            }
+            
+            if( roundCorners.topLeft === true ) {
+                context.lineTo(0, cornerRadius);
+                context.arc(cornerRadius, cornerRadius, cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            }
+            else {
+                context.lineTo(0, 0);
+            }
+            
         }
         context.closePath();
-
-        this.fill(context);
-        this.stroke(context);
     },
     /**
      * set width and height
@@ -65,7 +98,7 @@ Kinetic.Rect = Kinetic.Shape.extend({
 });
 
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Rect, ['width', 'height', 'cornerRadius']);
+Kinetic.Node.addGettersSetters(Kinetic.Rect, ['width', 'height', 'cornerRadius', 'roundCorners']);
 
 /**
  * set width
