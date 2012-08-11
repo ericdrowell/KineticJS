@@ -13,6 +13,10 @@
  */
 Kinetic.Image = Kinetic.Shape.extend({
     init: function(config) {
+        this.setDefaultAttrs({
+            cornerRadius: 0,
+        roundCorners: {topLeft: true, topRight: true, bottomLeft: true, bottomRight: true}
+        });
         this.shapeType = "Image";
         config.drawFunc = this.drawFunc;
         // call super constructor
@@ -23,9 +27,9 @@ Kinetic.Image = Kinetic.Shape.extend({
             var width = this.getWidth();
             var height = this.getHeight();
 
-            context.beginPath();
-            context.rect(0, 0, width, height);
-            context.closePath();
+            
+            this.drawPath(context, width, height, this.attrs.cornerRadius, this.attrs.roundCorners);
+            context.clip();
             this.fill(context);
             this.stroke(context);
 
@@ -42,6 +46,56 @@ Kinetic.Image = Kinetic.Shape.extend({
                 this.drawImage(context, this.attrs.image, 0, 0, width, height);
             }
         }
+    },
+    drawPath: function(context, width, height, cornerRadius, roundCorners) {
+        context.beginPath();
+        if(cornerRadius === 0) {
+            // simple rect - don't bother doing all that complicated maths stuff.
+            context.rect(0, 0, width, height);
+        }
+        else {
+            // arcTo would be nicer, but browser support is patchy (Opera)
+            if( roundCorners.topLeft === true ) {
+                context.moveTo(cornerRadius, 0);
+            }
+            else {
+                context.moveTo(0, 0);
+            }
+            
+            if( roundCorners.topRight === true ) {
+                context.lineTo(width - cornerRadius, 0);
+                context.arc(width - cornerRadius, cornerRadius, cornerRadius, Math.PI * 3 / 2, 0, false);
+            }
+            else {
+                context.lineTo(width,0);
+            }
+            
+            if( roundCorners.bottomRight === true ) {
+                context.lineTo(width, height - cornerRadius);
+                context.arc(width - cornerRadius, height - cornerRadius, cornerRadius, 0, Math.PI / 2, false);
+            }
+            else {
+                context.lineTo(width, height);
+            }
+            
+            if( roundCorners.bottomLeft === true ) {
+                context.lineTo(cornerRadius, height);
+                context.arc(cornerRadius, height - cornerRadius, cornerRadius, Math.PI / 2, Math.PI, false);
+            }
+            else {
+                context.lineTo(0, height);
+            }
+            
+            if( roundCorners.topLeft === true ) {
+                context.lineTo(0, cornerRadius);
+                context.arc(cornerRadius, cornerRadius, cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            }
+            else {
+                context.lineTo(0, 0);
+            }
+            
+        }
+        context.closePath();
     },
     /**
      * set width and height
