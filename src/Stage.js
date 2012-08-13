@@ -733,8 +733,8 @@ Kinetic.Stage = Kinetic.Container.extend({
             // one finger
             var touch = evt.touches[0];
             // Get the information for finger #1
-            var touchX = touch.clientX - this._getContentPosition().left + window.pageXOffset;
-            var touchY = touch.clientY - this._getContentPosition().top + window.pageYOffset;
+            var touchX = touch.clientX - this._getContentPosition().left;
+            var touchY = touch.clientY - this._getContentPosition().top;
 
             this.touchPos = {
                 x: touchX,

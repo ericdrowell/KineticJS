@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 10 2012
+ * Date: Aug 13 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -3457,8 +3457,8 @@ Kinetic.Stage = Kinetic.Container.extend({
             // one finger
             var touch = evt.touches[0];
             // Get the information for finger #1
-            var touchX = touch.clientX - this._getContentPosition().left + window.pageXOffset;
-            var touchY = touch.clientY - this._getContentPosition().top + window.pageYOffset;
+            var touchX = touch.clientX - this._getContentPosition().left;
+            var touchY = touch.clientY - this._getContentPosition().top;
 
             this.touchPos = {
                 x: touchX,
