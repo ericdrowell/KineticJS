@@ -333,7 +333,7 @@ Kinetic.Shape = Kinetic.Node.extend({
         // pixel detection
         if(this.imageData) {
             var w = stage.attrs.width;
-            var alpha = this.imageData.data[((w * pos.y) + pos.x) * 4 + 3];
+            var alpha = this.imageData.data[((w * Math.round(pos.y)) + Math.round(pos.x)) * 4 + 3];
             return (alpha);
         }
 
