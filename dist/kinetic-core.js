@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 10 2012
+ * Date: Aug 13 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -4265,7 +4265,7 @@ Kinetic.Shape = Kinetic.Node.extend({
         // pixel detection
         if(this.imageData) {
             var w = stage.attrs.width;
-            var alpha = this.imageData.data[((w * pos.y) + pos.x) * 4 + 3];
+            var alpha = this.imageData.data[((w * Math.round(pos.y)) + Math.round(pos.x)) * 4 + 3];
             return (alpha);
         }
 
