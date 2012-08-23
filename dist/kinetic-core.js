@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 22 2012
+ * Date: Aug 23 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -4113,7 +4113,7 @@ Kinetic.Shape.prototype = {
                 context.globalAlpha = 1;
             }
 
-            this.attrs.drawFunc.call(this, canvas.getContext());
+            this.attrs.drawFunc.call(this, canvas.getContext(), canvas.name === 'buffer');
 
             if(canvas.name === 'buffer') {
                 var bothLists = wl.concat(bl);

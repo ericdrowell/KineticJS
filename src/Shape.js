@@ -403,7 +403,7 @@ Kinetic.Shape.prototype = {
                 context.globalAlpha = 1;
             }
 
-            this.attrs.drawFunc.call(this, canvas.getContext());
+            this.attrs.drawFunc.call(this, canvas.getContext(), canvas.name === 'buffer');
 
             if(canvas.name === 'buffer') {
                 var bothLists = wl.concat(bl);
