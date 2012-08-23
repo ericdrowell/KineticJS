@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 22 2012
+ * Date: Aug 23 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1195,6 +1195,7 @@ requestAnimFrame = (function(callback) {
  * @param {Number} [config.dragBounds.right]
  * @param {Number} [config.dragBounds.bottom]
  * @param {Number} [config.dragBounds.left]
+ * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
  */
 Kinetic.Node = function(config) {
 	this._nodeInit(config);	
@@ -2214,7 +2215,7 @@ Kinetic.Node._addGetter = function(constructor, attr) {
     };
 };
 // add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'rotation', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening']);
+Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'scale', 'rotation', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'dragBoundFunc', 'listening']);
 Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
 
 /**
@@ -3306,8 +3307,9 @@ Kinetic.Stage.prototype = {
 
         if(node) {
             var pos = that.getUserPosition();
-            var dc = node.attrs.dragConstraint;
+			var dbf = node.attrs.dragBoundFunc;
             var db = node.attrs.dragBounds;
+			var dc = node.attrs.dragConstraint;
             var lastNodePos = {
                 x: node.attrs.x,
                 y: node.attrs.y
@@ -3319,6 +3321,11 @@ Kinetic.Stage.prototype = {
                 y: pos.y - go.drag.offset.y
             };
 
+			if(dbf !== undefined) {
+				// execute nodes dragBoundFunc if defined
+				newNodePos = dbf.call(node, newNodePos, evt);
+			}
+			
             // bounds overrides
             if(db.left !== undefined && newNodePos.x < db.left) {
                 newNodePos.x = db.left;
@@ -3333,15 +3340,15 @@ Kinetic.Stage.prototype = {
                 newNodePos.y = db.bottom;
             }
 
-            node.setAbsolutePosition(newNodePos);
-
             // constraint overrides
             if(dc === 'horizontal') {
-                node.attrs.y = lastNodePos.y;
+                newNodePos.y = lastNodePos.y;
             }
             else if(dc === 'vertical') {
-                node.attrs.x = lastNodePos.x;
+                newNodePos.x = lastNodePos.x;
             }
+
+            node.setAbsolutePosition(newNodePos);
 
             if(!go.drag.moving) {
                 go.drag.moving = true;
