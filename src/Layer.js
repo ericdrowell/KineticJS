@@ -54,6 +54,35 @@ Kinetic.Layer.prototype = {
         // call super constructor
         Kinetic.Container.call(this, config);
     },
+     /**
+     * convert a json string to a shape object and add it to this layer and return the shape
+     * @name addShapeFromJSON
+     * @param json string from Kinetic.Shape.toJSON()
+     * @return the converted shape from json string
+     * @methodOf Kinetic.Layer.prototype
+     */
+    addShapeFromJSON: function(json){
+         var obj = JSON.parse(json);
+         var type;
+         if(obj.nodeType === 'Shape'){
+             // add custom shape
+            if(obj.shapeType === undefined) {
+                type = 'Shape';
+            }
+            // add standard shape
+            else {
+                type = obj.shapeType;
+            }
+         }
+         else {
+            type = obj.nodeType;
+         }
+         var shape = new Kinetic[type](obj.attrs);
+         this.add(shape);
+         this.draw();
+         // return the converted shape
+         return shape;
+    },
     /**
      * draw children nodes.  this includes any groups
      *  or shapes
