@@ -248,6 +248,34 @@ Kinetic.Shape.prototype = {
             this.strokeText(context, text, 0, 0);
         }
     },
+     /**
+     * serialize shape as a JSON object and return
+     *  the result as a json string
+     * @name toJSON
+     * @methodOf Kinetic.Shape.prototype
+     */
+    toJSON: function() {
+        var type = Kinetic.Type;
+        function addNode(node) {
+            var obj = {};
+
+            obj.attrs = {};
+
+            // serialize only attributes that are not function, image, DOM, or objects with methods
+            for(var key in node.attrs) {
+                var val = node.attrs[key];
+                if(!type._isFunction(val) && !type._isElement(val) && !type._hasMethods(val)) {
+                    obj.attrs[key] = val;
+                }
+            }
+
+            obj.nodeType = node.nodeType;
+            obj.shapeType = node.shapeType;
+
+            return obj;
+        }
+        return JSON.stringify(addNode(this));
+    },
     /**
      * helper method to draw an image and apply
      * a shadow if neede
