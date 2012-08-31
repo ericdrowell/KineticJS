@@ -4544,7 +4544,7 @@ Kinetic.Image.prototype = {
 			var that = this;
 			var imageObj = new Image();
 			imageObj.onload = function() {
-				if(!that.attr.image) {
+				if(!that.attrs.image) {
 				    that.setImage(imageObj);
 			    }
 				that.draw(context);
