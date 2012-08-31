@@ -60,7 +60,8 @@ Kinetic.Image.prototype = {
 				    that.setImage(imageObj);
 			    }
 				that.draw(context);
-			}
+			};
+			imageObj.src = this.attrs.src;
 		}
     },
     /**
