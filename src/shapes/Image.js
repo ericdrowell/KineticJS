@@ -59,7 +59,7 @@ Kinetic.Image.prototype = {
 				if(!that.attrs.image) {
 				    that.setImage(imageObj);
 			    }
-				that.draw(context);
+				that.getLayer().draw(context);
 			};
 			imageObj.src = this.attrs.src;
 		}
