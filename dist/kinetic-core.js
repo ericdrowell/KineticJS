@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 26 2012
+ * Date: Aug 31 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -4540,7 +4540,16 @@ Kinetic.Image.prototype = {
             else {
                 this.drawImage(context, this.attrs.image, 0, 0, width, height);
             }
-        }
+        } else if(this.attrs.src) {
+			var that = this;
+			var imageObj = new Image();
+			imageObj.onload = function() {
+				if(!that.attr.image) {
+				    that.setImage(imageObj);
+			    }
+				that.draw(context);
+			}
+		}
     },
     /**
      * set width and height

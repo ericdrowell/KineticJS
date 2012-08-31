@@ -52,7 +52,16 @@ Kinetic.Image.prototype = {
             else {
                 this.drawImage(context, this.attrs.image, 0, 0, width, height);
             }
-        }
+        } else if(this.attrs.src) {
+			var that = this;
+			var imageObj = new Image();
+			imageObj.onload = function() {
+				if(!that.attr.image) {
+				    that.setImage(imageObj);
+			    }
+				that.draw(context);
+			}
+		}
     },
     /**
      * set width and height
