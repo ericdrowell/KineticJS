@@ -52,6 +52,17 @@ Kinetic.Image.prototype = {
             else {
                 this.drawImage(context, this.attrs.image, 0, 0, width, height);
             }
+        } else if(this.attrs.src) {
+            var imageObj = new Image();
+            var that = this;
+            imageObj.onload = function() {
+                if(!that.attrs.image) {
+                    that.attrs.image = imageObj;
+                }    
+                //that.drawFunc.call(that, context);
+                that.getLayer().drawScene();
+            };
+            imageObj.src = this.attrs.src;
         }
     },
     /**
@@ -75,6 +86,15 @@ Kinetic.Image.prototype = {
         };
     },
     /**
+     * set source for image
+     * @name setSrc
+     * @methodOf Kinetic.Image.prototype
+     */
+    setSrc: function(src) {    
+        this.attrs.image = null;
+        this.attrs.src = src;
+    },
+    /**
      * apply filter
      * @name applyFilter
      * @methodOf Kinetic.Image.prototype
@@ -84,11 +104,11 @@ Kinetic.Image.prototype = {
      *  filter has been applied
      */
     applyFilter: function(config) {
-    	var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
+        var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
         var context = canvas.getContext();
         context.drawImage(this.attrs.image, 0, 0);
-		try {
-			var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
+        try {
+            var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
             config.filter(imageData, config);
             var that = this;
             Kinetic.Type._getImage(imageData, function(imageObj) {
@@ -165,6 +185,7 @@ Kinetic.Image.prototype = {
 Kinetic.Global.extend(Kinetic.Image, Kinetic.Shape);
 
 // add getters setters
+Kinetic.Node.addGetters(Kinetic.Image, ['src']);
 Kinetic.Node.addGettersSetters(Kinetic.Image, ['image', 'crop', 'filter', 'width', 'height']);
 
 /**
