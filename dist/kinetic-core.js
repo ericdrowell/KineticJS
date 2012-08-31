@@ -4132,7 +4132,7 @@ Kinetic.Shape.prototype = {
                 for(var n = 0; n < wl.length; n++) {
                     var key = wl[n];
                     attrs[key] = this.attrs[key];
-                    if(this.attrs[key] || (key === 'fill' && !this.attrs.stroke && !('image' in this.attrs))) {
+                    if(this.attrs[key] || (key === 'fill' && !this.attrs.stroke && (!('image' in this.attrs) || !('src' in this.attrs)))) {
                         this.attrs[key] = '#' + this.colorKey;
                     }
                 }
@@ -4143,15 +4143,17 @@ Kinetic.Shape.prototype = {
                     this.attrs[key] = '';
                 }
 
-                // image is a special case
-                if('image' in this.attrs) {
+                // image and src are special cases
+                if('image' in this.attrs || 'src' in this.attrs) {
                     attrs.image = this.attrs.image;
+                    attrs.src = this.attrs.src;
 
                     if(this.imageBuffer) {
                         this.attrs.image = this.imageBuffer;
                     }
                     else {
                         this.attrs.image = null;
+                        this.attrs.src = null;
                         this.attrs.fill = '#' + this.colorKey;
                     }
                 }
@@ -4168,8 +4170,9 @@ Kinetic.Shape.prototype = {
                     this.attrs[key] = attrs[key];
                 }
 
-                // image is a special case
+                // image and src are special cases
                 this.attrs.image = attrs.image;
+                this.attrs.src = attrs.src;
             }
 
             context.restore();
@@ -4541,16 +4544,17 @@ Kinetic.Image.prototype = {
                 this.drawImage(context, this.attrs.image, 0, 0, width, height);
             }
         } else if(this.attrs.src) {
-			var that = this;
-			var imageObj = new Image();
-			imageObj.onload = function() {
-				if(!that.attrs.image) {
-				    that.setImage(imageObj);
-			    }
-				that.attrs.drawFunc.call(that, context);
-			};
-			imageObj.src = this.attrs.src;
-		}
+            var imageObj = new Image();
+            var that = this;
+            imageObj.onload = function() {
+                if(!that.attrs.image) {
+                    that.attrs.image = imageObj;
+                }    
+                //that.drawFunc.call(that, context);
+                that.getLayer().drawScene();
+            };
+            imageObj.src = this.attrs.src;
+        }
     },
     /**
      * set width and height
@@ -4573,6 +4577,15 @@ Kinetic.Image.prototype = {
         };
     },
     /**
+     * set source for image
+     * @name setSrc
+     * @methodOf Kinetic.Image.prototype
+     */
+    setSrc: function(src) {    
+        this.attrs.image = null;
+        this.attrs.src = src;
+    },
+    /**
      * apply filter
      * @name applyFilter
      * @methodOf Kinetic.Image.prototype
@@ -4582,11 +4595,11 @@ Kinetic.Image.prototype = {
      *  filter has been applied
      */
     applyFilter: function(config) {
-    	var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
+        var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
         var context = canvas.getContext();
         context.drawImage(this.attrs.image, 0, 0);
-		try {
-			var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
+        try {
+            var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
             config.filter(imageData, config);
             var that = this;
             Kinetic.Type._getImage(imageData, function(imageObj) {
@@ -4663,6 +4676,7 @@ Kinetic.Image.prototype = {
 Kinetic.Global.extend(Kinetic.Image, Kinetic.Shape);
 
 // add getters setters
+Kinetic.Node.addGetters(Kinetic.Image, ['src']);
 Kinetic.Node.addGettersSetters(Kinetic.Image, ['image', 'crop', 'filter', 'width', 'height']);
 
 /**

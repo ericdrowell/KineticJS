@@ -379,7 +379,7 @@ Kinetic.Shape.prototype = {
                 for(var n = 0; n < wl.length; n++) {
                     var key = wl[n];
                     attrs[key] = this.attrs[key];
-                    if(this.attrs[key] || (key === 'fill' && !this.attrs.stroke && !('image' in this.attrs))) {
+                    if(this.attrs[key] || (key === 'fill' && !this.attrs.stroke && (!('image' in this.attrs) || !('src' in this.attrs)))) {
                         this.attrs[key] = '#' + this.colorKey;
                     }
                 }
@@ -390,15 +390,17 @@ Kinetic.Shape.prototype = {
                     this.attrs[key] = '';
                 }
 
-                // image is a special case
-                if('image' in this.attrs) {
+                // image and src are special cases
+                if('image' in this.attrs || 'src' in this.attrs) {
                     attrs.image = this.attrs.image;
+                    attrs.src = this.attrs.src;
 
                     if(this.imageBuffer) {
                         this.attrs.image = this.imageBuffer;
                     }
                     else {
                         this.attrs.image = null;
+                        this.attrs.src = null;
                         this.attrs.fill = '#' + this.colorKey;
                     }
                 }
@@ -415,8 +417,9 @@ Kinetic.Shape.prototype = {
                     this.attrs[key] = attrs[key];
                 }
 
-                // image is a special case
+                // image and src are special cases
                 this.attrs.image = attrs.image;
+                this.attrs.src = attrs.src;
             }
 
             context.restore();
