@@ -4547,7 +4547,7 @@ Kinetic.Image.prototype = {
 				if(!that.attrs.image) {
 				    that.setImage(imageObj);
 			    }
-				that.getLayer().draw(context);
+				that.attrs.drawFunc.call(that, context);
 			};
 			imageObj.src = this.attrs.src;
 		}
