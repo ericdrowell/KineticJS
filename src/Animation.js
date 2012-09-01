@@ -10,6 +10,9 @@
  * @param {Function} config.func function to be executed on each animation frame
  */
 Kinetic.Animation = function(config) {
+    // set default config
+    this.drawBuffer = true;
+
     if(!config) {
         config = {};
     }
@@ -74,6 +77,7 @@ Kinetic.Animation._updateFrameObject = function(anim) {
 };
 Kinetic.Animation._runFrames = function() {
     var nodes = {};
+    var sceneNodes = {};
     /*
      * loop through all animations and execute animation
      *  function.  if the animation object has specified node,
@@ -85,7 +89,11 @@ Kinetic.Animation._runFrames = function() {
         var anim = this.animations[n];
         this._updateFrameObject(anim);
         if(anim.node && anim.node._id !== undefined) {
-            nodes[anim.node._id] = anim.node;
+            if(anim.drawBuffer) {
+                nodes[anim.node._id] = anim.node;
+            } else {
+                sceneNodes[anim.node._id] = anim.node;
+            }
         }
         // if animation object has a function, execute it
         if(anim.func) {
@@ -95,6 +103,11 @@ Kinetic.Animation._runFrames = function() {
 
     for(var key in nodes) {
         nodes[key].draw();
+    }
+    for(var key in sceneNodes) {
+        if(!nodes[key]) {
+            sceneNodes[key].drawScene();
+        }
     }
 };
 Kinetic.Animation._animationLoop = function() {
