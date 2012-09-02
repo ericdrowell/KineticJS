@@ -249,13 +249,16 @@ Kinetic.Layer.prototype = {
      * @methodOf Kinetic.Layer.prototype
      */
     moveToBottom: function() {
-        //call super method
-        Kinetic.Container.prototype.moveToBottom.call(this);
+	    var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveToBottom.call(this);
 
-        var stage = this.getStage();
-        if(stage) {
-            stage.content.removeChild(this.canvas.element);
-            stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            }
         }
     },
     /**

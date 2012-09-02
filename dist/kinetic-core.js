@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Sep 02 2012
+ * Date: Sep 03 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1716,9 +1716,11 @@ Kinetic.Node.prototype = {
      */
     moveToBottom: function() {
         var index = this.index;
-        this.parent.children.splice(index, 1);
-        this.parent.children.unshift(this);
-        this.parent._setChildrenIndices();
+        if(index > 0) {
+            this.parent.children.splice(index, 1);
+            this.parent.children.unshift(this);
+            this.parent._setChildrenIndices();
+        }
     },
     /**
      * set zIndex
@@ -3734,13 +3736,16 @@ Kinetic.Layer.prototype = {
      * @methodOf Kinetic.Layer.prototype
      */
     moveToBottom: function() {
-        //call super method
-        Kinetic.Container.prototype.moveToBottom.call(this);
+	    var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveToBottom.call(this);
 
-        var stage = this.getStage();
-        if(stage) {
-            stage.content.removeChild(this.canvas.element);
-            stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            }
         }
     },
     /**
