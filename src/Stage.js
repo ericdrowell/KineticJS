@@ -349,6 +349,33 @@ Kinetic.Stage.prototype = {
         });
     },
     /**
+     * determine if node is an ancestor
+     * of descendant
+     * @name isAncestorOf
+     * @methodOf Kinetic.Container.prototype
+     * @param {Kinetic.Node} node
+     */
+    isAncestorOf: function(node) {
+        // Stage is always the ancestor
+        return true;
+    },
+    /**
+     * get stage
+     * @name getStage
+     * @methodOf Kinetic.Stage.prototype
+     */
+    getStage: function() {
+        return this;
+    },
+    /**
+     * get draw node
+     * @name getDrawNode
+     * @methodOf Kinetic.Stage.prototype
+     */
+    getDrawNode: function() {
+        return this;
+    },
+    /**
      * get intersection object that contains shape and pixel data
      * @name getIntersection
      * @methodOf Kinetic.Stage.prototype

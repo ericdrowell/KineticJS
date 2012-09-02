@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 26 2012
+ * Date: Sep 03 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1188,11 +1188,11 @@ requestAnimFrame = (function(callback) {
  * @param {Number} [config.dragBounds.left]
  */
 Kinetic.Node = function(config) {
-    this._nodeInit(config);
+    this._initNode(config);
 };
 
 Kinetic.Node.prototype = {
-    _nodeInit: function(config) {
+    _initNode: function(config) {
         this.defaultNodeAttrs = {
             visible: true,
             listening: true,
@@ -1682,14 +1682,6 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.push(this);
         this.parent._setChildrenIndices();
-
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.appendChild(this.canvas.element);
-            }
-        }
     },
     /**
      * move node up
@@ -1702,20 +1694,6 @@ Kinetic.Node.prototype = {
             this.parent.children.splice(index, 1);
             this.parent.children.splice(index + 1, 0, this);
             this.parent._setChildrenIndices();
-
-            if(this.nodeType === 'Layer') {
-                var stage = this.getStage();
-                if(stage) {
-                    stage.content.removeChild(this.canvas.element);
-
-                    if(this.index < stage.getChildren().length - 1) {
-                        stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
-                    }
-                    else {
-                        stage.content.appendChild(this.canvas.element);
-                    }
-                }
-            }
         }
     },
     /**
@@ -1729,14 +1707,6 @@ Kinetic.Node.prototype = {
             this.parent.children.splice(index, 1);
             this.parent.children.splice(index - 1, 0, this);
             this.parent._setChildrenIndices();
-
-            if(this.nodeType === 'Layer') {
-                var stage = this.getStage();
-                if(stage) {
-                    stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
-                }
-            }
         }
     },
     /**
@@ -1746,16 +1716,10 @@ Kinetic.Node.prototype = {
      */
     moveToBottom: function() {
         var index = this.index;
-        this.parent.children.splice(index, 1);
-        this.parent.children.unshift(this);
-        this.parent._setChildrenIndices();
-
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
-            }
+        if(index > 0) {
+            this.parent.children.splice(index, 1);
+            this.parent.children.unshift(this);
+            this.parent._setChildrenIndices();
         }
     },
     /**
@@ -1826,11 +1790,11 @@ Kinetic.Node.prototype = {
      * @methodOf Kinetic.Node.prototype
      */
     getLayer: function() {
-        if(this.nodeType === 'Layer') {
-            return this;
+        if(this.getParent()) {
+            return this.getParent().getLayer();
         }
         else {
-            return this.getParent().getLayer();
+            return undefined;
         }
     },
     /**
@@ -1839,11 +1803,21 @@ Kinetic.Node.prototype = {
      * @methodOf Kinetic.Node.prototype
      */
     getStage: function() {
-        if(this.nodeType !== 'Stage' && this.getParent()) {
+        if(this.getParent()) {
             return this.getParent().getStage();
         }
-        else if(this.nodeType === 'Stage') {
-            return this;
+        else {
+            return undefined;
+        }
+    },
+    /**
+     * get the draw node that contains the node
+     * @name getDrawNode
+     * @methodOf Kinetic.Node.prototype
+     */
+    getDrawNode: function() {
+        if(this.getParent()) {
+            return this.getParent().getDrawNode();
         }
         else {
             return undefined;
@@ -1878,7 +1852,7 @@ Kinetic.Node.prototype = {
         /*
          * create new transition
          */
-        var node = this.nodeType === 'Stage' ? this : this.getLayer();
+        var node = this.getDrawNode();
         var that = this;
         var trans = new Kinetic.Transition(this, config);
 
@@ -2120,12 +2094,7 @@ Kinetic.Node.prototype = {
              * if dragging and dropping the stage,
              * draw all of the layers
              */
-            if(this.nodeType === 'Stage') {
-                stage.dragAnim.node = this;
-            }
-            else {
-                stage.dragAnim.node = this.getLayer();
-            }
+            stage.dragAnim.node = this.getDrawNode();
             stage.dragAnim.start();
         }
     },
@@ -2447,11 +2416,11 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  * @param {Number} [config.dragBounds.left]
  */
 Kinetic.Container = function(config) {
-    this._containerInit(config);
+    this._initContainer(config);
 };
 
 Kinetic.Container.prototype = {
-    _containerInit: function(config) {
+    _initContainer: function(config) {
         this.children = [];
         Kinetic.Node.call(this, config);
     },
@@ -2591,10 +2560,6 @@ Kinetic.Container.prototype = {
      * @param {Kinetic.Node} node
      */
     isAncestorOf: function(node) {
-        if(this.nodeType === 'Stage') {
-            return true;
-        }
-
         var parent = node.getParent();
         while(parent) {
             if(parent._id === this._id) {
@@ -3006,6 +2971,33 @@ Kinetic.Stage.prototype = {
                 });
             }
         });
+    },
+    /**
+     * determine if node is an ancestor
+     * of descendant
+     * @name isAncestorOf
+     * @methodOf Kinetic.Container.prototype
+     * @param {Kinetic.Node} node
+     */
+    isAncestorOf: function(node) {
+        // Stage is always the ancestor
+        return true;
+    },
+    /**
+     * get stage
+     * @name getStage
+     * @methodOf Kinetic.Stage.prototype
+     */
+    getStage: function() {
+        return this;
+    },
+    /**
+     * get draw node
+     * @name getDrawNode
+     * @methodOf Kinetic.Stage.prototype
+     */
+    getDrawNode: function() {
+        return this;
     },
     /**
      * get intersection object that contains shape and pixel data
@@ -3611,6 +3603,22 @@ Kinetic.Layer.prototype = {
         this.afterDrawFunc = func;
     },
     /**
+     * get layer
+     * @name getLayer
+     * @methodOf Kinetic.Layer.prototype
+     */
+    getLayer: function() {
+        return this;
+    },
+    /**
+     * get draw node
+     * @name getDrawNode
+     * @methodOf Kinetic.Layer.prototype
+     */
+    getDrawNode: function() {
+        return this;
+    },
+    /**
      * get layer canvas
      * @name getCanvas
      * @methodOf Kinetic.Layer.prototype
@@ -3664,6 +3672,103 @@ Kinetic.Layer.prototype = {
             canvas = this.getCanvas();
         }
         return canvas.toDataURL(mimeType, quality);
+    },
+	/**
+     * move layer to the top of its siblings
+     * @name moveToTop
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveToTop: function() {
+        //call super method
+        Kinetic.Container.prototype.moveToTop.call(this);
+
+        var stage = this.getStage();
+        if(stage) {
+            stage.content.removeChild(this.canvas.element);
+            stage.content.appendChild(this.canvas.element);
+        }
+    },
+    /**
+     * move layer up
+     * @name moveUp
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveUp: function() {
+        var index = this.index;
+        if(index < this.parent.getChildren().length - 1) {
+            //call super method
+            Kinetic.Container.prototype.moveUp.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+
+                if(this.index < stage.getChildren().length - 1) {
+                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                }
+                else {
+                    stage.content.appendChild(this.canvas.element);
+                }
+            }
+        }
+    },
+    /**
+     * move layer down
+     * @name moveDown
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveDown: function() {
+        var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveDown.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+            }
+        }
+    },
+    /**
+     * move layer to the bottom of its siblings
+     * @name moveToBottom
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveToBottom: function() {
+	    var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveToBottom.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            }
+        }
+    },
+    /**
+     * set zIndex
+     * @name setZIndex
+     * @methodOf Kinetic.Layer.prototype
+     * @param {Integer} zIndex
+     */
+    setZIndex: function(zIndex) {
+        //call super method
+        Kinetic.Container.prototype.setZIndex.call(this, zIndex);
+
+        var stage = this.getStage();
+        if (stage) {
+            stage.content.removeChild(this.canvas.element);
+
+            if (this.index < stage.getChildren().length - 1) {
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+            }
+            else {
+                stage.content.appendChild(this.canvas.element);
+            }
+        }
     },
     /**
      * remove layer from stage

@@ -116,6 +116,22 @@ Kinetic.Layer.prototype = {
         this.afterDrawFunc = func;
     },
     /**
+     * get layer
+     * @name getLayer
+     * @methodOf Kinetic.Layer.prototype
+     */
+    getLayer: function() {
+        return this;
+    },
+    /**
+     * get draw node
+     * @name getDrawNode
+     * @methodOf Kinetic.Layer.prototype
+     */
+    getDrawNode: function() {
+        return this;
+    },
+    /**
      * get layer canvas
      * @name getCanvas
      * @methodOf Kinetic.Layer.prototype
@@ -169,6 +185,103 @@ Kinetic.Layer.prototype = {
             canvas = this.getCanvas();
         }
         return canvas.toDataURL(mimeType, quality);
+    },
+	/**
+     * move layer to the top of its siblings
+     * @name moveToTop
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveToTop: function() {
+        //call super method
+        Kinetic.Container.prototype.moveToTop.call(this);
+
+        var stage = this.getStage();
+        if(stage) {
+            stage.content.removeChild(this.canvas.element);
+            stage.content.appendChild(this.canvas.element);
+        }
+    },
+    /**
+     * move layer up
+     * @name moveUp
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveUp: function() {
+        var index = this.index;
+        if(index < this.parent.getChildren().length - 1) {
+            //call super method
+            Kinetic.Container.prototype.moveUp.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+
+                if(this.index < stage.getChildren().length - 1) {
+                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                }
+                else {
+                    stage.content.appendChild(this.canvas.element);
+                }
+            }
+        }
+    },
+    /**
+     * move layer down
+     * @name moveDown
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveDown: function() {
+        var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveDown.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+            }
+        }
+    },
+    /**
+     * move layer to the bottom of its siblings
+     * @name moveToBottom
+     * @methodOf Kinetic.Layer.prototype
+     */
+    moveToBottom: function() {
+	    var index = this.index;
+        if(index > 0) {
+            //call super method
+            Kinetic.Container.prototype.moveToBottom.call(this);
+
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            }
+        }
+    },
+    /**
+     * set zIndex
+     * @name setZIndex
+     * @methodOf Kinetic.Layer.prototype
+     * @param {Integer} zIndex
+     */
+    setZIndex: function(zIndex) {
+        //call super method
+        Kinetic.Container.prototype.setZIndex.call(this, zIndex);
+
+        var stage = this.getStage();
+        if (stage) {
+            stage.content.removeChild(this.canvas.element);
+
+            if (this.index < stage.getChildren().length - 1) {
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+            }
+            else {
+                stage.content.appendChild(this.canvas.element);
+            }
+        }
     },
     /**
      * remove layer from stage
