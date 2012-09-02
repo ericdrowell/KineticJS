@@ -31,11 +31,11 @@
  * @param {Number} [config.dragBounds.left]
  */
 Kinetic.Container = function(config) {
-    this._containerInit(config);
+    this._initContainer(config);
 };
 
 Kinetic.Container.prototype = {
-    _containerInit: function(config) {
+    _initContainer: function(config) {
         this.children = [];
         Kinetic.Node.call(this, config);
     },
@@ -175,10 +175,6 @@ Kinetic.Container.prototype = {
      * @param {Kinetic.Node} node
      */
     isAncestorOf: function(node) {
-        if(this.nodeType === 'Stage') {
-            return true;
-        }
-
         var parent = node.getParent();
         while(parent) {
             if(parent._id === this._id) {

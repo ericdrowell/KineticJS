@@ -32,11 +32,11 @@
  * @param {Number} [config.dragBounds.left]
  */
 Kinetic.Node = function(config) {
-    this._nodeInit(config);
+    this._initNode(config);
 };
 
 Kinetic.Node.prototype = {
-    _nodeInit: function(config) {
+    _initNode: function(config) {
         this.defaultNodeAttrs = {
             visible: true,
             listening: true,
@@ -526,14 +526,6 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.push(this);
         this.parent._setChildrenIndices();
-
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.appendChild(this.canvas.element);
-            }
-        }
     },
     /**
      * move node up
@@ -546,20 +538,6 @@ Kinetic.Node.prototype = {
             this.parent.children.splice(index, 1);
             this.parent.children.splice(index + 1, 0, this);
             this.parent._setChildrenIndices();
-
-            if(this.nodeType === 'Layer') {
-                var stage = this.getStage();
-                if(stage) {
-                    stage.content.removeChild(this.canvas.element);
-
-                    if(this.index < stage.getChildren().length - 1) {
-                        stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
-                    }
-                    else {
-                        stage.content.appendChild(this.canvas.element);
-                    }
-                }
-            }
         }
     },
     /**
@@ -573,14 +551,6 @@ Kinetic.Node.prototype = {
             this.parent.children.splice(index, 1);
             this.parent.children.splice(index - 1, 0, this);
             this.parent._setChildrenIndices();
-
-            if(this.nodeType === 'Layer') {
-                var stage = this.getStage();
-                if(stage) {
-                    stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
-                }
-            }
         }
     },
     /**
@@ -593,14 +563,6 @@ Kinetic.Node.prototype = {
         this.parent.children.splice(index, 1);
         this.parent.children.unshift(this);
         this.parent._setChildrenIndices();
-
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
-            }
-        }
     },
     /**
      * set zIndex
@@ -670,11 +632,11 @@ Kinetic.Node.prototype = {
      * @methodOf Kinetic.Node.prototype
      */
     getLayer: function() {
-        if(this.nodeType === 'Layer') {
-            return this;
+        if(this.getParent()) {
+            return this.getParent().getLayer();
         }
         else {
-            return this.getParent().getLayer();
+            return undefined;
         }
     },
     /**
@@ -683,11 +645,21 @@ Kinetic.Node.prototype = {
      * @methodOf Kinetic.Node.prototype
      */
     getStage: function() {
-        if(this.nodeType !== 'Stage' && this.getParent()) {
+        if(this.getParent()) {
             return this.getParent().getStage();
         }
-        else if(this.nodeType === 'Stage') {
-            return this;
+        else {
+            return undefined;
+        }
+    },
+    /**
+     * get the draw node that contains the node
+     * @name getDrawNode
+     * @methodOf Kinetic.Node.prototype
+     */
+    getDrawNode: function() {
+        if(this.getParent()) {
+            return this.getParent().getDrawNode();
         }
         else {
             return undefined;
@@ -722,7 +694,7 @@ Kinetic.Node.prototype = {
         /*
          * create new transition
          */
-        var node = this.nodeType === 'Stage' ? this : this.getLayer();
+        var node = this.getDrawNode();
         var that = this;
         var trans = new Kinetic.Transition(this, config);
 
@@ -964,12 +936,7 @@ Kinetic.Node.prototype = {
              * if dragging and dropping the stage,
              * draw all of the layers
              */
-            if(this.nodeType === 'Stage') {
-                stage.dragAnim.node = this;
-            }
-            else {
-                stage.dragAnim.node = this.getLayer();
-            }
+            stage.dragAnim.node = this.getDrawNode();
             stage.dragAnim.start();
         }
     },
