@@ -329,6 +329,10 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: true
         });
+
+        if(this.nodeType === 'Layer') {
+            this.canvas.getElement().style.display = 'block';
+        }
     },
     /**
      * hide node.  Hidden nodes are no longer detectable
@@ -339,6 +343,10 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: false
         });
+
+        if(this.nodeType === 'Layer') {
+            this.canvas.getElement().style.display = 'none';
+        }
     },
     /**
      * get zIndex
