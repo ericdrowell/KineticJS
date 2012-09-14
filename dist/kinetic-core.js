@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 26 2012
+ * Date: Sep 14 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -3023,6 +3023,9 @@ Kinetic.Stage.prototype = {
          */
         for(var n = layers.length - 1; n >= 0; n--) {
             var layer = layers[n];
+            if(!layer.isVisible() || !layer.getListening()) {
+              continue;
+            }
             var p = layer.bufferCanvas.context.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
             // this indicates that a buffer pixel may have been found
             if(p[3] === 255) {
