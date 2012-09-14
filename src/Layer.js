@@ -53,6 +53,10 @@ Kinetic.Layer.prototype = {
 
         // call super constructor
         Kinetic.Container.call(this, config);
+
+        if(!this.isVisible()) {
+            this.canvas.getElement().style.display = 'none';
+        }
     },
     /**
      * draw children nodes.  this includes any groups
