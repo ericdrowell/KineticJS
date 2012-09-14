@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Aug 26 2012
+ * Date: Sep 14 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1485,6 +1485,10 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: true
         });
+
+        if(this.nodeType === 'Layer') {
+            this.canvas.getElement().style.display = 'block';
+        }
     },
     /**
      * hide node.  Hidden nodes are no longer detectable
@@ -1495,6 +1499,10 @@ Kinetic.Node.prototype = {
         this.setAttrs({
             visible: false
         });
+
+        if(this.nodeType === 'Layer') {
+            this.canvas.getElement().style.display = 'none';
+        }
     },
     /**
      * get zIndex
@@ -3548,6 +3556,10 @@ Kinetic.Layer.prototype = {
 
         // call super constructor
         Kinetic.Container.call(this, config);
+
+        if(!this.isVisible()) {
+            this.canvas.getElement().style.display = 'none';
+        }
     },
     /**
      * draw children nodes.  this includes any groups
