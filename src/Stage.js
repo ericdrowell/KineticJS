@@ -428,7 +428,7 @@ Kinetic.Stage.prototype = {
     _bindContentEvents: function() {
         var go = Kinetic.Global;
         var that = this;
-        var events = ['mousedown', 'mousemove', 'mouseup', 'mouseout', 'touchstart', 'touchmove', 'touchend'];
+        var events = ['mousedown', 'mousemove', 'mouseup', 'mouseout', 'mousewheel', 'touchstart', 'touchmove', 'touchend'];
 
         for(var n = 0; n < events.length; n++) {
             var pubEvent = events[n];
@@ -533,6 +533,15 @@ Kinetic.Stage.prototype = {
 
         // end drag and drop
         this._endDrag(evt);
+    },
+    _mousewheel: function (evt) {
+        this._setUserPosition(evt);
+        var shapes = this.get('Shape');
+        for (var i = 0; i < shapes.length; i++) {
+            if (shapes[i].eventListeners['mousewheel'] != null && shapes[i].intersects(this.getUserPosition())) {
+                shapes[i]._handleEvent('mousewheel', evt);
+            }
+        }
     },
     _touchstart: function(evt) {
         this._setUserPosition(evt);
