@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Sep 08 2012
+ * Date: Sep 23 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -1763,8 +1763,9 @@ Kinetic.Node.prototype = {
             if(this.nodeType === 'Layer') {
                 var stage = this.getStage();
                 if(stage) {
+                    var children = stage.getChildren();
                     stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                    stage.content.insertBefore(this.canvas.element, children[this.index + 1].canvas.element);
                 }
             }
         }
@@ -1776,15 +1777,18 @@ Kinetic.Node.prototype = {
      */
     moveToBottom: function() {
         var index = this.index;
-        this.parent.children.splice(index, 1);
-        this.parent.children.unshift(this);
-        this.parent._setChildrenIndices();
+        if(index > 0) {
+            this.parent.children.splice(index, 1);
+            this.parent.children.unshift(this);
+            this.parent._setChildrenIndices();
 
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            if(this.nodeType === 'Layer') {
+                var stage = this.getStage();
+                if(stage) {
+                    var children = stage.getChildren();
+                    stage.content.removeChild(this.canvas.element);
+                    stage.content.insertBefore(this.canvas.element, children[1].canvas.element);
+                }
             }
         }
     },
@@ -2634,6 +2638,22 @@ Kinetic.Container.prototype = {
         }
 
         return false;
+    },
+    /**
+     * clone node
+     * @name clone
+     * @methodOf Kinetic.Container.prototype
+     * @param {Object} attrs override attrs
+     */
+    clone: function(obj) {
+        // call super method
+        var node = Kinetic.Node.prototype.clone.call(this, obj)
+        
+        // perform deep clone on containers
+        for(var key in this.children) {
+            node.add(this.children[key].clone());
+        }
+        return node;
     },
     /**
      * get shapes that intersect a point
@@ -3663,6 +3683,24 @@ Kinetic.Layer.prototype = {
      */
     clear: function() {
         this.getCanvas().clear();
+    },
+    /**
+     * show layer
+     * @name show
+     * @methodOf Kinetic.Layer.prototype
+     */
+    show: function() {
+        Kinetic.Node.prototype.show.call(this);
+        this.canvas.element.style.display = 'block';
+    },
+    /**
+     * hide layer.  Hidden layers are no longer detectable
+     * @name hide
+     * @methodOf Kinetic.Layer.prototype
+     */
+    hide: function() {
+        Kinetic.Node.prototype.hide.call(this);
+        this.canvas.element.style.display = 'none';
     },
     /**
      * Creates a composite data URL. If MIME type is not

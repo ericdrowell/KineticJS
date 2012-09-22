@@ -577,8 +577,9 @@ Kinetic.Node.prototype = {
             if(this.nodeType === 'Layer') {
                 var stage = this.getStage();
                 if(stage) {
+                    var children = stage.getChildren();
                     stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                    stage.content.insertBefore(this.canvas.element, children[this.index + 1].canvas.element);
                 }
             }
         }
@@ -590,15 +591,18 @@ Kinetic.Node.prototype = {
      */
     moveToBottom: function() {
         var index = this.index;
-        this.parent.children.splice(index, 1);
-        this.parent.children.unshift(this);
-        this.parent._setChildrenIndices();
+        if(index > 0) {
+            this.parent.children.splice(index, 1);
+            this.parent.children.unshift(this);
+            this.parent._setChildrenIndices();
 
-        if(this.nodeType === 'Layer') {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, stage.getChildren()[1].canvas.element);
+            if(this.nodeType === 'Layer') {
+                var stage = this.getStage();
+                if(stage) {
+                    var children = stage.getChildren();
+                    stage.content.removeChild(this.canvas.element);
+                    stage.content.insertBefore(this.canvas.element, children[1].canvas.element);
+                }
             }
         }
     },
