@@ -68,33 +68,24 @@ Kinetic.Global = {
     },
     extendArray: function(array) {
         if (!array) array = [];
-        array.on = function (typeStr, handler) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].on(typeStr, handler);
-            }
-        };
-        array.off = function (typeStr) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].off(typeStr);
-            }
-        };
-        array.setAttrs = function (config) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].setAttrs(config);
-            }
-        };
-        array.show = function () {
-            for(var i = 0; i < this.length; i++) {
-                this[i].show();
-            }
-        };
-        array.hide = function () {
-            for(var i = 0; i < this.length; i++) {
-                this[i].hide();
-            }
-        };
-        // moveToTop, moveToBottom
+        extendableMethods = ['on', 'off','setAttrs','hide','show'];
+        for(var i = 0; i < extendableMethods.length; i++)
+        {
+            this._extendArrayMethod(extendableMethods[i]);
+        }
+        extendableAttrs = ['x', 'y', 'scale', 'rotation', 'rotationDeg', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening'];
+        for(var i = 0; i < extendableAttrs.length; i++)
+        {
+            this._extendMethod('set' + extendableAttrs[i].charAt(0).toUpperCase() + extendableAttrs[i].slice(1));
+        }
         return array;
+    },
+    _extendArrayMethod: function(method) {
+        array[method] = function () {
+            for(var i = 0; i < this.length; i++) {
+                this[i][method].apply(this[i], arguments);
+            }
+        }
     },
     _pullNodes: function(stage) {
         var tempNodes = this.tempNodes;
