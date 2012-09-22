@@ -40,32 +40,17 @@ Kinetic.Global = {
     },
     extendArray: function(array) {
         if (!array) array = [];
-        array.on = function (typeStr, handler) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].on(typeStr, handler);
-            }
-        };
-        array.off = function (typeStr) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].off(typeStr);
-            }
-        };
-        array.setAttrs = function (config) {
-            for(var i = 0; i < this.length; i++) {
-                this[i].setAttrs(config);
-            }
-        };
-        array.show = function () {
-            for(var i = 0; i < this.length; i++) {
-                this[i].show();
-            }
-        };
-        array.hide = function () {
-            for(var i = 0; i < this.length; i++) {
-                this[i].hide();
-            }
-        };
-        // moveToTop, moveToBottom
+        extendableMethods = ['on', 'off','setAttrs','hide','show'];
+        for(var i = 0; i < extendableMethods.length; i++)
+        {
+            (function(method) {
+                array[method] = function () {
+                    for(var i = 0; i < this.length; i++) {
+                        this[i][method].apply(this[i], arguments);
+                    }
+                }
+            })(extendableMethods[i]);
+        }
         return array;
     },
     _pullNodes: function(stage) {
