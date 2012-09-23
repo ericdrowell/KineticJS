@@ -66,27 +66,6 @@ Kinetic.Global = {
             }
         }
     },
-    extendArray: function(array) {
-        if (!array) array = [];
-        extendableMethods = ['on', 'off','setAttrs','hide','show'];
-        for(var i = 0; i < extendableMethods.length; i++)
-        {
-            this._extendArrayMethod(array, extendableMethods[i]);
-        }
-        extendableAttrs = ['x', 'y', 'scale', 'rotation', 'rotationDeg', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening'];
-        for(var i = 0; i < extendableAttrs.length; i++)
-        {
-            this._extendArrayMethod(array, 'set' + extendableAttrs[i].charAt(0).toUpperCase() + extendableAttrs[i].slice(1));
-        }
-        return array;
-    },
-    _extendArrayMethod: function(array, method) {
-        array[method] = function () {
-            for(var i = 0; i < this.length; i++) {
-                this[i][method].apply(this[i], arguments);
-            }
-        }
-    },
     _pullNodes: function(stage) {
         var tempNodes = this.tempNodes;
         for(var key in tempNodes) {
@@ -1050,6 +1029,45 @@ Kinetic.Transform.prototype = {
     }
 };
 
+/**
+ * Collection constructor.  Collection extends
+ *  Array.  This class is used in conjunction with get()
+ * @constructor
+ */
+Kinetic.Collection = function() {
+    var args = [].slice.call( arguments ), 
+        length = args.length, i = 0;
+
+    this.length = length;
+    for (; i < length; i++ ) {
+        this[ i ] = args[ i ];
+    }
+    return this;
+}
+Kinetic.Collection.prototype = new Array();
+/**
+ * apply a method to all nodes in the array
+ * @name apply
+ * @methodOf Kinetic.Collection.prototype
+ * @param {String} method
+ * @param val
+ */
+Kinetic.Collection.prototype.apply = function(method, val) {
+	for (var n=0; n<this.length; n++) {
+		this[n][method](val);
+	}
+};
+/**
+ * iterate through node array
+ * @name each
+ * @methodOf Kinetic.Collection.prototype
+ * @param {Function} func
+ */
+Kinetic.Collection.prototype.each = function(func) {
+	for (var n=0; n<this.length; n++) {
+		func(this[n]);
+	}
+};
 ///////////////////////////////////////////////////////////////////////
 //  Animation
 ///////////////////////////////////////////////////////////////////////
@@ -2439,6 +2457,7 @@ Kinetic.Node.addSetters(Kinetic.Node, ['rotationDeg']);
  * @name getListening
  * @methodOf Kinetic.Node.prototype
  */
+
 ///////////////////////////////////////////////////////////////////////
 //  Container
 ///////////////////////////////////////////////////////////////////////
@@ -2592,13 +2611,13 @@ Kinetic.Container.prototype = {
             arr = stage.names[key] !== undefined ? stage.names[key] : [];
         }
         else if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-            return Kinetic.Global.extendArray(this._getNodes(selector));
+            return this._getNodes(selector);
         }
         else {
             return false;
         }
 
-        var retArr = [];
+        var retArr = new Kinetic.Collection();
         for(var n = 0; n < arr.length; n++) {
             var node = arr[n];
             if(this.isAncestorOf(node)) {
@@ -2606,7 +2625,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return Kinetic.Global.extendArray(retArr);
+        return retArr;
     },
     /**
      * determine if node is an ancestor

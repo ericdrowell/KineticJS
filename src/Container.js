@@ -151,13 +151,13 @@ Kinetic.Container.prototype = {
             arr = stage.names[key] !== undefined ? stage.names[key] : [];
         }
         else if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-            return Kinetic.Global.extendArray(this._getNodes(selector));
+            return this._getNodes(selector);
         }
         else {
             return false;
         }
 
-        var retArr = [];
+        var retArr = new Kinetic.Collection();
         for(var n = 0; n < arr.length; n++) {
             var node = arr[n];
             if(this.isAncestorOf(node)) {
@@ -165,7 +165,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return Kinetic.Global.extendArray(retArr);
+        return retArr;
     },
     /**
      * determine if node is an ancestor
