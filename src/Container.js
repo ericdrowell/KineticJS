@@ -151,7 +151,7 @@ Kinetic.Container.prototype = {
             arr = stage.names[key] !== undefined ? stage.names[key] : [];
         }
         else if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-            return this._getNodes(selector);
+            return Kinetic.Global.extendArray(this._getNodes(selector));
         }
         else {
             return false;
@@ -165,7 +165,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return retArr;
+        return Kinetic.Global.extendArray(retArr);
     },
     /**
      * determine if node is an ancestor

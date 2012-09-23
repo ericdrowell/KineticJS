@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Sep 18 2012
+ * Date: Sep 23 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -63,6 +63,27 @@ Kinetic.Global = {
         for(var key in c2.prototype) {
             if(!( key in c1.prototype)) {
                 c1.prototype[key] = c2.prototype[key];
+            }
+        }
+    },
+    extendArray: function(array) {
+        if (!array) array = [];
+        extendableMethods = ['on', 'off','setAttrs','hide','show'];
+        for(var i = 0; i < extendableMethods.length; i++)
+        {
+            this._extendArrayMethod(array, extendableMethods[i]);
+        }
+        extendableAttrs = ['x', 'y', 'scale', 'rotation', 'rotationDeg', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening'];
+        for(var i = 0; i < extendableAttrs.length; i++)
+        {
+            this._extendArrayMethod(array, 'set' + extendableAttrs[i].charAt(0).toUpperCase() + extendableAttrs[i].slice(1));
+        }
+        return array;
+    },
+    _extendArrayMethod: function(array, method) {
+        array[method] = function () {
+            for(var i = 0; i < this.length; i++) {
+                this[i][method].apply(this[i], arguments);
             }
         }
     },
@@ -2571,7 +2592,7 @@ Kinetic.Container.prototype = {
             arr = stage.names[key] !== undefined ? stage.names[key] : [];
         }
         else if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-            return this._getNodes(selector);
+            return Kinetic.Global.extendArray(this._getNodes(selector));
         }
         else {
             return false;
@@ -2585,7 +2606,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return retArr;
+        return Kinetic.Global.extendArray(retArr);
     },
     /**
      * determine if node is an ancestor

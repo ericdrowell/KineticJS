@@ -38,6 +38,27 @@ Kinetic.Global = {
             }
         }
     },
+    extendArray: function(array) {
+        if (!array) array = [];
+        extendableMethods = ['on', 'off','setAttrs','hide','show'];
+        for(var i = 0; i < extendableMethods.length; i++)
+        {
+            this._extendArrayMethod(array, extendableMethods[i]);
+        }
+        extendableAttrs = ['x', 'y', 'scale', 'rotation', 'rotationDeg', 'opacity', 'name', 'id', 'offset', 'draggable', 'dragConstraint', 'dragBounds', 'listening'];
+        for(var i = 0; i < extendableAttrs.length; i++)
+        {
+            this._extendArrayMethod(array, 'set' + extendableAttrs[i].charAt(0).toUpperCase() + extendableAttrs[i].slice(1));
+        }
+        return array;
+    },
+    _extendArrayMethod: function(array, method) {
+        array[method] = function () {
+            for(var i = 0; i < this.length; i++) {
+                this[i][method].apply(this[i], arguments);
+            }
+        }
+    },
     _pullNodes: function(stage) {
         var tempNodes = this.tempNodes;
         for(var key in tempNodes) {
