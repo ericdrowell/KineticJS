@@ -3,7 +3,7 @@
  * http://www.kineticjs.com/
  * Copyright 2012, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Sep 25 2012
+ * Date: Sep 26 2012
  *
  * Copyright (C) 2011 - 2012 by Eric Rowell
  *
@@ -2058,6 +2058,13 @@ Kinetic.Node.prototype = {
         this.setAttr('scale', pos);
 
     },
+    _get: function(selector) {
+        if(this.nodeType === selector) {
+            return [this];
+        } else {
+            return [];
+        }
+    },
     _clearTransform: function() {
         var trans = {
             x: this.attrs.x,
@@ -2574,28 +2581,8 @@ Kinetic.Container.prototype = {
      */
     get: function(selector) {
         var stage = this.getStage();
-
-		// Node type selector
-        if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-        	var retArr = new Kinetic.Collection();
-            function traverse(cont) {
-                var children = cont.getChildren();
-                for(var n = 0; n < children.length; n++) {
-                    var child = children[n];
-                    if(child.nodeType === selector) {
-                        retArr.push(child);
-                    }
-                    else if(child.nodeType !== 'Shape') {
-                        traverse(child);
-                    }
-                }
-            }
-
-            traverse(this);
-            return retArr;
-        }
         // ID selector
-        else if(selector.charAt(0) === '#') {
+        if(selector.charAt(0) === '#') {
         	var key = selector.slice(1);
             var arr = stage.ids[key] !== undefined ? [stage.ids[key]] : [];
             return this._getDescendants(arr);
@@ -2606,10 +2593,23 @@ Kinetic.Container.prototype = {
             var arr = stage.names[key] || [];
 			return this._getDescendants(arr);
         }
-        // unrecognized selector
+        // unrecognized selector, pass to children
         else {
-            return [];
+            var retArr = [];
+            var children = this.getChildren();
+            for(var n = 0; n < children.length; n++) {
+                retArr = retArr.concat(children[n]._get(selector));
+            }
+            return Kinetic.Collection.apply(new Kinetic.Collection(),retArr);
         }
+    },
+    _get: function(selector) {
+        var retArr = Kinetic.Node.prototype._get.call(this,selector);
+        var children = this.getChildren();
+        for(var n = 0; n < children.length; n++) {
+            retArr = retArr.concat(children[n]._get(selector));
+        }
+        return retArr;
     },
     _getDescendants: function(arr) {
     	var retArr = new Kinetic.Collection();
@@ -4154,6 +4154,13 @@ Kinetic.Shape.prototype = {
             width: this.getWidth(),
             height: this.getHeight()
         };
+    },
+    _get: function(selector) {
+        if(this.nodeType === selector || this.shapeType === selector) {
+            return [this];
+        } else {
+            return [];
+        }
     },
     /**
      * apply shadow.  return true if shadow was applied

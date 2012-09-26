@@ -835,6 +835,13 @@ Kinetic.Node.prototype = {
         this.setAttr('scale', pos);
 
     },
+    _get: function(selector) {
+        if(this.nodeType === selector) {
+            return [this];
+        } else {
+            return [];
+        }
+    },
     _clearTransform: function() {
         var trans = {
             x: this.attrs.x,
