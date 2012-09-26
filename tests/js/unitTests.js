@@ -1786,7 +1786,7 @@ Test.prototype.tests = {
         };
         imageObj.src = '../assets/darth-vader.jpg';
     },
-    'SHAPE - set image fill to color then image': function(containerId) {
+    'SHAPE - set image fill to color then image then linear gradient then back to image': function(containerId) {
         var imageObj = new Image();
         imageObj.onload = function() {
             var stage = new Kinetic.Stage({
@@ -1817,7 +1817,27 @@ Test.prototype.tests = {
             test(circle.getFill().repeat === 'no-repeat', 'circle fill repeat should be no-repeat');
             test(circle.getFill().offset.x === -200, 'circle fill offset x should be -200');
             test(circle.getFill().offset.y === -70, 'circle fill offset y should be -70');
-
+            
+            circle.setFill({
+                start: {
+                    x: -35,
+                    y: -35
+                },
+                end: {
+                    x: 35,
+                    y: 35
+                },
+                colorStops: [0, 'red', 1, 'blue']
+            });
+            
+            test(circle.getFill().image === undefined, 'circle fill image should be undefined');
+            
+            circle.setFill({
+                image: imageObj,
+                repeat: 'no-repeat',
+                offset: [-200, -70]
+            });
+            
             layer.draw();
         };
         imageObj.src = '../assets/darth-vader.jpg';
@@ -2712,6 +2732,141 @@ Test.prototype.tests = {
         test(group.get('Layer').length === 0, 'group should have 0 layers');
         test(group.get('Group').length === 0, 'group should have 0 groups');
 
+    },
+    'CONTAINER - node and shape type selector': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var layer2 = new Kinetic.Layer();
+        var fooLayer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+
+        var blue = new Kinetic.Rect({
+            x: 100,
+            y: 50,
+            width: 100,
+            height: 50,
+            fill: 'blue'
+        });
+
+        var red = new Kinetic.Rect({
+            x: 150,
+            y: 75,
+            width: 100,
+            height: 50,
+            fill: 'red'
+        });
+        
+        var green = new Kinetic.Rect({
+            x: 200,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'green'
+        });
+        
+        var blueCircle = new Kinetic.Circle({
+            x: 350,
+            y: 75,
+            radius: 40,
+            fill: 'blue'
+        });
+
+        var redCircle = new Kinetic.Circle({
+            x: 400,
+            y: 125,
+            radius: 40,
+            fill: 'red'
+        });
+        
+        var textpath = new Kinetic.TextPath({
+            y: 35,
+            textStroke: 'black',
+            textStrokeWidth: 1,
+            textFill: 'orange',
+            fontSize: '18',
+            fontFamily: 'Arial',
+            text: 'The quick brown fox jumped over the lazy dog\'s back',
+            data: "M 10,10 300,150 550,150"
+        });
+        
+        var path = new Kinetic.Path({
+            x: 200,
+            y: -75,
+            data: 'M200,100h100v50z',
+            fill: '#ccc',
+            stroke: '#333',
+            strokeWidth: 2,
+            shadow: {
+                color: 'black',
+                blur: 2,
+                offset: [10, 10],
+                opacity: 0.5
+            },
+        });
+        
+        var poly = new Kinetic.RegularPolygon({
+            x: stage.getWidth()/2,
+            y: stage.getHeight()/2,
+            sides: 5,
+            radius: 50,
+            fill: 'green',
+            stroke: 'blue',
+            strokeWidth: 5,
+            name: 'foobar'
+        });
+
+        group.add(red);
+        group.add(redCircle);
+        layer.add(blue);
+        layer.add(green);
+        layer.add(blueCircle);
+        layer.add(group);
+        layer2.add(textpath);
+        layer2.add(path);
+        layer2.add(poly);
+        stage.add(layer);
+        stage.add(layer2);
+        stage.add(fooLayer);
+
+        test(stage.get('Shape').length === 8, 'stage should have 5 shapes');
+        test(stage.get('Layer').length === 3, 'stage should have 2 layers');
+        test(stage.get('Group').length === 1, 'stage should have 1 group');
+        test(stage.get('Rect').length === 3, 'stage should have 3 rects');
+        test(stage.get('Circle').length === 2, 'stage should have 2 circles');
+        test(stage.get('RegularPolygon').length === 1, 'stage should have 1 regular polygon');
+        test(stage.get('TextPath').length === 1, 'stage should have 1 text path');
+        test(stage.get('Path').length === 1, 'stage should have 1 path');
+
+        test(layer.get('Shape').length === 5, 'layer should have 5 shapes');
+        test(layer.get('Layer').length === 0, 'layer should have 0 layers');
+        test(layer.get('Group').length === 1, 'layer should have 1 group');
+        test(layer.get('Rect').length === 3, 'layer should have 3 rects');
+        test(layer.get('Circle').length === 2, 'layer should have 2 circles');
+        test(layer.get('RegularPolygon').length === 0, 'layer should have 0 regular polygon');
+        test(layer.get('TextPath').length === 0, 'layer should have 0 text path');
+        test(layer.get('Path').length === 0, 'layer should have 0 path');
+        
+        test(layer2.get('Shape').length === 3, 'layer2 should have 3 shapes');
+        test(layer2.get('Layer').length === 0, 'layer2 should have 0 layers');
+        test(layer2.get('Group').length === 0, 'layer2 should have 0 group');
+        test(layer2.get('RegularPolygon').length === 1, 'layer2 should have 1 regular polygon');
+        test(layer2.get('TextPath').length === 1, 'layer2 should have 1 text path');
+        test(layer2.get('Path').length === 1, 'layer2 should have 1 path');
+   
+        test(fooLayer.get('Shape').length === 0, 'layer should have 0 shapes');
+        test(fooLayer.get('Group').length === 0, 'layer should have 0 groups');
+        test(fooLayer.get('Rect').length === 0, 'layer should have 0 rects');
+        test(fooLayer.get('Circle').length === 0, 'layer should have 0 circles');
+
+        test(group.get('Shape').length === 2, 'group should have 2 shape');
+        test(group.get('Layer').length === 0, 'group should have 0 layers');
+        test(group.get('Group').length === 0, 'group should have 0 groups');
+        test(group.get('Rect').length === 1, 'group should have 1 rects');
+        test(group.get('Circle').length === 1, 'gropu should have 1 circles');
     },
     'SHAPE - text getters and setters': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -3975,33 +4130,12 @@ Test.prototype.tests = {
 
         // test defaults
         test(circle.attrs.draggable === false, 'draggable should be false');
-        test(circle.attrs.dragConstraint === 'none', 'drag constraint should be none');
-        test(circle.attrs.dragBounds.left === undefined, 'drag left should be undefined');
-        test(circle.attrs.dragBounds.top === undefined, 'drag top should be undefined');
-        test(circle.attrs.dragBounds.right === undefined, 'drag right should be undefined');
-        test(circle.attrs.dragBounds.bottom === undefined, 'drag bottom should be undefined');
-        test(circle.getDragConstraint() === 'none', 'drag constraint should be none');
-        test(circle.getDragBounds().bottom === undefined, 'drag bottom should be undefined');
 
         //change properties
         circle.setDraggable(true);
-        circle.setDragConstraint('vertical');
-        circle.setDragBounds({
-            left: 50,
-            top: 100,
-            right: 150,
-            bottom: 200
-        });
 
         // test new properties
         test(circle.attrs.draggable === true, 'draggable should be true');
-        test(circle.attrs.dragConstraint === 'vertical', 'drag constraint should be vertical');
-        test(circle.attrs.dragBounds.left === 50, 'drag left should be 50');
-        test(circle.attrs.dragBounds.top === 100, 'drag top should be 100');
-        test(circle.attrs.dragBounds.right === 150, 'drag right should be 150');
-        test(circle.attrs.dragBounds.bottom === 200, 'drag bottom should be 200');
-        test(circle.getDragConstraint() === 'vertical', 'drag constraint should be vertical');
-        test(circle.getDragBounds().bottom === 200, 'drag bottom should be 200');
     },
     'NODE - translate, rotate, scale shape': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -4606,6 +4740,15 @@ Test.prototype.tests = {
         test(greenGroup.getZIndex() === 0, 'green group should have zindex 0 after relayering');
 
         layer.draw();
+    },
+    'STAGE - test stage.getStage()': function(containerId) {
+    	var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        
+        console.log(stage.getStage());
     },
     'LAYERING - move blue layer on top of green layer with moveToTop': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -5842,6 +5985,51 @@ Test.prototype.tests = {
 
         layer.add(textpath);
         stage.add(layer);
+    },
+    'PATH - getPointOnLine for different directions': function() {
+        var origo = {x: 0, y: 0};
+        
+        var p, point;
+        
+        //point up left
+        p = {x:-10, y: -10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x < 0 && point.y < 0, 'The new point should be up left');
+              
+        //point up right
+        p = {x:10, y: -10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x > 0 && point.y < 0, 'The new point should be up right');
+
+        //point down right
+        p = {x:10, y: 10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x > 0 && point.y > 0, 'The new point should be down right');
+
+        //point down left
+        p = {x:-10, y: 10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x < 0 && point.y > 0, 'The new point should be down left');
+
+        //point left
+        p = {x:-10, y: 0};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x == -10 && point.y == 0, 'The new point should be left');
+
+        //point up
+        p = {x:0, y: -10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(Math.abs(point.x) < 0.0000001 && point.y == -10, 'The new point should be up');
+
+        //point right
+        p = {x:10, y: 0};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(point.x == 10 && point.y == 0, 'The new point should be right');
+
+        //point down
+        p = {x:0, y: 10};
+        point = Kinetic.Path.getPointOnLine(10, origo.x, origo.y, p.x, p.y);
+        test(Math.abs(point.x) < 0.0000001 && point.y == 10, 'The new point should be down');
     },
     'PATH - Borneo Map (has scientific notation: -10e-4)': function(containerId) {
 
