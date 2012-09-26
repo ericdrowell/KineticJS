@@ -378,11 +378,7 @@ Kinetic.Shape.prototype = {
         };
     },
     _get: function(selector) {
-        if(this.nodeType === selector || this.shapeType === selector) {
-            return [this];
-        } else {
-            return [];
-        }
+        return this.nodeType === selector || this.shapeType === selector ? [this] : [];
     },
     /**
      * apply shadow.  return true if shadow was applied
