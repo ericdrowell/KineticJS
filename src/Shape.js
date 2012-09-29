@@ -127,6 +127,26 @@ Kinetic.Shape.prototype = {
             }
         }
     },
+    _getFillType: function(fill) {
+        if(!fill) {
+            return undefined;
+        }
+        else if(Kinetic.Type._isString(fill)) {
+            return 'COLOR';
+        }
+        else if(fill.image) {
+            return 'PATTERN';
+        }
+        else if(fill.start && fill.end && !fill.start.radius && !fill.end.radius) {
+            return 'LINEAR_GRADIENT';
+        }
+        else if(fill.start && fill.end && Kinetic.Type._isNumber(fill.start.radius) && Kinetic.Type._isNumber(fill.end.radius)) {
+            return 'RADIAL_GRADIENT';
+        }
+        else {
+            return 'UNKNOWN';
+        }
+    },
     /**
      * helper method to fill the shape with a color, linear gradient,
      * radial gradient, or pattern, and also apply shadows if needed
@@ -135,7 +155,8 @@ Kinetic.Shape.prototype = {
      * */
     fill: function(context) {
         var appliedShadow = false;
-        var fill = this.attrs.fill;
+        var fill = this.getFill();
+        var fillType = this._getFillType(fill);
         if(fill) {
             context.save();
             if(this.attrs.shadow && !this.appliedShadow) {
@@ -144,53 +165,52 @@ Kinetic.Shape.prototype = {
 
             var s = fill.start;
             var e = fill.end;
-            var f = null;
 
             // color fill
-            if(Kinetic.Type._isString(fill)) {
-                context.fillStyle = fill;
-                context.fill(context);
-            }
-            // pattern
-            else if(fill.image) {
-                var repeat = !fill.repeat ? 'repeat' : fill.repeat;
-                if(fill.scale) {
-                    context.scale(fill.scale.x, fill.scale.y);
-                }
-                if(fill.offset) {
-                    context.translate(fill.offset.x, fill.offset.y);
-                }
+            switch(fillType) {
+                case 'COLOR':
+                    context.fillStyle = fill;
+                    context.fill(context);
+                    break;
+                case 'PATTERN':
+                    var repeat = !fill.repeat ? 'repeat' : fill.repeat;
+                    if(fill.scale) {
+                        context.scale(fill.scale.x, fill.scale.y);
+                    }
+                    if(fill.offset) {
+                        context.translate(fill.offset.x, fill.offset.y);
+                    }
 
-                context.fillStyle = context.createPattern(fill.image, repeat);
-                context.fill(context);
-            }
-            // linear gradient
-            else if(!s.radius && !e.radius) {
-                var grd = context.createLinearGradient(s.x, s.y, e.x, e.y);
-                var colorStops = fill.colorStops;
+                    context.fillStyle = context.createPattern(fill.image, repeat);
+                    context.fill(context);
+                    break;
+                case 'LINEAR_GRADIENT':
+                    var grd = context.createLinearGradient(s.x, s.y, e.x, e.y);
+                    var colorStops = fill.colorStops;
 
-                // build color stops
-                for(var n = 0; n < colorStops.length; n += 2) {
-                    grd.addColorStop(colorStops[n], colorStops[n + 1]);
-                }
-                context.fillStyle = grd;
-                context.fill(context);
-            }
-            // radial gradient
-            else if((s.radius || s.radius === 0) && (e.radius || e.radius === 0)) {
-                var grd = context.createRadialGradient(s.x, s.y, s.radius, e.x, e.y, e.radius);
-                var colorStops = fill.colorStops;
+                    // build color stops
+                    for(var n = 0; n < colorStops.length; n += 2) {
+                        grd.addColorStop(colorStops[n], colorStops[n + 1]);
+                    }
+                    context.fillStyle = grd;
+                    context.fill(context);
 
-                // build color stops
-                for(var n = 0; n < colorStops.length; n += 2) {
-                    grd.addColorStop(colorStops[n], colorStops[n + 1]);
-                }
-                context.fillStyle = grd;
-                context.fill(context);
-            }
-            else {
-                context.fillStyle = 'black';
-                context.fill(context);
+                    break;
+                case 'RADIAL_GRADIENT':
+                    var grd = context.createRadialGradient(s.x, s.y, s.radius, e.x, e.y, e.radius);
+                    var colorStops = fill.colorStops;
+
+                    // build color stops
+                    for(var n = 0; n < colorStops.length; n += 2) {
+                        grd.addColorStop(colorStops[n], colorStops[n + 1]);
+                    }
+                    context.fillStyle = grd;
+                    context.fill(context);
+                    break;
+                default:
+                    context.fillStyle = 'black';
+                    context.fill(context);
+                    break;
             }
             context.restore();
         }
@@ -291,6 +311,73 @@ Kinetic.Shape.prototype = {
         }
     },
     /**
+     * set shadow object
+     * @name setShadow
+     * @methodOf Kinetic.Shape.prototype
+     * @param {Object} config
+     * @param {String} config.color
+     * @param {Number} config.blur
+     * @param {Array|Object|Number} config.offset
+     * @param {Number} config.opacity
+     */
+    setShadow: function(config) {
+        if(config.offset !== undefined) {
+            config.offset = Kinetic.Type._getXY(config.offset);
+        }
+        this.setAttr('shadow', Kinetic.Type._merge(config, this.getShadow()));
+    },
+    /**
+     * set fill which can be a color, linear gradient object,
+     *  radial gradient object, or pattern object
+     * @name setFill
+     * @methodOf Kinetic.Shape.prototype
+     * @param {String|Object} fill
+     */
+    setFill: function(fill) {
+        var oldFill = this.getFill();
+        var fillType = this._getFillType(fill);
+        var oldFillType = this._getFillType(oldFill);
+        var newOrOldFillIsColor = fillType === 'COLOR' || oldFillType === 'COLOR';
+        var changedFillType = fillType === oldFillType || fillType === 'UNKNOWN';
+
+        // if fill.offset is defined, normalize the xy value
+        if(fill.offset !== undefined) {
+            fill.offset = Kinetic.Type._getXY(fill.offset);
+        }
+
+        /*
+         * merge fill objects if neither the new or old fill
+         * is type is COLOR, and if if the fill type has not changed.  Otherwise,
+         * overwrite the fill entirely
+         */
+        if(!newOrOldFillIsColor && changedFillType) {
+            fill = Kinetic.Type._merge(fill, oldFill);
+        }
+
+        this.setAttr('fill', fill);
+    },
+    /**
+     * set width and height
+     * @name setSize
+     * @methodOf Kinetic.Shape.prototype
+     */
+    setSize: function() {
+        var size = Kinetic.Type._getSize(Array.prototype.slice.call(arguments));
+        this.setWidth(size.width);
+        this.setHeight(size.height);
+    },
+    /**
+     * return shape size
+     * @name getSize
+     * @methodOf Kinetic.Shape.prototype
+     */
+    getSize: function() {
+        return {
+            width: this.getWidth(),
+            height: this.getHeight()
+        };
+    },
+    /**
      * apply shadow.  return true if shadow was applied
      * and false if it was not
      */
@@ -335,7 +422,8 @@ Kinetic.Shape.prototype = {
         var p = bufferCanvas.context.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
         return p[3] > 0;
     },
-    _remove: function() {
+    remove: function() {
+    	Kinetic.Node.prototype.remove.call(this);
         delete Kinetic.Global.shapes[this.colorKey];
     },
     __draw: function(canvas) {
@@ -426,15 +514,8 @@ Kinetic.Shape.prototype = {
 Kinetic.Global.extend(Kinetic.Shape, Kinetic.Node);
 
 // add getters and setters
-Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'strokeWidth', 'shadow', 'drawFunc', 'filter']);
-
-/**
- * set fill which can be a color, linear gradient object,
- *  radial gradient object, or pattern object
- * @name setFill
- * @methodOf Kinetic.Shape.prototype
- * @param {String|Object} fill
- */
+Kinetic.Node.addGettersSetters(Kinetic.Shape, ['stroke', 'lineJoin', 'strokeWidth', 'drawFunc', 'filter']);
+Kinetic.Node.addGetters(Kinetic.Shape, ['shadow', 'fill']);
 
 /**
  * set stroke color
@@ -456,13 +537,6 @@ Kinetic.Node.addGettersSetters(Kinetic.Shape, ['fill', 'stroke', 'lineJoin', 'st
  * @name setStrokeWidth
  * @methodOf Kinetic.Shape.prototype
  * @param {Number} strokeWidth
- */
-
-/**
- * set shadow object
- * @name setShadow
- * @methodOf Kinetic.Shape.prototype
- * @param {Object} config
  */
 
 /**

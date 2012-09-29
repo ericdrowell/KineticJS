@@ -54,7 +54,7 @@ Kinetic.Container.prototype = {
      */
     removeChildren: function() {
         while(this.children.length > 0) {
-            this.remove(this.children[0]);
+            this.children[0].remove();
         }
     },
     /**
@@ -85,48 +85,7 @@ Kinetic.Container.prototype = {
             var go = Kinetic.Global;
             go._pullNodes(stage);
         }
-
-        // do extra stuff if needed
-        if(this._add !== undefined) {
-            this._add(child);
-        }
-
-        // chainable
-        return this;
-    },
-    /**
-     * remove child from container
-     * @name remove
-     * @methodOf Kinetic.Container.prototype
-     * @param {Node} child
-     */
-    remove: function(child) {
-        if(child && child.index !== undefined && this.children[child.index]._id == child._id) {
-            var stage = this.getStage();
-            /*
-             * remove event listeners and references to the node
-             * from the ids and names hashes
-             */
-            if(stage) {
-                stage._removeId(child.getId());
-                stage._removeName(child.getName(), child._id);
-            }
-
-            Kinetic.Global._removeTempNode(child);
-            this.children.splice(child.index, 1);
-            this._setChildrenIndices();
-
-            // remove children
-            while(child.children && child.children.length > 0) {
-                child.remove(child.children[0]);
-            }
-
-            // do extra stuff if needed
-            if(child._remove !== undefined) {
-                child._remove();
-            }
-        }
-
+        
         // chainable
         return this;
     },
@@ -142,22 +101,45 @@ Kinetic.Container.prototype = {
      */
     get: function(selector) {
         var stage = this.getStage();
-        var arr;
-        var key = selector.slice(1);
-        if(selector.charAt(0) === '#') {
-            arr = stage.ids[key] !== undefined ? [stage.ids[key]] : [];
-        }
-        else if(selector.charAt(0) === '.') {
-            arr = stage.names[key] !== undefined ? stage.names[key] : [];
-        }
-        else if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
-            return this._getNodes(selector);
-        }
-        else {
-            return false;
-        }
 
-        var retArr = [];
+		// Node type selector
+        if(selector === 'Shape' || selector === 'Group' || selector === 'Layer') {
+        	var retArr = new Kinetic.Collection();
+            function traverse(cont) {
+                var children = cont.getChildren();
+                for(var n = 0; n < children.length; n++) {
+                    var child = children[n];
+                    if(child.nodeType === selector) {
+                        retArr.push(child);
+                    }
+                    else if(child.nodeType !== 'Shape') {
+                        traverse(child);
+                    }
+                }
+            }
+
+            traverse(this);
+            return retArr;
+        }
+        // ID selector
+        else if(selector.charAt(0) === '#') {
+        	var key = selector.slice(1);
+            var arr = stage.ids[key] !== undefined ? [stage.ids[key]] : [];
+            return this._getDescendants(arr);
+        }
+        // name selector
+        else if(selector.charAt(0) === '.') {
+        	var key = selector.slice(1);
+            var arr = stage.names[key] || [];
+			return this._getDescendants(arr);
+        }
+        // unrecognized selector
+        else {
+            return [];
+        }
+    },
+    _getDescendants: function(arr) {
+    	var retArr = new Kinetic.Collection();
         for(var n = 0; n < arr.length; n++) {
             var node = arr[n];
             if(this.isAncestorOf(node)) {
@@ -165,7 +147,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return retArr;
+        return retArr; 	
     },
     /**
      * determine if node is an ancestor
@@ -175,10 +157,6 @@ Kinetic.Container.prototype = {
      * @param {Kinetic.Node} node
      */
     isAncestorOf: function(node) {
-        if(this.nodeType === 'Stage') {
-            return true;
-        }
-
         var parent = node.getParent();
         while(parent) {
             if(parent._id === this._id) {
@@ -188,6 +166,22 @@ Kinetic.Container.prototype = {
         }
 
         return false;
+    },
+    /**
+     * clone node
+     * @name clone
+     * @methodOf Kinetic.Container.prototype
+     * @param {Object} attrs override attrs
+     */
+    clone: function(obj) {
+        // call super method
+        var node = Kinetic.Node.prototype.clone.call(this, obj)
+
+        // perform deep clone on containers
+        for(var key in this.children) {
+            node.add(this.children[key].clone());
+        }
+        return node;
     },
     /**
      * get shapes that intersect a point
@@ -206,27 +200,6 @@ Kinetic.Container.prototype = {
                 arr.push(shape);
             }
         }
-
-        return arr;
-    },
-    /**
-     * get all shapes inside container
-     */
-    _getNodes: function(sel) {
-        var arr = [];
-        function traverse(cont) {
-            var children = cont.getChildren();
-            for(var n = 0; n < children.length; n++) {
-                var child = children[n];
-                if(child.nodeType === sel) {
-                    arr.push(child);
-                }
-                else if(child.nodeType !== 'Shape') {
-                    traverse(child);
-                }
-            }
-        }
-        traverse(this);
 
         return arr;
     },

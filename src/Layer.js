@@ -25,13 +25,7 @@
  * @param {Number} [config.offset.x]
  * @param {Number} [config.offset.y]
  * @param {Boolean} [config.draggable]
- * @param {String} [config.dragConstraint] can be vertical, horizontal, or none.  The default
- *  is none
- * @param {Object} [config.dragBounds]
- * @param {Number} [config.dragBounds.top]
- * @param {Number} [config.dragBounds.right]
- * @param {Number} [config.dragBounds.bottom]
- * @param {Number} [config.dragBounds.left]
+ * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
  */
 Kinetic.Layer = function(config) {
     this._initLayer(config);
@@ -139,6 +133,62 @@ Kinetic.Layer.prototype = {
     clear: function() {
         this.getCanvas().clear();
     },
+    // extenders
+    setVisible: function(visible) {
+        Kinetic.Node.prototype.setVisible.call(this, visible);
+        if(visible) {
+            this.canvas.element.style.display = 'block';
+        }
+        else {
+            this.canvas.element.style.display = 'none';
+        }
+    },
+    moveToTop: function() {
+        Kinetic.Node.prototype.moveToTop.call(this);
+        var stage = this.getStage();
+        if(stage) {
+            stage.content.removeChild(this.canvas.element);
+            stage.content.appendChild(this.canvas.element);
+        }
+    },
+    moveUp: function() {
+        if(Kinetic.Node.prototype.moveUp.call(this)) {
+            var stage = this.getStage();
+            if(stage) {
+                stage.content.removeChild(this.canvas.element);
+
+                if(this.index < stage.getChildren().length - 1) {
+                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                }
+                else {
+                    stage.content.appendChild(this.canvas.element);
+                }
+            }
+        }
+    },
+    moveDown: function() {
+        if(Kinetic.Node.prototype.moveDown.call(this)) {
+            var stage = this.getStage();
+            if(stage) {
+                var children = stage.getChildren();
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, children[this.index + 1].canvas.element);
+            }
+        }
+    },
+    moveToBottom: function() {
+        if(Kinetic.Node.prototype.moveToBottom.call(this)) {
+            var stage = this.getStage();
+            if(stage) {
+                var children = stage.getChildren();
+                stage.content.removeChild(this.canvas.element);
+                stage.content.insertBefore(this.canvas.element, children[1].canvas.element);
+            }
+        }
+    },
+    getLayer: function() {
+    	return this;
+    },
     /**
      * Creates a composite data URL. If MIME type is not
      *  specified, then "image/png" will result. For "image/jpeg", specify a quality
@@ -173,15 +223,15 @@ Kinetic.Layer.prototype = {
     /**
      * remove layer from stage
      */
-    _remove: function() {
+    remove: function() {
+    	Kinetic.Node.prototype.remove.call(this);
         /*
          * remove canvas DOM from the document if
          * it exists
          */
         try {
             this.getStage().content.removeChild(this.canvas.element);
-        }
-        catch(e) {
+        } catch(e) {
             Kinetic.Global.warn('unable to remove layer scene canvas element from the document');
         }
     },
