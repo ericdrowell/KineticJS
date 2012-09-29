@@ -368,6 +368,9 @@ Kinetic.Stage.prototype = {
          */
         for(var n = layers.length - 1; n >= 0; n--) {
             var layer = layers[n];
+            if(!layer.isVisible() || !layer.getListening()) {
+              continue;
+            }
             var p = layer.bufferCanvas.context.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
             // this indicates that a buffer pixel may have been found
             if(p[3] === 255) {
