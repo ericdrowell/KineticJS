@@ -54,7 +54,7 @@ Kinetic.Container.prototype = {
      */
     removeChildren: function() {
         while(this.children.length > 0) {
-            this.remove(this.children[0]);
+            this.children[0].remove();
         }
     },
     /**
@@ -84,47 +84,6 @@ Kinetic.Container.prototype = {
              */
             var go = Kinetic.Global;
             go._pullNodes(stage);
-        }
-
-        // do extra stuff if needed
-        if(this._add !== undefined) {
-            this._add(child);
-        }
-
-        // chainable
-        return this;
-    },
-    /**
-     * remove child from container
-     * @name remove
-     * @methodOf Kinetic.Container.prototype
-     * @param {Node} child
-     */
-    remove: function(child) {
-        if(child && child.index !== undefined && this.children[child.index]._id == child._id) {
-            var stage = this.getStage();
-            /*
-             * remove event listeners and references to the node
-             * from the ids and names hashes
-             */
-            if(stage) {
-                stage._removeId(child.getId());
-                stage._removeName(child.getName(), child._id);
-            }
-
-            Kinetic.Global._removeTempNode(child);
-            this.children.splice(child.index, 1);
-            this._setChildrenIndices();
-
-            // remove children
-            while(child.children && child.children.length > 0) {
-                child.remove(child.children[0]);
-            }
-
-            // do extra stuff if needed
-            if(child._remove !== undefined) {
-                child._remove();
-            }
         }
 
         // chainable
@@ -182,6 +141,20 @@ Kinetic.Container.prototype = {
         }
         return retArr;
     },
+    // extenders
+    toObject: function() {
+        var obj = Kinetic.Node.prototype.toObject.call(this);
+
+        obj.children = [];
+
+        var children = this.getChildren();
+        for(var n = 0; n < children.length; n++) {
+            var child = children[n];
+            obj.children.push(child.toObject());
+        }
+
+        return obj;
+    },
     _getDescendants: function(arr) {
     	var retArr = [];
         for(var n = 0; n < arr.length; n++) {
@@ -191,7 +164,7 @@ Kinetic.Container.prototype = {
             }
         }
 
-        return retArr; 	
+        return retArr;
     },
     /**
      * determine if node is an ancestor

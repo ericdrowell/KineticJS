@@ -181,35 +181,6 @@ Test.prototype.tests = {
         group.add(circle);
         layer.draw();
     },
-    'STAGE - serialize stage': function(containerId) {
-        var stage = new Kinetic.Stage({
-            container: containerId,
-            width: 578,
-            height: 200
-        });
-        var layer = new Kinetic.Layer();
-        var group = new Kinetic.Group();
-        var circle = new Kinetic.Circle({
-            x: stage.getWidth() / 2,
-            y: stage.getHeight() / 2,
-            radius: 70,
-            fill: 'green',
-            stroke: 'black',
-            strokeWidth: 4,
-            name: 'myCircle',
-            draggable: true
-        });
-
-        stage.add(layer);
-        layer.add(group);
-        group.add(circle);
-        layer.draw();
-
-        var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Group","children":[{"attrs":{"radius":{"x":70,"y":70},"detectionType":"path","visible":true,"listening":true,"name":"myCircle","opacity":1,"x":289,"y":100,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":true,"dragThrottle":80,"fill":"green","stroke":"black","strokeWidth":4},"nodeType":"Shape","shapeType":"Circle"}]}]}]}';
-
-        //console.log(stage.toJSON())
-        //test(stage.toJSON() === expectedJson, 'problem with serialization');
-    },
     'STAGE - reset stage': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -284,98 +255,6 @@ Test.prototype.tests = {
         });
 
         test(stage.getDOM().className === 'kineticjs-content', 'stage DOM class name is wrong');
-    },
-    'STAGE - load stage using json': function(containerId) {
-        var stage = new Kinetic.Stage({
-            container: containerId,
-            width: 578,
-            height: 200
-        });
-
-        var json = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Group","children":[{"attrs":{"radius":{"x":70,"y":70},"detectionType":"path","visible":true,"listening":true,"name":"myCircle","opacity":1,"x":289,"y":100,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":true,"dragThrottle":80,"fill":"green","stroke":"black","strokeWidth":4},"nodeType":"Shape","shapeType":"Circle"}]}]}]}';
-        //stage.load(json);
-
-        //test(stage.toJSON() === json, "problem loading stage with json");
-    },
-    'STAGE - serialize stage with custom shape': function(containerId) {
-        var urls = dataUrls['STAGE - serialize stage with custom shape'];
-
-        var stage = new Kinetic.Stage({
-            container: containerId,
-            width: 578,
-            height: 200
-        });
-        var layer = new Kinetic.Layer();
-        var group = new Kinetic.Group();
-
-        var drawTriangle = function(context) {
-            context.beginPath();
-            context.moveTo(200, 50);
-            context.lineTo(420, 80);
-            context.quadraticCurveTo(300, 100, 260, 170);
-            context.closePath();
-            this.fill(context);
-            this.stroke(context);
-        };
-        var triangle = new Kinetic.Shape({
-            drawFunc: drawTriangle,
-            fill: "#00D2FF",
-            stroke: "black",
-            strokeWidth: 4,
-            id: 'myTriangle'
-        });
-
-        group.add(triangle);
-        layer.add(group);
-        stage.add(layer);
-
-        var startDataUrl = layer.toDataURL();
-
-        //warn(startDataUrl === urls[0], 'start data url is incorrect');
-        test(triangle.getId() === 'myTriangle', 'triangle id should be myTriangle');
-
-        //console.log(stage.toJSON())
-        var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Group","children":[{"attrs":{"detectionType":"path","visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
-
-        //console.log(stage.toJSON())
-        //test(stage.toJSON() === expectedJson, "problem serializing stage with custom shape");
-
-        /*
-         * test redrawing layer after serialization
-         * drawing should be the same
-         */
-        layer.draw();
-
-        var endDataUrl = layer.toDataURL();
-        //warn(endDataUrl === urls[0], 'end data url is incorrect');
-
-    },
-    'STAGE - load stage with custom shape using json': function(containerId) {
-        var stage = new Kinetic.Stage({
-            container: containerId,
-            width: 578,
-            height: 200
-        });
-
-        var drawTriangle = function(context) {
-            context.beginPath();
-            context.moveTo(200, 50);
-            context.lineTo(420, 80);
-            context.quadraticCurveTo(300, 100, 260, 170);
-            context.closePath();
-            this.fill(context);
-            this.stroke(context);
-        };
-        var json = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Group","children":[{"attrs":{"detectionType":"path","visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
-        //stage.load(json);
-
-        //var customShape = stage.get('#myTriangle')[0];
-
-        //customShape.setDrawFunc(drawTriangle);
-
-        //stage.draw();
-        //console.log(stage.toJSON());
-        //test(stage.toJSON() === json, "problem loading stage with custom shape json");
     },
     'EVENTS - test getIntersections': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -604,14 +483,14 @@ Test.prototype.tests = {
         test(Kinetic.Global.shapes[circleColorKey]._id === circle._id, 'circle color key should be in shapes hash');
         test(Kinetic.Global.shapes[rectColorKey]._id === rect._id, 'rect color key should be in shapes hash');
 
-        layer.remove(circle);
+        circle.remove();
 
         test(stage.ids.myCircle === undefined, 'circle still in hash');
         test(stage.names.myRect[0]._id === rect._id, 'rect not in names hash');
         test(Kinetic.Global.shapes[circleColorKey] === undefined, 'circle color key should not be in shapes hash');
         test(Kinetic.Global.shapes[rectColorKey]._id === rect._id, 'rect color key should be in shapes hash');
 
-        layer.remove(rect);
+        rect.remove();
 
         test(stage.ids.myCircle === undefined, 'circle still in hash');
         test(stage.names.myRect === undefined, 'rect still in hash');
@@ -786,11 +665,11 @@ Test.prototype.tests = {
         test(stage.names['myRect'][0].getName() === 'myRect', 'rect name not in names hash');
 
         circle.setId('newCircleId');
-        test(stage.ids['newCircleId'].getId() === 'newCircleId', 'circle not in ids hash');
+        test(stage.ids['newCircleId'] !== undefined, 'circle not in ids hash');
         test(stage.ids['myCircle'] === undefined, 'old circle id key is still in ids hash');
 
         rect.setName('newRectName');
-        test(stage.names['newRectName'][0].getName() === 'newRectName', 'new rect name not in names hash');
+        test(stage.names['newRectName'][0] !== undefined, 'new rect name not in names hash');
         test(stage.names['myRect'] === undefined, 'old rect name is still in names hash');
     },
     'STAGE - set shape and layer opacity to 0.5': function(containerId) {
@@ -816,6 +695,32 @@ Test.prototype.tests = {
 
         test(circle.getAbsoluteOpacity() === 0.25, 'abs opacity should be 0.25');
         test(layer.getAbsoluteOpacity() === 0.5, 'abs opacity should be 0.5');
+    },
+    'STAGE - set shape, layer and stage opacity to 0.5': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        circle.setOpacity(0.5);
+        layer.setOpacity(0.5);
+        stage.setOpacity(0.5);
+        layer.add(circle);
+        stage.add(layer);
+
+        test(circle.getAbsoluteOpacity() === 0.125, 'abs opacity should be 0.125');
+        test(layer.getAbsoluteOpacity() === 0.25, 'abs opacity should be 0.25');
+        test(stage.getAbsoluteOpacity() === 0.5, 'abs opacity should be 0.5');
     },
     'STAGE - remove shape without adding its parent to stage': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -846,7 +751,7 @@ Test.prototype.tests = {
 
         test(go.tempNodes[circle._id].attrs.id === 'myCircle', 'circle should be in temp nodes');
 
-        layer.remove(circle);
+        circle.remove();
 
         test(go.tempNodes[circle._id] === undefined, 'circle shouldn\'t be in the temp nodes hash');
 
@@ -877,7 +782,7 @@ Test.prototype.tests = {
         test(stage.get('.myLayer')[0] !== undefined, 'layer should exist');
         test(stage.get('.myCircle')[0] !== undefined, 'circle should exist');
 
-        stage.remove(layer);
+        layer.remove();
 
         test(stage.children.length === 0, 'stage should have 0 children');
         test(stage.get('.myLayer')[0] === undefined, 'layer should not exist');
@@ -893,7 +798,7 @@ Test.prototype.tests = {
         });
         var layer = new Kinetic.Layer();
         stage.add(layer);
-        stage.remove(layer);
+        layer.remove();
 
         test(stage.children.length === 0, 'stage should have 0 children');
     },
@@ -926,8 +831,8 @@ Test.prototype.tests = {
 
         test(layer.getChildren().length === 2, 'layer should have two children');
 
-        layer.remove(shape1);
-        layer.remove(shape1);
+        shape1.remove();
+        shape1.remove();
 
         test(layer.getChildren().length === 1, 'layer should have two children');
 
@@ -966,58 +871,13 @@ Test.prototype.tests = {
 
         test(stage.getChildren().length === 2, 'stage should have two children');
 
-        stage.remove(layer1);
-        stage.remove(layer1);
+        layer1.remove();
+        layer1.remove();
 
         test(stage.getChildren().length === 1, 'stage should have one child');
 
         stage.draw();
 
-    },
-    'STAGE - serialize stage with an image': function(containerId) {
-        var imageObj = new Image();
-        imageObj.onload = function() {
-            var stage = new Kinetic.Stage({
-                container: containerId,
-                width: 578,
-                height: 200
-            });
-            var layer = new Kinetic.Layer();
-            darth = new Kinetic.Image({
-                x: 200,
-                y: 60,
-                image: imageObj,
-                offset: {
-                    x: 50,
-                    y: imageObj.height / 2
-                },
-                id: 'darth'
-            });
-
-            layer.add(darth);
-            stage.add(layer);
-            var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80},"nodeType":"Layer","children":[{"attrs":{"detectionType":"path","visible":true,"listening":true,"opacity":1,"x":200,"y":60,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":50,"y":150},"dragConstraint":"none","dragBounds":{},"draggable":false,"dragThrottle":80,"id":"darth"},"nodeType":"Shape","shapeType":"Image"}]}]}';
-            //console.log(stage.toJSON())
-            //test(stage.toJSON() === expectedJson, 'problem with serializing stage with image');
-        };
-        imageObj.src = '../assets/darth-vader.jpg';
-    },
-    'STAGE - load stage with an image': function(containerId) {
-        var imageObj = new Image();
-        imageObj.onload = function() {
-            var stage = new Kinetic.Stage({
-                container: containerId,
-                width: 578,
-                height: 200
-            });
-
-            var json = '{"attrs":{"width":578,"height":200,"visible":true,"listen":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"visible":true,"listen":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"dragConstraint":"none","dragBounds":{},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"crop":{"x":0,"y":0},"detectionType":"path","visible":true,"listen":true,"opacity":1,"x":200,"y":60,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":50,"y":150},"dragConstraint":"none","dragBounds":{},"draggable":false,"id":"darth"},"nodeType":"Shape","shapeType":"Image"}]}]}';
-            //stage.load(json);
-            //var image = stage.get('#darth')[0];
-            //image.setImage(imageObj);
-            //stage.draw();
-        };
-        imageObj.src = '../assets/darth-vader.jpg';
     },
     ////////////////////////////////////////////////////////////////////////
     //  LAYERS tests
@@ -1032,7 +892,7 @@ Test.prototype.tests = {
         var layer = new Kinetic.Layer();
         stage.add(layer);
     },
-    'LAYER - hide layer': function(containerId) {
+    'LAYER - hide show layer': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -1562,7 +1422,7 @@ Test.prototype.tests = {
         * methods, such as self, are not serialized, and will therefore avoid
         * circular json errors.
         */
-        //var json = stage.toJSON();
+        var json = stage.toJSON();
     },
     'SHAPE - set fill after instantiation': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -3155,7 +3015,7 @@ Test.prototype.tests = {
 
         test(layer.children.length === 1, 'layer should have 1 children');
 
-        layer.remove(circle);
+        circle.remove();
 
         test(layer.children.length === 0, 'layer should have 0 children');
         //test(layer.getChild('myCircle') === undefined, 'shape should be null');
@@ -4256,6 +4116,25 @@ Test.prototype.tests = {
         circle.off('click.bar');
         test(circle.eventListeners['click'] === undefined, 'circle should have no click listeners');
 
+        /*
+         * test remove all events in name space
+         */
+        circle.on('click.foo', function() { });
+        circle.on('click.foo', function() { });
+        circle.on('touch.foo', function() { });
+        circle.on('click.bar', function() { });
+        circle.on('touch.bar', function() { });
+        
+        test(circle.eventListeners['click'].length === 3, 'circle should have 3 click listeners');
+        test(circle.eventListeners['touch'].length === 2, 'circle should have 2 touch listeners');
+        circle.off('.foo');
+        test(circle.eventListeners['click'].length === 1, 'circle should have 1 click listener');
+        test(circle.eventListeners['touch'].length === 1, 'circle should have 2 touch listeners');
+
+        circle.off('.bar');
+        test(circle.eventListeners['click'] === undefined, 'circle should have no click listeners');
+        test(circle.eventListeners['touch'] === undefined, 'circle should have no touch listeners');
+
         stage.add(layer);
         layer.add(circle);
         layer.draw();
@@ -4750,6 +4629,51 @@ Test.prototype.tests = {
         
         console.log(stage.getStage());
     },
+    'LAYERING - move blue layer on top of green layer with setZIndex': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var blueLayer = new Kinetic.Layer();
+        var greenLayer = new Kinetic.Layer();
+
+        var bluecircle = new Kinetic.Circle({
+            x: 200,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'blue',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        var greencircle = new Kinetic.Circle({
+            x: 280,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        blueLayer.add(bluecircle);
+        greenLayer.add(greencircle);
+
+        stage.add(blueLayer);
+        stage.add(greenLayer);
+
+        blueLayer.setZIndex(1);
+
+		test(greenLayer.getZIndex() === 0, 'green layer should have z index of 0');
+		test(blueLayer.getZIndex() === 1, 'blue layer should have z index of 1');
+		
+		stage.toDataURL({
+            callback: function(dataUrl) {
+            	//console.log(dataUrl)
+                warn(dataUrls['blue on top of green'] === dataUrl, 'layer setZIndex is not working');
+            }
+        });
+    },
     'LAYERING - move blue layer on top of green layer with moveToTop': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -4828,7 +4752,7 @@ Test.prototype.tests = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToTop is not working');
+                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToBottom is not working');
             }
         });
     },
@@ -4868,7 +4792,7 @@ Test.prototype.tests = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToTop is not working');
+                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveDown is not working');
             }
         });
     },
@@ -4908,7 +4832,7 @@ Test.prototype.tests = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToTop is not working');
+                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveUp is not working');
             }
         });
     },
@@ -6097,5 +6021,191 @@ Test.prototype.tests = {
                 imageObj.src = url;
             }
         })
+    },
+    /*
+     * Serialization tests
+     */
+    'SERIALIZATION - serialize stage': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myCircle',
+            draggable: true
+        });
+
+        stage.add(layer);
+        layer.add(group);
+        group.add(circle);
+        layer.draw();
+
+        var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Group","children":[{"attrs":{"radius":70,"visible":true,"listening":true,"name":"myCircle","opacity":1,"x":289,"y":100,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":true,"fill":"green","stroke":"black","strokeWidth":4},"nodeType":"Shape","shapeType":"Circle"}]}]}]}';
+
+		
+       	//console.log(stage.toJSON())
+       	
+       	//console.log(expectedJson);
+        test(stage.toJSON() === expectedJson, 'problem with serialization');
+    },
+    'SERIALIZATION - serialize shape': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myCircle',
+            draggable: true
+        });
+
+        stage.add(layer);
+        layer.add(group);
+        group.add(circle);
+        layer.draw();
+
+        var expectedJson = '{"attrs":{"radius":70,"visible":true,"listening":true,"name":"myCircle","opacity":1,"x":289,"y":100,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":true,"fill":"green","stroke":"black","strokeWidth":4},"nodeType":"Shape","shapeType":"Circle"}';
+
+		
+       	//console.log(circle.toJSON())
+       	
+       	//console.log(expectedJson);
+        test(circle.toJSON() === expectedJson, 'problem with serialization');
+    },
+    'SERIALIZATION - load stage using json': function(containerId) {
+        var json = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Group","children":[{"attrs":{"radius":70,"visible":true,"listening":true,"name":"myCircle","opacity":1,"x":289,"y":100,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":true,"fill":"green","stroke":"black","strokeWidth":4},"nodeType":"Shape","shapeType":"Circle"}]}]}]}';
+        var stage = Kinetic.Node.create(json, containerId);
+
+        test(stage.toJSON() === json, "problem loading stage with json");
+    },
+    'SERIALIZATION - serialize stage with custom shape': function(containerId) {
+        var urls = dataUrls['STAGE - serialize stage with custom shape'];
+
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+
+        var drawTriangle = function(context) {
+            context.beginPath();
+            context.moveTo(200, 50);
+            context.lineTo(420, 80);
+            context.quadraticCurveTo(300, 100, 260, 170);
+            context.closePath();
+            this.fill(context);
+            this.stroke(context);
+        };
+        var triangle = new Kinetic.Shape({
+            drawFunc: drawTriangle,
+            fill: "#00D2FF",
+            stroke: "black",
+            strokeWidth: 4,
+            id: 'myTriangle'
+        });
+
+        group.add(triangle);
+        layer.add(group);
+        stage.add(layer);
+
+        var startDataUrl = layer.toDataURL();
+
+        //warn(startDataUrl === urls[0], 'start data url is incorrect');
+        test(triangle.getId() === 'myTriangle', 'triangle id should be myTriangle');
+
+        //console.log(stage.toJSON());
+        var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Group","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
+
+        //console.log(stage.toJSON())
+        test(stage.toJSON() === expectedJson, "problem serializing stage with custom shape");
+
+        /*
+         * test redrawing layer after serialization
+         * drawing should be the same
+         */
+        layer.draw();
+
+        var endDataUrl = layer.toDataURL();
+        //warn(endDataUrl === urls[0], 'end data url is incorrect');
+
+    },
+    'SERIALIZATION - load stage with custom shape using json': function(containerId) {
+        var drawTriangle = function(context) {
+            context.beginPath();
+            context.moveTo(200, 50);
+            context.lineTo(420, 80);
+            context.quadraticCurveTo(300, 100, 260, 170);
+            context.closePath();
+            this.fill(context);
+            this.stroke(context);
+        };
+        var json = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Group","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false,"fill":"#00D2FF","stroke":"black","strokeWidth":4,"id":"myTriangle"},"nodeType":"Shape"}]}]}]}';
+        
+        var stage = Kinetic.Node.create(json, containerId);
+
+        stage.get('#myTriangle').apply('setDrawFunc', drawTriangle);
+
+        stage.draw();
+        //console.log(stage.toJSON());
+        test(stage.toJSON() === json, "problem loading stage with custom shape json");
+    },
+    'SERIALIZATION - serialize stage with an image': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var stage = new Kinetic.Stage({
+                container: containerId,
+                width: 578,
+                height: 200
+            });
+            var layer = new Kinetic.Layer();
+            darth = new Kinetic.Image({
+                x: 200,
+                y: 60,
+                image: imageObj,
+                offset: {
+                    x: 50,
+                    y: imageObj.height / 2
+                },
+                id: 'darth'
+            });
+
+            layer.add(darth);
+            stage.add(layer);
+            var expectedJson = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":200,"y":60,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":50,"y":150},"draggable":false,"id":"darth","width":438,"height":300},"nodeType":"Shape","shapeType":"Image"}]}]}';
+            //console.log(stage.toJSON())
+            test(stage.toJSON() === expectedJson, 'problem with serializing stage with image');
+        };
+        imageObj.src = '../assets/darth-vader.jpg';
+    },
+    'SERIALIZATION - load stage with an image': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var json = '{"attrs":{"width":578,"height":200,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Stage","children":[{"attrs":{"clearBeforeDraw":true,"visible":true,"listening":true,"opacity":1,"x":0,"y":0,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":0,"y":0},"draggable":false},"nodeType":"Layer","children":[{"attrs":{"visible":true,"listening":true,"opacity":1,"x":200,"y":60,"scale":{"x":1,"y":1},"rotation":0,"offset":{"x":50,"y":150},"draggable":false,"id":"darth","width":438,"height":300},"nodeType":"Shape","shapeType":"Image"}]}]}';
+            var stage = Kinetic.Node.create(json, containerId);
+            
+            test(stage.toJSON(), json, 'problem loading stage json with image');
+            stage.get('#darth').apply('setImage', imageObj);
+            stage.draw();
+        };
+        imageObj.src = '../assets/darth-vader.jpg';
     }
 };

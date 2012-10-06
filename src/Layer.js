@@ -25,13 +25,7 @@
  * @param {Number} [config.offset.x]
  * @param {Number} [config.offset.y]
  * @param {Boolean} [config.draggable]
- * @param {String} [config.dragConstraint] can be vertical, horizontal, or none.  The default
- *  is none
- * @param {Object} [config.dragBounds]
- * @param {Number} [config.dragBounds.top]
- * @param {Number} [config.dragBounds.right]
- * @param {Number} [config.dragBounds.bottom]
- * @param {Number} [config.dragBounds.left]
+ * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
  */
 Kinetic.Layer = function(config) {
     this._initLayer(config);
@@ -144,9 +138,25 @@ Kinetic.Layer.prototype = {
         Kinetic.Node.prototype.setVisible.call(this, visible);
         if(visible) {
             this.canvas.element.style.display = 'block';
+            this.bufferCanvas.element.style.display = 'block';
         }
         else {
             this.canvas.element.style.display = 'none';
+            this.bufferCanvas.element.style.display = 'none';
+        }
+    },
+    setZIndex: function(index) {
+        Kinetic.Node.prototype.setZIndex.call(this, index);
+        var stage = this.getStage();
+        if(stage) {
+            stage.content.removeChild(this.canvas.element);
+
+            if(index < stage.getChildren().length - 1) {
+                stage.content.insertBefore(this.canvas.element, stage.getChildren()[index + 1].canvas.element);
+            }
+            else {
+                stage.content.appendChild(this.canvas.element);
+            }
         }
     },
     moveToTop: function() {
@@ -193,7 +203,7 @@ Kinetic.Layer.prototype = {
         }
     },
     getLayer: function() {
-    	return this;
+        return this;
     },
     /**
      * Creates a composite data URL. If MIME type is not
@@ -229,7 +239,8 @@ Kinetic.Layer.prototype = {
     /**
      * remove layer from stage
      */
-    _remove: function() {
+    remove: function() {
+        Kinetic.Node.prototype.remove.call(this);
         /*
          * remove canvas DOM from the document if
          * it exists

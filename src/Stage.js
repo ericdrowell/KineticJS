@@ -25,13 +25,7 @@
  * @param {Number} [config.offset.x]
  * @param {Number} [config.offset.y]
  * @param {Boolean} [config.draggable]
- * @param {String} [config.dragConstraint] can be vertical, horizontal, or none.  The default
- *  is none
- * @param {Object} [config.dragBounds]
- * @param {Number} [config.dragBounds.top]
- * @param {Number} [config.dragBounds.right]
- * @param {Number} [config.dragBounds.bottom]
- * @param {Number} [config.dragBounds.left]
+ * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
  */
 Kinetic.Stage = function(config) {
     this._initStage(config);
@@ -132,46 +126,6 @@ Kinetic.Stage.prototype = {
         }
     },
     /**
-     * serialize stage and children as a JSON object and return
-     *  the result as a json string
-     * @name toJSON
-     * @methodOf Kinetic.Stage.prototype
-     */
-    toJSON: function() {
-        var type = Kinetic.Type;
-
-        function addNode(node) {
-            var obj = {};
-
-            obj.attrs = {};
-
-            // serialize only attributes that are not function, image, DOM, or objects with methods
-            for(var key in node.attrs) {
-                var val = node.attrs[key];
-                if(!type._isFunction(val) && !type._isElement(val) && !(type._isObject(val) && type._hasMethods(val))) {
-                    obj.attrs[key] = val;
-                }
-            }
-
-            obj.nodeType = node.nodeType;
-            obj.shapeType = node.shapeType;
-
-            if(node.nodeType !== 'Shape') {
-                obj.children = [];
-
-                var children = node.getChildren();
-                for(var n = 0; n < children.length; n++) {
-                    var child = children[n];
-                    obj.children.push(addNode(child));
-                }
-            }
-
-            return obj;
-        }
-
-        return JSON.stringify(addNode(this));
-    },
-    /**
      * reset stage to default state
      * @name reset
      * @methodOf Kinetic.Stage.prototype
@@ -183,57 +137,6 @@ Kinetic.Stage.prototype = {
         // defaults
         this._setStageDefaultProperties();
         this.setAttrs(this.defaultNodeAttrs);
-    },
-    /**
-     * load stage with JSON string.  De-serializtion does not generate custom
-     *  shape drawing functions, images, or event handlers (this would make the
-     * 	serialized object huge).  If your app uses custom shapes, images, and
-     *  event handlers (it probably does), then you need to select the appropriate
-     *  shapes after loading the stage and set these properties via on(), setDrawFunc(),
-     *  and setImage()
-     * @name load
-     * @methodOf Kinetic.Stage.prototype
-     * @param {String} JSON string
-     */
-    load: function(json) {
-        this.reset();
-
-        function loadNode(node, obj) {
-            var children = obj.children;
-            if(children !== undefined) {
-                for(var n = 0; n < children.length; n++) {
-                    var child = children[n];
-                    var type;
-
-                    // determine type
-                    if(child.nodeType === 'Shape') {
-                        // add custom shape
-                        if(child.shapeType === undefined) {
-                            type = 'Shape';
-                        }
-                        // add standard shape
-                        else {
-                            type = child.shapeType;
-                        }
-                    }
-                    else {
-                        type = child.nodeType;
-                    }
-
-                    var no = new Kinetic[type](child.attrs);
-                    node.add(no);
-                    loadNode(no, child);
-                }
-            }
-        }
-
-        var obj = JSON.parse(json);
-
-        // copy over stage properties
-        this.attrs = obj.attrs;
-
-        loadNode(this, obj);
-        this.draw();
     },
     /**
      * get mouse position for desktop apps
@@ -374,21 +277,23 @@ Kinetic.Stage.prototype = {
          */
         for(var n = layers.length - 1; n >= 0; n--) {
             var layer = layers[n];
-            var p = layer.bufferCanvas.context.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
-            // this indicates that a buffer pixel may have been found
-            if(p[3] === 255) {
-                var colorKey = Kinetic.Type._rgbToHex(p[0], p[1], p[2]);
-                shape = Kinetic.Global.shapes[colorKey];
-                return {
-                    shape: shape,
-                    pixel: p
-                };
-            }
-            // if no shape mapped to that pixel, return pixel array
-            else if(p[0] > 0 || p[1] > 0 || p[2] > 0 || p[3] > 0) {
-                return {
-                    pixel: p
-                };
+            if(layer.isVisible() && layer.isListening()) {
+                var p = layer.bufferCanvas.context.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
+                // this indicates that a buffer pixel may have been found
+                if(p[3] === 255) {
+                    var colorKey = Kinetic.Type._rgbToHex(p[0], p[1], p[2]);
+                    shape = Kinetic.Global.shapes[colorKey];
+                    return {
+                        shape: shape,
+                        pixel: p
+                    };
+                }
+                // if no shape mapped to that pixel, return pixel array
+                else if(p[0] > 0 || p[1] > 0 || p[2] > 0 || p[3] > 0) {
+                    return {
+                        pixel: p
+                    };
+                }
             }
         }
 
@@ -424,13 +329,17 @@ Kinetic.Stage.prototype = {
      * add layer to stage
      * @param {Layer} layer
      */
-    _add: function(layer) {
+    add: function(layer) {
+        Kinetic.Container.prototype.add.call(this, layer);
         layer.canvas.setSize(this.attrs.width, this.attrs.height);
         layer.bufferCanvas.setSize(this.attrs.width, this.attrs.height);
 
         // draw layer and append canvas to container
         layer.draw();
         this.content.appendChild(layer.canvas.element);
+
+        // chainable
+        return this;
     },
     _setUserPosition: function(evt) {
         if(!evt) {
@@ -466,6 +375,7 @@ Kinetic.Stage.prototype = {
         var targetShape = this.targetShape;
         if(targetShape && !go.drag.moving) {
             targetShape._handleEvent('mouseout', evt);
+            targetShape._handleEvent('mouseleave', evt);
             this.targetShape = null;
         }
         this.mousePos = undefined;
@@ -484,8 +394,10 @@ Kinetic.Stage.prototype = {
                 if(!go.drag.moving && obj.pixel[3] === 255 && (!this.targetShape || this.targetShape._id !== shape._id)) {
                     if(this.targetShape) {
                         this.targetShape._handleEvent('mouseout', evt, shape);
+                        this.targetShape._handleEvent('mouseleave', evt, shape);
                     }
                     shape._handleEvent('mouseover', evt, this.targetShape);
+                    shape._handleEvent('mouseenter', evt, this.targetShape);
                     this.targetShape = shape;
                 }
                 else {
@@ -499,6 +411,7 @@ Kinetic.Stage.prototype = {
          */
         else if(this.targetShape && !go.drag.moving) {
             this.targetShape._handleEvent('mouseout', evt);
+            this.targetShape._handleEvent('mouseleave', evt);
             this.targetShape = null;
         }
 

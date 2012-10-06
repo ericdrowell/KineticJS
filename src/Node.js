@@ -23,13 +23,6 @@
  * @param {Number} [config.offset.x]
  * @param {Number} [config.offset.y]
  * @param {Boolean} [config.draggable]
- * @param {String} [config.dragConstraint] can be vertical, horizontal, or none.  The default
- *  is none
- * @param {Object} [config.dragBounds]
- * @param {Number} [config.dragBounds.top]
- * @param {Number} [config.dragBounds.right]
- * @param {Number} [config.dragBounds.bottom]
- * @param {Number} [config.dragBounds.left]
  * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
  */
 Kinetic.Node = function(config) {
@@ -54,8 +47,6 @@ Kinetic.Node.prototype = {
                 x: 0,
                 y: 0
             },
-            dragConstraint: 'none',
-            dragBounds: {},
             draggable: false
         };
 
@@ -127,7 +118,8 @@ Kinetic.Node.prototype = {
      *  event types delimmited by a space to remove multiple event
      *  bindings at once such as 'mousedown mouseup mousemove'.
      *  include a namespace to remove an event binding by name
-     *  such as 'click.foobar'.
+     *  such as 'click.foobar'. If you only give a name like '.foobar',
+     *  all events in that namespace will be removed.
      * @name off
      * @methodOf Kinetic.Node.prototype
      * @param {String} typesStr
@@ -142,22 +134,49 @@ Kinetic.Node.prototype = {
             var parts = event.split('.');
             var baseEvent = parts[0];
 
-            if(this.eventListeners[baseEvent] && parts.length > 1) {
-                var name = parts[1];
-
-                for(var i = 0; i < this.eventListeners[baseEvent].length; i++) {
-                    if(this.eventListeners[baseEvent][i].name === name) {
-                        this.eventListeners[baseEvent].splice(i, 1);
-                        if(this.eventListeners[baseEvent].length === 0) {
-                            delete this.eventListeners[baseEvent];
-                            break;
-                        }
-                        i--;
+            if(parts.length > 1) {
+                if(baseEvent) {
+                    if(this.eventListeners[baseEvent]) {
+                        this._off(baseEvent, parts[1]);
+                    }
+                }
+                else {
+                    for(var type in this.eventListeners) {
+                        this._off(type, parts[1]);
                     }
                 }
             }
             else {
                 delete this.eventListeners[baseEvent];
+            }
+        }
+    },
+    /**
+     * remove child from container
+     * @name remove
+     * @methodOf Kinetic.Container.prototype
+     * @param {Node} child
+     */
+    remove: function() {
+        var parent = this.getParent();
+        if(parent && this.index !== undefined && parent.children[this.index]._id == this._id) {
+            var stage = parent.getStage();
+            /*
+             * remove event listeners and references to the node
+             * from the ids and names hashes
+             */
+            if(stage) {
+                stage._removeId(this.getId());
+                stage._removeName(this.getName(), this._id);
+            }
+
+            Kinetic.Global._removeTempNode(this);
+            parent.children.splice(this.index, 1);
+            parent._setChildrenIndices();
+
+            // remove children
+            while(this.children && this.children.length > 0) {
+                this.children[0].remove();
             }
         }
     },
@@ -499,12 +518,9 @@ Kinetic.Node.prototype = {
      * @methodOf Kinetic.Node.prototype
      */
     getAbsoluteOpacity: function() {
-        var absOpacity = 1;
-        var node = this;
-        // traverse upwards
-        while(node.nodeType !== 'Stage') {
-            absOpacity *= node.attrs.opacity;
-            node = node.parent;
+        var absOpacity = this.getOpacity();
+        if (this.getParent()) {
+            absOpacity *= this.getParent().getAbsoluteOpacity();
         }
         return absOpacity;
     },
@@ -534,6 +550,33 @@ Kinetic.Node.prototype = {
         this.index = newContainer.children.length - 1;
         this.parent = newContainer;
         newContainer._setChildrenIndices();
+    },
+    /**
+     * convert Node into an object for serialization
+     * @name toObject
+     * @methodOf Kinetic.Node.prototype
+     */
+    toObject: function() {
+        var obj = {};
+        var type = Kinetic.Type;
+
+        obj.attrs = {};
+
+        // serialize only attributes that are not function, image, DOM, or objects with methods
+        for(var key in this.attrs) {
+            var val = this.attrs[key];
+            if(!type._isFunction(val) && !type._isElement(val) && !(type._isObject(val) && type._hasMethods(val))) {
+                obj.attrs[key] = val;
+            }
+        }
+
+        obj.nodeType = this.nodeType;
+        obj.shapeType = this.shapeType;
+
+        return obj;
+    },
+    toJSON: function() {
+        return JSON.stringify(this.toObject());
     },
     /**
      * get parent container
@@ -795,6 +838,18 @@ Kinetic.Node.prototype = {
     _get: function(selector) {
         return this.nodeType === selector ? [this] : [];
     },
+    _off: function(type, name) {
+        for(var i = 0; i < this.eventListeners[type].length; i++) {
+            if(this.eventListeners[type][i].name === name) {
+                this.eventListeners[type].splice(i, 1);
+                if(this.eventListeners[type].length === 0) {
+                    delete this.eventListeners[type];
+                    break;
+                }
+                i--;
+            }
+        }
+    },
     _clearTransform: function() {
         var trans = {
             x: this.attrs.x,
@@ -921,10 +976,10 @@ Kinetic.Node.prototype = {
         var el = this.eventListeners;
         var okayToRun = true;
 
-        if(eventType === 'mouseover' && compareShape && this._id === compareShape._id) {
+        if(eventType === 'mouseenter' && compareShape && this._id === compareShape._id) {
             okayToRun = false;
         }
-        else if(eventType === 'mouseout' && compareShape && this._id === compareShape._id) {
+        else if(eventType === 'mouseleave' && compareShape && this._id === compareShape._id) {
             okayToRun = false;
         }
 
@@ -999,6 +1054,52 @@ Kinetic.Node._addGetter = function(constructor, attr) {
     constructor.prototype[method] = function(arg) {
         return this.attrs[attr];
     };
+};
+/**
+ * create node with JSON string.  De-serializtion does not generate custom
+ *  shape drawing functions, images, or event handlers (this would make the
+ * 	serialized object huge).  If your app uses custom shapes, images, and
+ *  event handlers (it probably does), then you need to select the appropriate
+ *  shapes after loading the stage and set these properties via on(), setDrawFunc(),
+ *  and setImage()
+ * @name create
+ * @methodOf Kinetic.Node
+ * @param {String} JSON string
+ */
+Kinetic.Node.create = function(json, container) {
+    return this._createNode(JSON.parse(json), container);
+};
+Kinetic.Node._createNode = function(obj, container) {
+    var type;
+
+    // determine type
+    if(obj.nodeType === 'Shape') {
+        // add custom shape
+        if(obj.shapeType === undefined) {
+            type = 'Shape';
+        }
+        // add standard shape
+        else {
+            type = obj.shapeType;
+        }
+    }
+    else {
+        type = obj.nodeType;
+    }
+    
+    // if container was passed in, add it to attrs
+    if (container) {
+    	obj.attrs.container = container;
+    }
+    
+    var no = new Kinetic[type](obj.attrs);
+    if(obj.children) {
+        for(var n = 0; n < obj.children.length; n++) {
+            no.add(this._createNode(obj.children[n]));
+        }
+    }
+
+    return no;
 };
 // add getters setters
 Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'rotation', 'opacity', 'name', 'id', 'draggable', 'listening', 'visible', 'dragBoundFunc']);
