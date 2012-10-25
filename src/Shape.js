@@ -171,11 +171,19 @@ Kinetic.Shape.prototype = {
                     break;
                 case 'PATTERN':
                     var repeat = !fill.repeat ? 'repeat' : fill.repeat;
+                    var scaleSign = 1;
                     if(fill.scale) {
+                        scaleSign = (fill.scale.x > 0) ? 1 : -1;
                         context.scale(fill.scale.x, fill.scale.y);
                     }
                     if(fill.offset) {
                         context.translate(fill.offset.x, fill.offset.y);
+                    }
+                    if(fill.rotation) {
+                        context.rotate(fill.rotation*scaleSign);
+                    } else if (fill.rotationDeg) {
+                        fill.rotation = fill.rotationDeg * Math.PI / 180;
+                        context.rotate(fill.rotation*scaleSign);
                     }
 
                     context.fillStyle = context.createPattern(fill.image, repeat);
