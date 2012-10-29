@@ -50,6 +50,8 @@ Kinetic.Animation.prototype = {
 Kinetic.Animation.animations = [];
 Kinetic.Animation.animIdCounter = 0;
 Kinetic.Animation.animRunning = false;
+Kinetic.Animation.interval = 1000 / 60;
+Kinetic.Animation.lastTime = 0;
 Kinetic.Animation._addAnimation = function(anim) {
     this.animations.push(anim);
 };
@@ -98,7 +100,7 @@ Kinetic.Animation._animationLoop = function() {
     if(this.animations.length > 0) {
         this._runFrames();
         var that = this;
-        requestAnimFrame(function() {
+        Kinetic.Animation._requestAnimFrame(function() {
             that._animationLoop();
         });
     }
@@ -113,9 +115,21 @@ Kinetic.Animation._handleAnimation = function() {
         that._animationLoop();
     }
 };
-requestAnimFrame = (function(callback) {
-    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-    function(callback) {
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
+Kinetic.Animation._requestAnimFrame = function(fun) {
+	var interval = Kinetic.Animation.interval;
+	var time = new Date().getTime();
+	var diff = time - Kinetic.Animation.lastTime;
+	// variance will always be positive
+	var variance = diff - interval;
+
+	// if variance gets high, we need to slow down the animation
+	if (variance > 1) {
+		Kinetic.Animation.interval += 0.5;
+	}
+	// if variance is low, we can try to speed up the animation
+	else {
+		Kinetic.Animation.interval -= 1;
+	}
+	Kinetic.Animation.lastTime = time;
+	setTimeout(fun, interval);
+};

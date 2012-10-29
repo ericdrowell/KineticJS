@@ -142,7 +142,7 @@ Test.prototype.tests = {
 
         stage.add(layer);
     },
-    'ANIMATION - start and stop animation': function(containerId) {
+    '*ANIMATION - start animation': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -177,7 +177,7 @@ Test.prototype.tests = {
         anim.start();
 
         setTimeout(function() {
-            anim.stop();
+            //anim.stop();
         }, 3000);
     },
     'TRANSITION - ease-in, ease-out, ease-in-out hovers': function(containerId) {
