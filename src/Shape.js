@@ -55,6 +55,8 @@
  * @param {Number} [config.dragBounds.right]
  * @param {Number} [config.dragBounds.bottom]
  * @param {Number} [config.dragBounds.left]
+ * @param {String} [config.globalCompositeOperationBefore]
+ * @param {String} [config.globalCompositeOperationAfter]
  */
 Kinetic.Shape = function(config) {
     this._initShape(config);
@@ -447,6 +449,9 @@ Kinetic.Shape.prototype = {
         if(this.attrs.drawFunc && Kinetic.Node.prototype._shouldDraw.call(this, canvas)) {
             var stage = this.getStage();
             var context = canvas.getContext();
+			if(this.attrs.globalCompositeOperationBefore != null) {
+				context.globalCompositeOperation = this.attrs.globalCompositeOperationBefore;
+			}
             var family = [];
             var parent = this.parent;
 
@@ -520,14 +525,17 @@ Kinetic.Shape.prototype = {
             }
 
             context.restore();
+			if(this.attrs.globalCompositeOperationAfter != null) {
+				context.globalCompositeOperation = this.attrs.globalCompositeOperationAfter;
+			}
         }
     }
 };
 Kinetic.Global.extend(Kinetic.Shape, Kinetic.Node);
 
 // add getters and setters
-Kinetic.Node.addGettersSetters(Kinetic.Shape, ['stroke', 'lineJoin', 'strokeWidth', 'drawFunc', 'cornerRadius']);
-Kinetic.Node.addGetters(Kinetic.Shape, ['shadow', 'fill']);
+Kinetic.Node.addGettersSetters(Kinetic.Shape, ['stroke', 'lineJoin', 'strokeWidth', 'drawFunc', 'cornerRadius', 'globalCompositeOperationBefore', 'globalCompositeOperationAfter']);
+Kinetic.Node.addGetters(Kinetic.Shape, ['shadow', 'fill', 'globalCompositeOperationBefore', 'globalCompositeOperationAfter']);
 
 /**
  * set stroke color
@@ -570,6 +578,20 @@ Kinetic.Node.addGetters(Kinetic.Shape, ['shadow', 'fill']);
  * @name setLineCap
  * @methodOf Kinetic.Shape.prototype
  * @param {String} lineCap
+ */
+
+ /**
+ * set composite operation before
+ * @name setGlobalCompositeOperationBefore
+ * @methodOf Kinetic.Shape.prototype
+ * @param {String} globalCompositeOperation
+ */
+ 
+/**
+ * set composite operation after
+ * @name setGlobalCompositeOperationAfter
+ * @methodOf Kinetic.Shape.prototype
+ * @param {String} globalCompositeOperation
  */
 
 /**
@@ -617,5 +639,17 @@ Kinetic.Node.addGetters(Kinetic.Shape, ['shadow', 'fill']);
 /**
  * get line cap
  * @name getLineCap
+ * @methodOf Kinetic.Shape.prototype
+ */
+ 
+ /**
+ * get composite operation before
+ * @name getGlobalCompositeOperationBefore
+ * @methodOf Kinetic.Shape.prototype
+ */
+ 
+ /**
+ * get composite operation after
+ * @name getGlobalCompositeOperationAfter
  * @methodOf Kinetic.Shape.prototype
  */
