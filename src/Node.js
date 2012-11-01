@@ -21,6 +21,8 @@
  * @param {Number} [config.offset.y]
  * @param {Boolean} [config.draggable]
  * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
+ * @param {String} [config.globalCompositeOperationBefore] default is null
+ * @param {String} [config.globalCompositeOperationAfter] default is null
  */
 Kinetic.Node = function(config) {
     this._nodeInit(config);
@@ -44,7 +46,9 @@ Kinetic.Node.prototype = {
                 x: 0,
                 y: 0
             },
-            draggable: false
+            draggable: false,
+			globalCompositeOperationBefore: null,
+			globalCompositeOperationAfter: null
         };
 
         this.setDefaultAttrs(this.defaultNodeAttrs);
