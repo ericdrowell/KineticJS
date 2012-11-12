@@ -1376,14 +1376,14 @@ Test.prototype.tests = {
         layer.add(circle);
         stage.add(layer);
     },
-    'SHAPE - add circle segment using Circle': function(containerId) {
+    'SHAPE - add circle segment using Wedge': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
             height: 200
         });
         var layer = new Kinetic.Layer();
-        var circle = new Kinetic.Circle({
+        var wedge = new Kinetic.Wedge({
             x: stage.getWidth() / 2,
             y: stage.getHeight() / 2,
             radius: 70,
@@ -1392,7 +1392,7 @@ Test.prototype.tests = {
             stroke: 'black',
             strokeWidth: 4
         });
-        layer.add(circle);
+        layer.add(wedge);
         stage.add(layer);
     },
     'SHAPE - add ellipse': function(containerId) {
