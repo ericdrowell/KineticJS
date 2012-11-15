@@ -73,9 +73,9 @@ Kinetic.Image.prototype = {
      *  filter has been applied
      */
     applyFilter: function(config) {
-        var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
+        var canvas = new Kinetic.Canvas(this.attrs.width, this.attrs.height);
         var context = canvas.getContext();
-        context.drawImage(this.attrs.image, 0, 0);
+        context.drawImage(this.attrs.image, 0, 0, this.attrs.width, this.attrs.height);
         try {
             var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
             config.filter(imageData, config.config);
