@@ -40,6 +40,10 @@ Kinetic.Line.prototype = {
                 var lastY = this.attrs.points[n - 1].y;
                 this._dashedLine(context, lastX, lastY, x, y, this.attrs.dashArray);
             }
+            else if(this.attrs.cornerRadius && n+1 < this.attrs.points.length) {
+                // draw line with rounded corner
+                context.arcTo(x, y, this.attrs.points[n + 1].x, this.attrs.points[n + 1].y, this.attrs.cornerRadius);
+            }
             else {
                 // draw normal line
                 context.lineTo(x, y);
