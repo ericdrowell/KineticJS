@@ -516,8 +516,8 @@ Kinetic.Stage.prototype = {
      * @param {Event} evt
      */
     _setMousePosition: function(evt) {
-        var mouseX = evt.clientX - this._getContentPosition().left;
-        var mouseY = evt.clientY - this._getContentPosition().top;
+        var mouseX = evt.offsetX || (evt.clientX - this._getContentPosition().left);
+        var mouseY = evt.offsetY || (evt.clientY - this._getContentPosition().top);
         this.mousePos = {
             x: mouseX,
             y: mouseY
