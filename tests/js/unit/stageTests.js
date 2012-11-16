@@ -259,5 +259,31 @@ Test.Modules.STAGE = {
         test(stage.getStage() !== undefined, 'stage is undefined');
 
         //console.log(stage.getStage());
+    },
+    'test stage don\'t throw error if has no layers and try to get dataURL': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+
+        try {
+
+            stage.toDataURL({
+                callback: function(data){
+                    test(false, "'callback' called even when there was no layer to draw");
+                },
+                mimeType: 'image/jpeg',
+                quality: 0.95
+            });
+
+            test(true, "method 'toDataURL' didn't throw an error when no layers were present");
+
+        } catch(e) {
+
+            test(false, "method 'toDataURL' throwed an error when no layers were present");
+
+        }
+
     }
 };

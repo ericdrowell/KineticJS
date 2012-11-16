@@ -189,9 +189,18 @@ Kinetic.Stage.prototype = {
         var layers = this.children;
 
         function drawLayer(n) {
-            var layer = layers[n];
-            var layerUrl = layer.toDataURL();
-            var imageObj = new Image();
+            var layer;
+            var layerUrl;
+            var imageObj;
+
+            if(layers.length < 1) {
+                return;
+            }
+
+            layer = layers[n];
+            layerUrl = layer.toDataURL();
+            imageObj = new Image();
+
             imageObj.onload = function() {
                 context.drawImage(imageObj, 0, 0);
 
