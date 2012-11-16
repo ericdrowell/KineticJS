@@ -42,7 +42,52 @@ Kinetic.Line.prototype = {
             }
             else if(this.attrs.cornerRadius && n+1 < this.attrs.points.length) {
                 // draw line with rounded corner
-                context.arcTo(x, y, this.attrs.points[n + 1].x, this.attrs.points[n + 1].y, this.attrs.cornerRadius);
+                var radius = this.attrs.cornerRadius
+                var lastX = this.attrs.points[n - 1].x;
+                var lastY = this.attrs.points[n - 1].y;
+                var nextX = this.attrs.points[n + 1].x;
+                var nextY = this.attrs.points[n + 1].y;
+                var lastXD = x - lastX
+                var lastYD = y - lastY
+                var nextXD = nextX - x
+                var nextYD = nextY - y
+                    
+                var lastangle = Math.atan2(lastXD, lastYD);
+                var nextangle = Math.atan2(nextXD, nextYD);
+                if (lastangle > nextangle) {
+                  // Direction of the normal line bisecting the two line segments
+                  var normangle = (lastangle + nextangle - Math.PI)/2 // Any value between -1.5 π and 0.5 π // Angle 
+                  // Relative angle between normal line and either line segment
+                  var halfangle = Math.abs((lastangle - nextangle - Math.PI)/2) // Value is between 0 and π/2 (0 and 90°).
+                } else {
+                  // Direction of the normal line bisecting the two line segments
+                  var normangle = (lastangle + nextangle + Math.PI)/2 // Any value between -0.5 π and 1.5 π
+                  // Relative angle between normal line and either line segment
+                  var halfangle = Math.abs((nextangle - lastangle - Math.PI)/2) // Value is between 0 and π/2 (0 and 90°).
+                }
+                if (radius * Math.cos(halfangle) < 0.5) {
+                    // less than half a pixel of a corner to draw. Don't bother.
+                    // This also prevents tan(halfang) to reach infinity.
+                    context.lineTo(x, y);
+                    continue;
+                }
+                    
+                if (n == 1) {
+                    lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD);
+                } else {
+                    lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD)/2;
+                }
+                if (n+1 == this.attrs.points.length) {
+                    nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD);
+                } else {
+                    nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD)/2;
+                }
+                    
+                // no worries that tan(halfang) is infinite; that is caught above
+                // Reduce the radius if there is not enough space
+                radius = Math.min(radius, Math.min(lastlen, nextlen) * Math.tan(halfangle))
+                // Draw the line
+                context.arcTo(x, y, nextX, nextY, radius);
             }
             else {
                 // draw normal line
