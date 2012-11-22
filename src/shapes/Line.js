@@ -51,43 +51,76 @@ Kinetic.Line.prototype = {
                 var lastYD = y - lastY
                 var nextXD = nextX - x
                 var nextYD = nextY - y
-                    
+                
+                // Warning: the angle system for atan2() and arc() in the
+                // HTML5 canvas is different.
+                // For atan2(), south is 0°, counter clockwise, range -π to π
+                // For arc(), east is 0°, clockwise, range 0 to 2π
                 var lastangle = Math.atan2(lastXD, lastYD);
                 var nextangle = Math.atan2(nextXD, nextYD);
-                if (lastangle > nextangle) {
-                  // Direction of the normal line bisecting the two line segments
-                  var normangle = (lastangle + nextangle - Math.PI)/2 // Any value between -1.5 π and 0.5 π // Angle 
-                  // Relative angle between normal line and either line segment
-                  var halfangle = Math.abs((lastangle - nextangle - Math.PI)/2) // Value is between 0 and π/2 (0 and 90°).
+                var anglediff = nextangle - lastangle
+                if (anglediff < -Math.PI) {
+                    anglediff += 2*Math.PI
+                    var clockwise = false;
+                    // Direction of the normal line bisecting the two line segments
+                    var normangle = (lastangle + nextangle - Math.PI)/2 // Value is between -1.5 π and 0.5 π
+                    // Relative angle between normal line and either line segment
+                    var halfangle = (Math.PI - anglediff)/2 // Value is between 0 and π/2 (0 and 90°).
+                    // Direction in arc() coordinates, not in atan2() coordinates.
+                    var startangle = Math.PI - lastangle // lastangle + 90 degrees clockwise, other angle system.
+                    var endangle = Math.PI - nextangle // nextangle + 90 degrees clockwise, other angle system.
+                } else if (anglediff < 0) {
+                    var clockwise = true;
+                    // Direction of the normal line bisecting the two line segments
+                    var normangle = (lastangle + nextangle - Math.PI)/2 // Value is between -1.5 π and 0.5 π
+                    // Relative angle between normal line and either line segment
+                    var halfangle = (anglediff + Math.PI)/2 // Value is between 0 and π/2 (0 and 90°).
+                    var startangle = -lastangle // lastangle + 90 degrees counter clockwise, other angle system.
+                    var endangle = -nextangle // nextangle + 90 degrees counter clockwise, other angle system.
+                } else if (anglediff < Math.PI) {
+                    var clockwise = false;
+                    // Direction of the normal line bisecting the two line segments
+                    var normangle = (lastangle + nextangle + Math.PI)/2 // Value is between -0.5 π and 1.5 π
+                    // Relative angle between normal line and either line segment
+                    var halfangle = (Math.PI - anglediff)/2 // Value is between 0 and π/2 (0 and 90°).
+                    var startangle = Math.PI - lastangle // lastangle + 90 degrees clockwise, other angle system.
+                    var endangle = Math.PI - nextangle // nextangle + 90 degrees clockwise, other angle system.
                 } else {
-                  // Direction of the normal line bisecting the two line segments
-                  var normangle = (lastangle + nextangle + Math.PI)/2 // Any value between -0.5 π and 1.5 π
-                  // Relative angle between normal line and either line segment
-                  var halfangle = Math.abs((nextangle - lastangle - Math.PI)/2) // Value is between 0 and π/2 (0 and 90°).
+                    anglediff -= 2*Math.PI
+                    var clockwise = true;
+                    // Direction of the normal line bisecting the two line segments
+                    var normangle = (lastangle + nextangle + Math.PI)/2 // Value is between -0.5 π and 1.5 π
+                    // Relative angle between normal line and either line segment
+                    var halfangle = (anglediff + Math.PI)/2 // Value is between 0 and π/2 (0 and 90°).
+                    var startangle = -lastangle // lastangle + 90 degrees counter clockwise, other angle system.
+                    var endangle = -nextangle // nextangle + 90 degrees counter clockwise, other angle system.
                 }
                 if (radius * Math.cos(halfangle) < 0.5) {
                     // less than half a pixel of a corner to draw. Don't bother.
                     // This also prevents tan(halfang) to reach infinity.
                     context.lineTo(x, y);
-                    continue;
-                }
-                    
-                if (n == 1) {
-                    lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD);
+                    radius = 0
                 } else {
-                    lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD)/2;
+                    if (n == 1) {
+                        lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD);
+                    } else {
+                        lastlen = Math.sqrt(lastXD*lastXD + lastYD*lastYD)/2;
+                    }
+                    if (n+1 == this.attrs.points.length) {
+                        nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD);
+                    } else {
+                        nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD)/2;
+                    }
+                    // no worries that tan(halfang) is infinite; that is caught above
+                    // Reduce the radius if there is not enough space
+                    radius = Math.min(radius, Math.min(lastlen, nextlen) * Math.tan(halfangle))
+
+                    // distance from x,y to center of the arc
+                    var arcdist = radius/Math.sin(halfangle)
+                    var arcX = x + arcdist*Math.sin(normangle)
+                    var arcY = y + arcdist*Math.cos(normangle)
+                    context.arc(arcX, arcY, radius, startangle, endangle, !clockwise);
                 }
-                if (n+1 == this.attrs.points.length) {
-                    nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD);
-                } else {
-                    nextlen = Math.sqrt(nextXD*nextXD + nextYD*nextYD)/2;
-                }
-                    
-                // no worries that tan(halfang) is infinite; that is caught above
-                // Reduce the radius if there is not enough space
-                radius = Math.min(radius, Math.min(lastlen, nextlen) * Math.tan(halfangle))
-                // Draw the line
-                context.arcTo(x, y, nextX, nextY, radius);
             }
             else {
                 // draw normal line
