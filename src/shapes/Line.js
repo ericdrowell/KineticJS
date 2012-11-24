@@ -115,11 +115,19 @@ Kinetic.Line.prototype = {
                     // Reduce the radius if there is not enough space
                     radius = Math.min(radius, Math.min(lastlen, nextlen) * Math.tan(halfangle))
 
-                    // distance from x,y to center of the arc
-                    var arcdist = radius/Math.sin(halfangle)
-                    var arcX = x + arcdist*Math.sin(normangle)
-                    var arcY = y + arcdist*Math.cos(normangle)
-                    context.arc(arcX, arcY, radius, startangle, endangle, !clockwise);
+                    if (radius <= 0) {
+                        // special case: the line segments make a 180° turn
+                        var arcdist = Math.min(lastlen, nextlen)
+                        var arcX = x + arcdist*Math.sin(normangle)
+                        var arcY = y + arcdist*Math.cos(normangle)
+                        context.lineTo(arcX, arcY);
+                    } else {
+                        // distance from x,y to center of the arc
+                        var arcdist = radius/Math.sin(halfangle)
+                        var arcX = x + arcdist*Math.sin(normangle)
+                        var arcY = y + arcdist*Math.cos(normangle)
+                        context.arc(arcX, arcY, radius, startangle, endangle, !clockwise);
+                    }
                 }
             }
             else {
