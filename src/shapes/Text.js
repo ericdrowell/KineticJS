@@ -52,11 +52,10 @@
             var textArr = this.textArr;
 
             context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
-            context.textBaseline = 'middle';
+            context.textBaseline = 'top';
             context.textAlign = 'left';
             context.save();
-            context.translate(p, 0);
-            context.translate(0, p + this.getTextHeight() / 2);
+            context.translate(p, p);
 
             // draw text lines
             for(var n = 0; n < textArr.length; n++) {
