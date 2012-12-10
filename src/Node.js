@@ -41,6 +41,10 @@
                     x: 1,
                     y: 1
                 },
+				shear: {
+                    x: 0,
+                    y: 0
+                },
                 rotation: 0,
                 offset: {
                     x: 0,
@@ -668,17 +672,20 @@
          * @methodOf Kinetic.Node.prototype
          */
         getTransform: function() {
-            var m = new Kinetic.Transform(), attrs = this.attrs, x = attrs.x, y = attrs.y, rotation = attrs.rotation, scale = attrs.scale, scaleX = scale.x, scaleY = scale.y, offset = attrs.offset, offsetX = offset.x, offsetY = offset.y;
+            var m = new Kinetic.Transform(), attrs = this.attrs, x = attrs.x, y = attrs.y, rotation = attrs.rotation, scale = attrs.scale, scaleX = scale.x, scaleY = scale.y, shear = attrs.shear, shearX = shear.x, shearY = shear.y, offset = attrs.offset, offsetX = offset.x, offsetY = offset.y;
 
             if(x !== 0 || y !== 0) {
                 m.translate(x, y);
             }
-            if(rotation !== 0) {
-                m.rotate(rotation);
-            }
+			if(rotation !== 0) {
+				m.rotate(rotation);
+			}
+			if(shearX !== 0 || shearY !== 0) {
+				m.shear(shearX, shearY);
+			}
             if(scaleX !== 1 || scaleY !== 1) {
                 m.scale(scaleX, scaleY);
-            }
+            }			
             if(offsetX !== 0 || offsetY !== 0) {
                 m.translate(-1 * offsetX, -1 * offsetY);
             }
@@ -811,6 +818,25 @@
             this.setAttr('scale', pos);
 
         },
+		/**
+         * set shear.
+         * @name setShear
+         * @param {Number} x
+         * @param {Number} y
+         * @methodOf Kinetic.Node.prototype
+         */
+        setShear: function() {
+            var pos = Kinetic.Type._getXY([].slice.call(arguments));
+
+            if(pos.x === undefined) {
+                pos.x = this.getShear().x;
+            }
+            if(pos.y === undefined) {
+                pos.y = this.getShear().y;
+            }
+            this.setAttr('shear', pos);
+
+        },
         /**
          * set size
          * @name setSize
@@ -867,7 +893,7 @@
             }
         },
         _clearTransform: function() {
-            var attrs = this.attrs, scale = attrs.scale, offset = attrs.offset;
+            var attrs = this.attrs, scale = attrs.scale, shear = attrs.shear, offset = attrs.offset;
             var trans = {
                 x: attrs.x,
                 y: attrs.y,
@@ -875,6 +901,10 @@
                 scale: {
                     x: scale.x,
                     y: scale.y
+                },
+				shear: {
+                    x: shear.x,
+                    y: shear.y
                 },
                 offset: {
                     x: offset.x,
@@ -888,6 +918,10 @@
             this.attrs.scale = {
                 x: 1,
                 y: 1
+            };
+			this.attrs.shear = {
+                x: 0,
+                y: 0
             };
             this.attrs.offset = {
                 x: 0,
@@ -1045,7 +1079,7 @@
     };
     // add getters setters
     Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'rotation', 'opacity', 'name', 'id']);
-    Kinetic.Node.addGetters(Kinetic.Node, ['scale', 'offset']);
+    Kinetic.Node.addGetters(Kinetic.Node, ['scale', 'shear', 'offset']);
     Kinetic.Node.addSetters(Kinetic.Node, ['width', 'height', 'listening', 'visible']);
 
     // aliases
