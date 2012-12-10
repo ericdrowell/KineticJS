@@ -41,7 +41,7 @@
                     x: 1,
                     y: 1
                 },
-				shear: {
+                shear: {
                     x: 0,
                     y: 0
                 },
@@ -677,15 +677,15 @@
             if(x !== 0 || y !== 0) {
                 m.translate(x, y);
             }
-			if(rotation !== 0) {
-				m.rotate(rotation);
-			}
-			if(shearX !== 0 || shearY !== 0) {
-				m.shear(shearX, shearY);
-			}
+            if(rotation !== 0) {
+                m.rotate(rotation);
+            }
+            if(shearX !== 0 || shearY !== 0) {
+                m.shear(shearX, shearY);
+            }
             if(scaleX !== 1 || scaleY !== 1) {
                 m.scale(scaleX, scaleY);
-            }			
+            }            
             if(offsetX !== 0 || offsetY !== 0) {
                 m.translate(-1 * offsetX, -1 * offsetY);
             }
@@ -818,7 +818,7 @@
             this.setAttr('scale', pos);
 
         },
-		/**
+        /**
          * set shear.
          * @name setShear
          * @param {Number} x
@@ -902,7 +902,7 @@
                     x: scale.x,
                     y: scale.y
                 },
-				shear: {
+                shear: {
                     x: shear.x,
                     y: shear.y
                 },
@@ -919,7 +919,7 @@
                 x: 1,
                 y: 1
             };
-			this.attrs.shear = {
+            this.attrs.shear = {
                 x: 0,
                 y: 0
             };
@@ -1031,7 +1031,7 @@
     /**
      * create node with JSON string.  De-serializtion does not generate custom
      *  shape drawing functions, images, or event handlers (this would make the
-     * 	serialized object huge).  If your app uses custom shapes, images, and
+     *     serialized object huge).  If your app uses custom shapes, images, and
      *  event handlers (it probably does), then you need to select the appropriate
      *  shapes after loading the stage and set these properties via on(), setDrawFunc(),
      *  and setImage() methods
