@@ -8,6 +8,7 @@
     Kinetic.Canvas = function(width, height) {
         this.element = document.createElement('canvas');
         this.context = this.element.getContext('2d');
+        this.element.style = this.element.style || {};
 
         // set dimensions
         this.element.width = width || 0;
