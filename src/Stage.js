@@ -530,7 +530,7 @@
          * @param {Event} evt
          */
         _setTouchPosition: function(evt) {
-            if(evt.touches !== undefined && evt.touches.length === 1) {
+            if(evt.touches !== undefined && (evt.touches.length === 1 || this.touchPos === undefined)) {
                 // one finger
                 var touch = evt.touches[0];
                 // Get the information for finger #1
