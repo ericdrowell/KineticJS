@@ -971,7 +971,7 @@
             }
         },
         _executeHandlers: function(eventType, evt) {
-            var events = this.eventListeners[eventType];
+            var events = this.eventListeners[eventType].slice(0);
             var len = events.length;
             for(var i = 0; i < len; i++) {
                 events[i].handler.apply(this, [evt]);
