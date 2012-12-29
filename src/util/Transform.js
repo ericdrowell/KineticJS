@@ -45,6 +45,21 @@
             this.m[3] *= sy;
         },
         /**
+         * Apply shear
+         * @param {Number} sx
+         * @param {Number} sy
+         */
+        shear: function(sx, sy) {
+            var m11 = this.m[0] + this.m[2] * sy;
+            var m12 = this.m[1] + this.m[3] * sy;
+            var m21 = this.m[2] + this.m[0] * sx;
+            var m22 = this.m[3] + this.m[1] * sx;
+            this.m[0] = m11;
+            this.m[1] = m12;
+            this.m[2] = m21;
+            this.m[3] = m22;
+        },
+        /**
          * Apply rotation
          * @param {Number} rad  Angle in radians
          */
