@@ -3,9 +3,12 @@
      * Group constructor.  Groups are used to contain shapes or other groups.
      * @constructor
      * @augments Kinetic.Container
-     * @param {Object} config
+     * 
+     * 
      * @param {Number} [config.x]
      * @param {Number} [config.y]
+     * @param {Number} [config.width]
+     * @param {Number} [config.height]
      * @param {Boolean} [config.visible]
      * @param {Boolean} [config.listening] whether or not the node is listening for events
      * @param {String} [config.id] unique id
@@ -16,11 +19,11 @@
      * @param {Number} [config.scale.y]
      * @param {Number} [config.rotation] rotation in radians
      * @param {Number} [config.rotationDeg] rotation in degrees
-     * @param {Object} [config.offset] offsets default position point and rotation point
+     * @param {Object} [config.offset] offset from center point and rotation point
      * @param {Number} [config.offset.x]
      * @param {Number} [config.offset.y]
      * @param {Boolean} [config.draggable]
-     * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
+     * @param {Function} [config.dragBoundFunc]
      */
     Kinetic.Group = function(config) {
         this._initGroup(config);

@@ -148,7 +148,7 @@
         /**
          * remove child from container
          * @name remove
-         * @methodOf Kinetic.Container.prototype
+         * @methodOf Kinetic.Node.prototype
          */
         remove: function() {
             var parent = this.getParent();
@@ -428,22 +428,22 @@
 
             this.setPosition(x, y);
         },
-        /**
-         * get rotation in degrees
-         * @name getRotationDeg
-         * @methodOf Kinetic.Node.prototype
-         */
-        getRotationDeg: function() {
-            return Kinetic.Type._radToDeg(this.getRotation());
-        },
-        /**
-         * set rotation in degrees
-         * @name setRotationDeg
-         * @methodOf Kinetic.Node.prototype
-         * @param {Number} deg
-         */
-        setRotationDeg: function(deg) {
-            this.setRotation(Kinetic.Type._degToRad(deg));
+        _eachAncestorReverse: function(func, includeSelf) {
+            var family = [], parent = this.getParent();
+
+            // build family by traversing ancestors
+            if(includeSelf) {
+                family.unshift(this);
+            }
+            while(parent) {
+                family.unshift(parent);
+                parent = parent.parent;
+            }
+
+            var len = family.length;
+            for(var n = 0; n < len; n++) {
+                func(family[n]);
+            }
         },
         /**
          * rotate node by an amount in radians relative to its current rotation
@@ -650,22 +650,10 @@
             // absolute transform
             var am = new Kinetic.Transform();
 
-            var family = [];
-            var parent = this.parent;
-
-            family.unshift(this);
-            while(parent) {
-                family.unshift(parent);
-                parent = parent.parent;
-            }
-
-            var len = family.length;
-            for(var n = 0; n < len; n++) {
-                var node = family[n];
+            this._eachAncestorReverse(function(node) {
                 var m = node.getTransform();
                 am.multiply(m);
-            }
-
+            }, true);
             return am;
         },
         /**
@@ -735,10 +723,13 @@
          * @name toDataURL
          * @methodOf Kinetic.Node.prototype
          * @param {Object} config
-         * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+         * @param {Function} config.callback function executed when the composite has completed
+         * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
          *  "image/png" is the default
-         * @param {Number} [config.width] data url image width
-         * @param {Number} [config.height] data url image height
+         * @param {Number} [config.x] x position of canvas section
+         * @param {Number} [config.y] y position of canvas section
+         * @param {Number} [config.width] width of canvas section
+         * @param {Number} [config.height] height of canvas section
          * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
          *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
          *  is very high quality
@@ -757,6 +748,8 @@
             }
             context = canvas.getContext();
             context.save();
+            canvas._counterPixelRatio();
+
             if(x || y) {
                 context.translate(-1 * x, -1 * y);
             }
@@ -772,11 +765,13 @@
          * @name toImage
          * @methodOf Kinetic.Node.prototype
          * @param {Object} config
-         * @param {Function} config.callback function that is passed the image object
-         * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+         * @param {Function} config.callback function executed when the composite has completed
+         * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
          *  "image/png" is the default
-         * @param {Number} [config.width] data url image width
-         * @param {Number} [config.height] data url image height
+         * @param {Number} [config.x] x position of canvas section
+         * @param {Number} [config.y] y position of canvas section
+         * @param {Number} [config.width] width of canvas section
+         * @param {Number} [config.height] height of canvas section
          * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
          *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
          *  is very high quality
@@ -785,42 +780,6 @@
             Kinetic.Type._getImage(this.toDataURL(config), function(img) {
                 config.callback(img);
             });
-        },
-        /**
-         * set offset.  A node's offset defines the position and rotation point
-         * @name setOffset
-         * @methodOf Kinetic.Node.prototype
-         * @param {Number} x
-         * @param {Number} y
-         */
-        setOffset: function() {
-            var pos = Kinetic.Type._getXY([].slice.call(arguments));
-            if(pos.x === undefined) {
-                pos.x = this.getOffset().x;
-            }
-            if(pos.y === undefined) {
-                pos.y = this.getOffset().y;
-            }
-            this.setAttr('offset', pos);
-        },
-        /**
-         * set scale.
-         * @name setScale
-         * @param {Number} x
-         * @param {Number} y
-         * @methodOf Kinetic.Node.prototype
-         */
-        setScale: function() {
-            var pos = Kinetic.Type._getXY([].slice.call(arguments));
-
-            if(pos.x === undefined) {
-                pos.x = this.getScale().x;
-            }
-            if(pos.y === undefined) {
-                pos.y = this.getScale().y;
-            }
-            this.setAttr('scale', pos);
-
         },
         /**
          * set size
@@ -980,6 +939,20 @@
             this._addSetter(constructor, attr);
         }
     };
+    Kinetic.Node.addPointSetters = function(constructor, arr) {
+        var len = arr.length;
+        for(var n = 0; n < len; n++) {
+            var attr = arr[n];
+            this._addPointSetter(constructor, attr);
+        }
+    };
+    Kinetic.Node.addRotationSetters = function(constructor, arr) {
+        var len = arr.length;
+        for(var n = 0; n < len; n++) {
+            var attr = arr[n];
+            this._addRotationSetter(constructor, attr);
+        }
+    };
     Kinetic.Node.addGetters = function(constructor, arr) {
         var len = arr.length;
         for(var n = 0; n < len; n++) {
@@ -987,9 +960,24 @@
             this._addGetter(constructor, attr);
         }
     };
+    Kinetic.Node.addRotationGetters = function(constructor, arr) {
+        var len = arr.length;
+        for(var n = 0; n < len; n++) {
+            var attr = arr[n];
+            this._addRotationGetter(constructor, attr);
+        }
+    };
     Kinetic.Node.addGettersSetters = function(constructor, arr) {
         this.addSetters(constructor, arr);
         this.addGetters(constructor, arr);
+    };
+    Kinetic.Node.addPointGettersSetters = function(constructor, arr) {
+        this.addPointSetters(constructor, arr);
+        this.addGetters(constructor, arr);
+    };
+    Kinetic.Node.addRotationGettersSetters = function(constructor, arr) {
+        this.addRotationSetters(constructor, arr);
+        this.addRotationGetters(constructor, arr);
     };
     Kinetic.Node._addSetter = function(constructor, attr) {
         var that = this;
@@ -998,11 +986,49 @@
             this.setAttr(attr, val);
         };
     };
+    Kinetic.Node._addPointSetter = function(constructor, attr) {
+        var that = this;
+        var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
+        constructor.prototype[method] = function() {
+            var pos = Kinetic.Type._getXY([].slice.call(arguments));
+            if(pos && pos.x === undefined) {
+                pos.x = this.attrs[attr].x;
+            }
+            if(pos && pos.y === undefined) {
+                pos.y = this.attrs[attr].y;
+            }
+            this.setAttr(attr, pos);
+        };
+    };
+    Kinetic.Node._addRotationSetter = function(constructor, attr) {
+        var that = this;
+        var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
+        // radians
+        constructor.prototype[method] = function(val) {
+            this.setAttr(attr, val);
+        };
+        // degrees
+        constructor.prototype[method + 'Deg'] = function(deg) {
+            this.setAttr(attr, Kinetic.Type._degToRad(deg));
+        };
+    };
     Kinetic.Node._addGetter = function(constructor, attr) {
         var that = this;
         var method = 'get' + attr.charAt(0).toUpperCase() + attr.slice(1);
         constructor.prototype[method] = function(arg) {
             return this.attrs[attr];
+        };
+    };
+    Kinetic.Node._addRotationGetter = function(constructor, attr) {
+        var that = this;
+        var method = 'get' + attr.charAt(0).toUpperCase() + attr.slice(1);
+        // radians
+        constructor.prototype[method] = function() {
+            return this.attrs[attr];
+        };
+        // degrees
+        constructor.prototype[method + 'Deg'] = function() {
+            return Kinetic.Type._radToDeg(this.attrs[attr])
         };
     };
     /**
@@ -1055,37 +1081,7 @@
         return no;
     };
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'rotation', 'opacity', 'name', 'id']);
-    Kinetic.Node.addGetters(Kinetic.Node, ['scale', 'offset']);
-    Kinetic.Node.addSetters(Kinetic.Node, ['width', 'height', 'listening', 'visible']);
-
-    // aliases
-    /**
-     * Alias of getListening()
-     * @name isListening
-     * @methodOf Kinetic.Node.prototype
-     */
-    Kinetic.Node.prototype.isListening = Kinetic.Node.prototype.getListening;
-    /**
-     * Alias of getVisible()
-     * @name isVisible
-     * @methodOf Kinetic.Node.prototype
-     */
-    Kinetic.Node.prototype.isVisible = Kinetic.Node.prototype.getVisible;
-
-    // collection mappings
-    var collectionMappings = ['on', 'off'];
-    for(var n = 0; n < 2; n++) {
-        // induce scope
-        (function(i) {
-            var method = collectionMappings[i];
-            Kinetic.Collection.prototype[method] = function() {
-                var args = [].slice.call(arguments);
-                args.unshift(method);
-                this.apply.apply(this, args);
-            };
-        })(n);
-    }
+    Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'opacity', 'name', 'id']);
 
     /**
      * set x position
@@ -1099,13 +1095,6 @@
      * @name setY
      * @methodOf Kinetic.Node.prototype
      * @param {Number} y
-     */
-
-    /**
-     * set rotation in radians
-     * @name setRotation
-     * @methodOf Kinetic.Node.prototype
-     * @param {Number} theta
      */
 
     /**
@@ -1130,6 +1119,96 @@
      * @methodOf Kinetic.Node.prototype
      * @param {String} id
      */
+
+    /**
+     * get x position
+     * @name getX
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get y position
+     * @name getY
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get opacity.
+     * @name getOpacity
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get name
+     * @name getName
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get id
+     * @name getId
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    Kinetic.Node.addRotationGettersSetters(Kinetic.Node, ['rotation']);
+
+    /**
+     * set rotation in radians
+     * @name setRotation
+     * @methodOf Kinetic.Node.prototype
+     * @param {Number} theta
+     */
+
+    /**
+     * set rotation in degrees
+     * @name setRotationDeg
+     * @methodOf Kinetic.Node.prototype
+     * @param {Number} deg
+     */
+
+    /**
+     * get rotation in degrees
+     * @name getRotationDeg
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get rotation in radians
+     * @name getRotation
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    Kinetic.Node.addPointGettersSetters(Kinetic.Node, ['scale', 'offset']);
+
+    /**
+     * set scale
+     * @name setScale
+     * @param {Number} x
+     * @param {Number} y
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * set offset.  A node's offset defines the position and rotation point
+     * @name setOffset
+     * @methodOf Kinetic.Node.prototype
+     * @param {Number} x
+     * @param {Number} y
+     */
+
+    /**
+     * get scale
+     * @name getScale
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get offset
+     * @name getOffset
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    Kinetic.Node.addSetters(Kinetic.Node, ['width', 'height', 'listening', 'visible']);
 
     /**
      * set width
@@ -1159,51 +1238,31 @@
      * @param {Boolean} visible
      */
 
+    // aliases
     /**
-     * get x position
-     * @name getX
+     * Alias of getListening()
+     * @name isListening
      * @methodOf Kinetic.Node.prototype
      */
+    Kinetic.Node.prototype.isListening = Kinetic.Node.prototype.getListening;
+    /**
+     * Alias of getVisible()
+     * @name isVisible
+     * @methodOf Kinetic.Node.prototype
+     */
+    Kinetic.Node.prototype.isVisible = Kinetic.Node.prototype.getVisible;
 
-    /**
-     * get y position
-     * @name getY
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get rotation in radians
-     * @name getRotation
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get opacity.
-     * @name getOpacity
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get name
-     * @name getName
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get id
-     * @name getId
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get scale
-     * @name getScale
-     * @methodOf Kinetic.Node.prototype
-     */
-
-    /**
-     * get offset
-     * @name getOffset
-     * @methodOf Kinetic.Node.prototype
-     */
+    // collection mappings
+    var collectionMappings = ['on', 'off'];
+    for(var n = 0; n < 2; n++) {
+        // induce scope
+        (function(i) {
+            var method = collectionMappings[i];
+            Kinetic.Collection.prototype[method] = function() {
+                var args = [].slice.call(arguments);
+                args.unshift(method);
+                this.apply.apply(this, args);
+            };
+        })(n);
+    }
 })();

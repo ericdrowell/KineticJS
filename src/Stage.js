@@ -5,10 +5,12 @@
      * @augments Kinetic.Container
      * @param {Object} config
      * @param {String|DomElement} config.container Container id or DOM element
-     * @param {Number} config.width
-     * @param {Number} config.height
+     * 
+     * 
      * @param {Number} [config.x]
      * @param {Number} [config.y]
+     * @param {Number} [config.width]
+     * @param {Number} [config.height]
      * @param {Boolean} [config.visible]
      * @param {Boolean} [config.listening] whether or not the node is listening for events
      * @param {String} [config.id] unique id
@@ -19,11 +21,11 @@
      * @param {Number} [config.scale.y]
      * @param {Number} [config.rotation] rotation in radians
      * @param {Number} [config.rotationDeg] rotation in degrees
-     * @param {Object} [config.offset] offsets default position point and rotation point
+     * @param {Object} [config.offset] offset from center point and rotation point
      * @param {Number} [config.offset.x]
      * @param {Number} [config.offset.y]
      * @param {Boolean} [config.draggable]
-     * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
+     * @param {Function} [config.dragBoundFunc]
      */
     Kinetic.Stage = function(config) {
         this._initStage(config);
@@ -43,13 +45,16 @@
             this._id = Kinetic.Global.idCounter++;
             this._buildDOM();
             this._bindContentEvents();
-
-            var go = Kinetic.Global;
-            go.stages.push(this);
+            Kinetic.Global.stages.push(this);
             this._addId(this);
             this._addName(this);
-
         },
+        /**
+         * set container dom element which contains the stage wrapper div element
+         * @name setContainer
+         * @methodOf Kinetic.Stage.prototype
+         * @param {DomElement} container can pass in a dom element or id string
+         */
         setContainer: function(container) {
             /*
              * if container is a string, assume it's an id for
@@ -61,13 +66,13 @@
             this.setAttr('container', container);
         },
         /**
-         * draw layer scenes
+         * draw layer scene graphs
          * @name draw
          * @methodOf Kinetic.Stage.prototype
          */
 
         /**
-         * draw layer hits
+         * draw layer hit graphs
          * @name drawHit
          * @methodOf Kinetic.Stage.prototype
          */
@@ -120,27 +125,24 @@
          * get mouse position for desktop apps
          * @name getMousePosition
          * @methodOf Kinetic.Stage.prototype
-         * @param {Event} evt
          */
-        getMousePosition: function(evt) {
+        getMousePosition: function() {
             return this.mousePos;
         },
         /**
          * get touch position for mobile apps
          * @name getTouchPosition
          * @methodOf Kinetic.Stage.prototype
-         * @param {Event} evt
          */
-        getTouchPosition: function(evt) {
+        getTouchPosition: function() {
             return this.touchPos;
         },
         /**
-         * get user position (mouse position or touch position)
+         * get user position which can be a touc position or mouse position
          * @name getUserPosition
          * @methodOf Kinetic.Stage.prototype
-         * @param {Event} evt
          */
-        getUserPosition: function(evt) {
+        getUserPosition: function() {
             return this.getTouchPosition() || this.getMousePosition();
         },
         /**
@@ -152,7 +154,7 @@
             return this;
         },
         /**
-         * get stage DOM node, which is a div element
+         * get stage DOM node which is a div element
          *  with the class name "kineticjs-content"
          * @name getDOM
          * @methodOf Kinetic.Stage.prototype
@@ -161,22 +163,17 @@
             return this.content;
         },
         /**
-         * Creates a composite data URL and requires a callback because the stage
-         *  toDataURL method is asynchronous. If MIME type is not
-         *  specified, then "image/png" will result. For "image/jpeg", specify a quality
-         *  level as quality (range 0.0 - 1.0).  Note that this method works
-         *  differently from toDataURL() for other nodes because it generates an absolute dataURL
-         *  based on what's draw onto the canvases for each layer, rather than drawing
-         *  the current state of each node
+         * Creates a composite data URL and requires a callback because the composite is generated asynchronously.
          * @name toDataURL
          * @methodOf Kinetic.Stage.prototype
          * @param {Object} config
-         * @param {Function} config.callback since the stage toDataURL() method is asynchronous,
-         *  the data url string will be passed into the callback
-         * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+         * @param {Function} config.callback function executed when the composite has completed
+         * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
          *  "image/png" is the default
-         * @param {Number} [config.width] data url image width
-         * @param {Number} [config.height] data url image height
+         * @param {Number} [config.x] x position of canvas section
+         * @param {Number} [config.y] y position of canvas section
+         * @param {Number} [config.width] width of canvas section
+         * @param {Number} [config.height] height of canvas section
          * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
          *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
          *  is very high quality
@@ -208,17 +205,17 @@
             drawLayer(0);
         },
         /**
-         * converts stage into an image.  Since the stage toImage() method
-         *  is asynchronous, a callback function is required
+         * converts stage into an image. 
          * @name toImage
          * @methodOf Kinetic.Stage.prototype
          * @param {Object} config
-         * @param {Function} callback since the toImage() method is asynchonrous, the
-         *  resulting image object is passed into the callback function
-         * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
+         * @param {Function} config.callback function executed when the composite has completed
+         * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
          *  "image/png" is the default
-         * @param {Number} [config.width] data url image width
-         * @param {Number} [config.height] data url image height
+         * @param {Number} [config.x] x position of canvas section
+         * @param {Number} [config.y] y position of canvas section
+         * @param {Number} [config.width] width of canvas section
+         * @param {Number} [config.height] height of canvas section
          * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
          *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
          *  is very high quality
@@ -300,7 +297,7 @@
         },
         /**
          * add layer to stage
-         * @param {Layer} layer
+         * @param {Kinetic.Layer} layer
          */
         add: function(layer) {
             Kinetic.Container.prototype.add.call(this, layer);
@@ -352,11 +349,6 @@
                 this.targetShape = null;
             }
             this.mousePos = undefined;
-
-            // end drag and drop
-            if(dd) {
-                dd._endDrag(evt);
-            }
         },
         _mousemove: function(evt) {
             this._setUserPosition(evt);
@@ -392,7 +384,7 @@
 
             // start drag and drop
             if(dd) {
-                dd._startDrag(evt);
+                dd._drag(evt);
             }
         },
         _mousedown: function(evt) {
@@ -406,7 +398,7 @@
 
             //init stage drag and drop
             if(Kinetic.DD && this.attrs.draggable) {
-                this._initDrag();
+                this._startDrag();
             }
         },
         _mouseup: function(evt) {
@@ -459,7 +451,7 @@
              * init stage drag and drop
              */
             if(Kinetic.DD && this.attrs.draggable) {
-                this._initDrag();
+                this._startDrag();
             }
         },
         _touchend: function(evt) {
@@ -510,7 +502,7 @@
 
             // start drag and drop
             if(dd) {
-                dd._startDrag(evt);
+                dd._drag(evt);
             }
         },
         /**
@@ -565,7 +557,7 @@
             this.attrs.container.appendChild(this.content);
 
             this.bufferCanvas = new Kinetic.SceneCanvas();
-            this.hitCanvas = new Kinetic.HitCanvas(0, 0);
+            this.hitCanvas = new Kinetic.HitCanvas();
 
             this._resizeDOM();
         },

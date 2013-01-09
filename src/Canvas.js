@@ -28,7 +28,7 @@
             context.clearRect(0, 0, el.width, el.height);
         },
         /**
-         * get element
+         * get canvas element
          * @name getElement
          * @methodOf Kinetic.Canvas.prototype
          */
@@ -36,7 +36,7 @@
             return this.element;
         },
         /**
-         * get context
+         * get canvas context
          * @name getContext
          * @methodOf Kinetic.Canvas.prototype
          */
@@ -47,6 +47,7 @@
          * set width
          * @name setWidth
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Number} width
          */
         setWidth: function(width) {
             this.width = width;
@@ -58,6 +59,7 @@
          * set height
          * @name setHeight
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Number} height
          */
         setHeight: function(height) {
             this.height = height;
@@ -85,13 +87,19 @@
          * set size
          * @name setSize
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Number} width
+         * @param {Number} height
          */
         setSize: function(width, height) {
             this.setWidth(width);
             this.setHeight(height);
         },
         /**
-         * toDataURL
+         * to data url
+         * @name toDataURL
+         * @methodOf Kinetic.Canvas.prototype
+         * @param {String} mimeType
+         * @param {Number} quality between 0 and 1 for jpg mime types
          */
         toDataURL: function(mimeType, quality) {
             try {
@@ -110,49 +118,49 @@
             }
         },
         /**
-         * fill current path
+         * fill shape
          * @name fill
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Kinetic.Shape} shape
          */
         fill: function(shape) {
             this._fill(shape);
         },
         /**
-         * stroke current path
+         * stroke shape
          * @name stroke
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Kinetic.Shape} shape
          */
         stroke: function(shape) {
             this._stroke(shape);
         },
         /**
-         * fill and stroke current path.&nbsp; Aside from being a convenience method
-         *  which fills and strokes the current path with a single method, its main purpose is
-         *  to ensure that the shadow object is not applied to both the fill and stroke.&nbsp; A shadow
+         * fill, stroke, and apply shadows
          *  will only be applied to either the fill or stroke.&nbsp; Fill
          *  is given priority over stroke.
          * @name fillStroke
-         * @param {CanvasContext} context
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Kinetic.Shape} shape
          */
         fillStroke: function(shape) {
             this._fill(shape);
-            this._stroke(shape, shape.getShadow() && shape.getFill());
+            this._stroke(shape, shape.hasShadow() && shape.getFill());
         },
         /**
          * apply shadow
          * @name applyShadow
-         * @param {CanvasContext} context
-         * @param {Function} func draw function
          * @methodOf Kinetic.Canvas.prototype
+         * @param {Kinetic.Shape} shape
+         * @param {Function} drawFunc
          */
-        applyShadow: function(shape, func) {
+        applyShadow: function(shape, drawFunc) {
             var context = this.context;
             context.save();
             this._applyShadow(shape);
-            func();
+            drawFunc();
             context.restore();
-            func();
+            drawFunc();
         },
         _applyLineCap: function(shape) {
             var lineCap = shape.getLineCap();
@@ -177,6 +185,20 @@
             if(pixelRatio !== 1) {
                 this.getContext().scale(pixelRatio, pixelRatio);
             }
+        },
+        _counterPixelRatio: function() {
+            var pixelRatio = Kinetic.Canvas.pixelRatio;
+            if(pixelRatio !== 1) {
+                pixelRatio = 1 / pixelRatio;
+                this.getContext().scale(pixelRatio, pixelRatio);
+            }
+        },
+        _applyAncestorTransforms: function(node) {
+            var context = this.context;
+            node._eachAncestorReverse(function(no) {
+                var t = no.getTransform(), m = t.getMatrix();
+                context.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            }, true);
         }
     };
 
@@ -185,80 +207,79 @@
     };
 
     Kinetic.SceneCanvas.prototype = {
+        _fillColor: function(shape) {
+            var context = this.context, fill = shape.getFill();
+            context.fillStyle = fill;
+            context.fill(context);
+        },
+        _fillPattern: function(shape) {
+            var context = this.context, fillPatternImage = shape.getFillPatternImage(), fillPatternX = shape.getFillPatternX(), fillPatternY = shape.getFillPatternY(), fillPatternScale = shape.getFillPatternScale(), fillPatternRotation = shape.getFillPatternRotation(), fillPatternOffset = shape.getFillPatternOffset(), fillPatternRepeat = shape.getFillPatternRepeat();
+
+            if(fillPatternX || fillPatternY) {
+                context.translate(fillPatternX || 0, fillPatternY || 0);
+            }
+            if(fillPatternRotation) {
+                context.rotate(fillPatternRotation);
+            }
+            if(fillPatternScale) {
+                context.scale(fillPatternScale.x, fillPatternScale.y);
+            }
+            if(fillPatternOffset) {
+                context.translate(-1 * fillPatternOffset.x, -1 * fillPatternOffset.y);
+            }
+
+            context.fillStyle = context.createPattern(fillPatternImage, fillPatternRepeat || 'repeat');
+            context.fill(context);
+        },
+        _fillLinearGradient: function(shape) {
+            var context = this.context, start = shape.getFillLinearGradientStartPoint(), end = shape.getFillLinearGradientEndPoint(), colorStops = shape.getFillLinearGradientColorStops(), grd = context.createLinearGradient(start.x, start.y, end.x, end.y);
+
+            // build color stops
+            for(var n = 0; n < colorStops.length; n += 2) {
+                grd.addColorStop(colorStops[n], colorStops[n + 1]);
+            }
+            context.fillStyle = grd;
+            context.fill(context);
+        },
+        _fillRadialGradient: function(shape) {
+            var context = this.context, start = shape.getFillRadialGradientStartPoint(), end = shape.getFillRadialGradientEndPoint(), startRadius = shape.getFillRadialGradientStartRadius(), endRadius = shape.getFillRadialGradientEndRadius(), colorStops = shape.getFillRadialGradientColorStops(), grd = context.createRadialGradient(start.x, start.y, startRadius, end.x, end.y, endRadius);
+
+            // build color stops
+            for(var n = 0; n < colorStops.length; n += 2) {
+                grd.addColorStop(colorStops[n], colorStops[n + 1]);
+            }
+            context.fillStyle = grd;
+            context.fill(context);
+        },
         _fill: function(shape, skipShadow) {
-            var context = this.context, fill = shape.getFill(), fillType = shape._getFillType(fill), shadow = shape.getShadow();
+            var context = this.context, fill = shape.getFill(), fillPatternImage = shape.getFillPatternImage(), fillLinearGradientStartPoint = shape.getFillLinearGradientStartPoint(), fillRadialGradientStartPoint = shape.getFillRadialGradientStartPoint();
+
+            context.save();
+
+            if(!skipShadow && shape.hasShadow()) {
+                this._applyShadow(shape);
+            }
+
             if(fill) {
-                context.save();
+                this._fillColor(shape);
+            }
+            else if(fillPatternImage) {
+                this._fillPattern(shape);
+            }
+            else if(fillLinearGradientStartPoint) {
+                this._fillLinearGradient(shape);
+            }
+            else if(fillRadialGradientStartPoint) {
+                this._fillRadialGradient(shape);
+            }
+            context.restore();
 
-                if(!skipShadow && shadow) {
-                    this._applyShadow(shape);
-                }
-
-                // color fill
-                switch(fillType) {
-                    case 'COLOR':
-                        context.fillStyle = fill;
-                        context.fill(context);
-                        break;
-                    case 'PATTERN':
-                        if(fill.x || fill.y) {
-                            context.translate(fill.x || 0, fill.y || 0);
-                        }
-                        if(fill.rotation) {
-                            context.rotate(fill.rotation);
-                        }
-                        if(fill.scale) {
-                            context.scale(fill.scale.x, fill.scale.y);
-                        }
-                        if(fill.offset) {
-                            context.translate(-1 * fill.offset.x, -1 * fill.offset.y);
-                        }
-
-                        context.fillStyle = context.createPattern(fill.image, fill.repeat || 'repeat');
-                        context.fill(context);
-                        break;
-                    case 'LINEAR_GRADIENT':
-                        var s = fill.start;
-                        var e = fill.end;
-                        var grd = context.createLinearGradient(s.x, s.y, e.x, e.y);
-                        var colorStops = fill.colorStops;
-
-                        // build color stops
-                        for(var n = 0; n < colorStops.length; n += 2) {
-                            grd.addColorStop(colorStops[n], colorStops[n + 1]);
-                        }
-                        context.fillStyle = grd;
-                        context.fill(context);
-
-                        break;
-                    case 'RADIAL_GRADIENT':
-                        var s = fill.start;
-                        var e = fill.end;
-                        var grd = context.createRadialGradient(s.x, s.y, s.radius, e.x, e.y, e.radius);
-                        var colorStops = fill.colorStops;
-
-                        // build color stops
-                        for(var n = 0; n < colorStops.length; n += 2) {
-                            grd.addColorStop(colorStops[n], colorStops[n + 1]);
-                        }
-                        context.fillStyle = grd;
-                        context.fill(context);
-                        break;
-                    default:
-                        context.fillStyle = 'black';
-                        context.fill(context);
-                        break;
-                }
-
-                context.restore();
-
-                if(!skipShadow && shadow && shadow.opacity) {
-                    this._fill(shape, true);
-                }
+            if(!skipShadow && shape.hasShadow()) {
+                this._fill(shape, true);
             }
         },
         _stroke: function(shape, skipShadow) {
-            var context = this.context, stroke = shape.getStroke(), strokeWidth = shape.getStrokeWidth(), shadow = shape.getShadow(), dashArray = shape.getDashArray();
+            var context = this.context, stroke = shape.getStroke(), strokeWidth = shape.getStrokeWidth(), dashArray = shape.getDashArray();
             if(stroke || strokeWidth) {
                 context.save();
                 this._applyLineCap(shape);
@@ -266,11 +287,8 @@
                     if(context.setLineDash) {
                         context.setLineDash(dashArray);
                     }
-                    else {
-                        Kinetic.Global.warn('Could not apply dash array because your browser does not support it.');
-                    }
                 }
-                if(!skipShadow && shadow) {
+                if(!skipShadow && shape.hasShadow()) {
                     this._applyShadow(shape);
                 }
                 context.lineWidth = strokeWidth || 2;
@@ -278,25 +296,25 @@
                 context.stroke(context);
                 context.restore();
 
-                if(!skipShadow && shadow && shadow.opacity) {
+                if(!skipShadow && shape.hasShadow()) {
                     this._stroke(shape, true);
                 }
             }
         },
         _applyShadow: function(shape) {
-            var context = this.context, shadow = shape.getShadow();
-            if(shadow) {
+            var context = this.context;
+            if(shape.hasShadow()) {
                 var aa = shape.getAbsoluteOpacity();
                 // defaults
-                var color = shadow.color || 'black';
-                var blur = shadow.blur || 5;
-                var offset = shadow.offset || {
+                var color = shape.getShadowColor() || 'black';
+                var blur = shape.getShadowBlur() || 5;
+                var offset = shape.getShadowOffset() || {
                     x: 0,
                     y: 0
                 };
 
-                if(shadow.opacity) {
-                    context.globalAlpha = shadow.opacity * aa;
+                if(shape.getShadowOpacity()) {
+                    context.globalAlpha = shape.getShadowOpacity() * aa;
                 }
                 context.shadowColor = color;
                 context.shadowBlur = blur;

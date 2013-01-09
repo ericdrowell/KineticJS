@@ -3,7 +3,6 @@
      * Stage constructor.  A stage is used to contain multiple layers and handle
      * animations
      * @constructor
-     * @augments Kinetic.Container
      * @param {Function} func function executed on each animation frame
      * @param {Kinetic.Node} [node] node to be redrawn.&nbsp; Specifying a node will improve
      *  draw performance.&nbsp; This can be a shape, a group, a layer, or the stage.
@@ -32,7 +31,6 @@
             this.frame.timeDiff = 0;
             this.frame.lastTime = new Date().getTime();
             Kinetic.Animation._addAnimation(this);
-            Kinetic.Animation._handleAnimation();
         },
         /**
          * stop animation
@@ -42,8 +40,7 @@
         stop: function() {
             Kinetic.Animation._removeAnimation(this);
         },
-        _updateFrameObject: function() {
-            var time = new Date().getTime();
+        _updateFrameObject: function(time) {
             this.frame.timeDiff = time - this.frame.lastTime;
             this.frame.lastTime = time;
             this.frame.time += this.frame.timeDiff;
@@ -60,11 +57,11 @@
 
     Kinetic.Animation._addAnimation = function(anim) {
         this.animations.push(anim);
+        this._handleAnimation();
     };
     Kinetic.Animation._removeAnimation = function(anim) {
-        var id = anim.id;
-        var animations = this.animations;
-        for(var n = 0; n < animations.length; n++) {
+        var id = anim.id, animations = this.animations, len = animations.length;
+        for(var n = 0; n < len; n++) {
             if(animations[n].id === id) {
                 this.animations.splice(n, 1);
                 break;
@@ -73,7 +70,7 @@
     };
 
     Kinetic.Animation._runFrames = function() {
-        var nodes = {};
+        var nodes = {}, animations = this.animations;
         /*
          * loop through all animations and execute animation
          *  function.  if the animation object has specified node,
@@ -81,15 +78,19 @@
          *  drawing the same node multiple times.  The node property
          *  can be the stage itself or a layer
          */
-        for(var n = 0; n < this.animations.length; n++) {
-            var anim = this.animations[n];
-            anim._updateFrameObject();
-            if(anim.node && anim.node._id !== undefined) {
-                nodes[anim.node._id] = anim.node;
+        /*
+         * WARNING: don't cache animations.length because it could change while
+         * the for loop is running, causing a JS error
+         */
+        for(var n = 0; n < animations.length; n++) {
+            var anim = animations[n], node = anim.node, func = anim.func;
+            anim._updateFrameObject(new Date().getTime());
+            if(node && node._id !== undefined) {
+                nodes[node._id] = node;
             }
             // if animation object has a function, execute it
-            if(anim.func) {
-                anim.func(anim.frame);
+            if(func) {
+                func(anim.frame);
             }
         }
 
@@ -98,9 +99,9 @@
         }
     };
     Kinetic.Animation._animationLoop = function() {
+        var that = this;
         if(this.animations.length > 0) {
             this._runFrames();
-            var that = this;
             Kinetic.Animation.requestAnimFrame(function() {
                 that._animationLoop();
             });
@@ -116,9 +117,11 @@
             that._animationLoop();
         }
     };
-    Kinetic.Animation.requestAnimFrame = function(callback) {
-        var raf = Kinetic.DD && Kinetic.DD.moving ? this.fixedRequestAnimFrame : window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || Kinetic.Animation.fixedRequestAnimFrame;
+    RAF = (function() {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || Kinetic.Animation.fixedRequestAnimFrame;
+    })();
 
-        raf(callback);
+    Kinetic.Animation.requestAnimFrame = function(callback) {
+        RAF(callback);
     };
 })();

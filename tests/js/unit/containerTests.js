@@ -541,9 +541,9 @@ Test.Modules.CONTAINER = {
 
         var textpath = new Kinetic.TextPath({
             y: 35,
-            textStroke: 'black',
-            textStrokeWidth: 1,
-            textFill: 'orange',
+            stroke: 'black',
+            strokeWidth: 1,
+            fill: 'orange',
             fontSize: '18',
             fontFamily: 'Arial',
             text: 'The quick brown fox jumped over the lazy dog\'s back',
@@ -557,12 +557,10 @@ Test.Modules.CONTAINER = {
             fill: '#ccc',
             stroke: '#333',
             strokeWidth: 2,
-            shadow: {
-                color: 'black',
-                blur: 2,
-                offset: [10, 10],
-                opacity: 0.5
-            },
+            shadowColor: 'black',
+            shadowBlur: 2,
+            shadowOffset: [10, 10],
+            shadowOpacity: 0.5
         });
 
         var poly = new Kinetic.RegularPolygon({

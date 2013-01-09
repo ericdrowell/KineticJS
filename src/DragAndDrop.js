@@ -5,12 +5,79 @@
         offset: {
             x: 0,
             y: 0
+        },
+        prevParent: null,
+        topLayer: null
+    };
+    Kinetic.Node.prototype._startDrag = function() {
+        var dd = Kinetic.DD;
+        var stage = this.getStage();
+        var pos = stage.getUserPosition();
+
+        if(pos) {
+            var m = this.getTransform().getTranslation(), ap = this.getAbsolutePosition(), nodeType = this.nodeType;
+
+            dd.node = this;
+            dd.offset.x = pos.x - ap.x;
+            dd.offset.y = pos.y - ap.y;
+
+            /*
+             * if dragging and dropping the stage,
+             * draw all of the layers
+             */
+            if(nodeType === 'Stage') {
+                dd.anim.node = this;
+            }
+            else {
+                /*
+                 * if node type is a group or shape, create a top layer,
+                 * and move the node to the top layer
+                 */
+                if(nodeType === 'Group' || nodeType === 'Shape') {
+                    var lastContainer = null;
+                    dd.prevParent = this.getParent();
+
+                    // re-construct node tree
+                    this._eachAncestorReverse(function(node) {
+                        if(node.nodeType === 'Layer') {
+                            dd.topLayer = new Kinetic.Layer({
+                                x: node.getX(),
+                                y: node.getY(),
+                                scale: node.getScale(),
+                                rotation: node.getRotation()
+                            });
+                            lastContainer = dd.topLayer;
+                            stage.add(dd.topLayer);
+                        }
+                        else if(node.nodeType === 'Group') {
+                            var group = new Kinetic.Group({
+                                x: node.getX(),
+                                y: node.getY(),
+                                scale: node.getScale(),
+                                rotation: node.getRotation()
+                            });
+
+                            lastContainer.add(group);
+                            lastContainer = group;
+                        }
+                    });
+
+                    this.moveTo(dd.topLayer);
+                    dd.topLayer.draw();
+
+                    if(dd.prevParent) {
+                        dd.prevParent.getLayer().draw();
+                    }
+
+                }
+
+                dd.anim.node = this.getLayer();
+            }
+            dd.anim.start();
         }
     };
-
-    Kinetic.DD._startDrag = function(evt) {
-        var dd = Kinetic.DD;
-        var node = dd.node;
+    Kinetic.DD._drag = function(evt) {
+        var dd = Kinetic.DD, node = dd.node;
 
         if(node) {
             var pos = node.getStage().getUserPosition();
@@ -40,18 +107,27 @@
         }
     };
     Kinetic.DD._endDrag = function(evt) {
-        var dd = Kinetic.DD;
-        var node = dd.node;
+        var dd = Kinetic.DD, node = dd.node;
         if(node) {
+            var nodeType = node.nodeType;
             node.setListening(true);
-            if(node.nodeType === 'Stage') {
+            if(nodeType === 'Stage') {
                 node.draw();
             }
             else {
+                if((nodeType === 'Group' || nodeType === 'Shape') && dd.prevParent) {
+                    node.moveTo(dd.prevParent);
+                    dd.topLayer.remove();
+                    dd.prevParent = null;
+                    dd.topLayer = null;
+                }
+
                 node.getLayer().draw();
             }
 
-            // handle dragend
+            // only fire dragend event if the drag and drop
+            // operation actually started.  This can be detected by
+            // checking dd.moving
             if(dd.moving) {
                 dd.moving = false;
                 node._handleEvent('dragend', evt);
@@ -90,37 +166,9 @@
 
     Kinetic.Node.prototype._listenDrag = function() {
         this._dragCleanup();
-        var that = this;
-        this.on('mousedown.kinetic touchstart.kinetic', function(evt) {
-            that._initDrag();
-        });
+        this.on('mousedown.kinetic touchstart.kinetic', this._startDrag);
     };
-    Kinetic.Node.prototype._initDrag = function() {
-        var dd = Kinetic.DD;
-        var stage = this.getStage();
-        var pos = stage.getUserPosition();
 
-        if(pos) {
-            var m = this.getTransform().getTranslation();
-            var am = this.getAbsoluteTransform().getTranslation();
-            var ap = this.getAbsolutePosition();
-            dd.node = this;
-            dd.offset.x = pos.x - ap.x;
-            dd.offset.y = pos.y - ap.y;
-
-            /*
-             * if dragging and dropping the stage,
-             * draw all of the layers
-             */
-            if(this.nodeType === 'Stage') {
-                dd.anim.node = this;
-            }
-            else {
-                dd.anim.node = this.getLayer();
-            }
-            dd.anim.start();
-        }
-    };
     Kinetic.Node.prototype._dragChange = function() {
         if(this.attrs.draggable) {
             this._listenDrag();
@@ -145,7 +193,6 @@
         this.off('mousedown.kinetic');
         this.off('touchstart.kinetic');
     };
-
     /**
      * get draggable.  Alias of getDraggable()
      * @name isDraggable

@@ -80,11 +80,9 @@ Test.Modules.LINE = {
             lineJoin: 'round',
             draggable: true,
             dashArray: [30, 10, 0, 10, 10, 20],
-            shadow: {
-                color: '#aaa',
-                blur: 10,
-                offset: [20, 20]
-            },
+            shadowColor: '#aaa',
+            shadowBlur: 10,
+            shadowOffset: [20, 20]
             //opacity: 0.2
         });
 
@@ -97,5 +95,5 @@ Test.Modules.LINE = {
 
         test(line.getPoints().length === 4, 'line should have 4 points');
 
-    }	
+    }
 };

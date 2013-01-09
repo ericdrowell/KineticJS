@@ -5,6 +5,68 @@
      * @constructor
      * @augments Kinetic.Shape
      * @param {Object} config
+     * @param {String} [config.fontFamily] default is Calibri
+     * @param {Number} [config.fontSize] default is 12
+     * @param {String} [config.fontStyle] can be normal, bold, or italic.  Default is normal
+     * @param {String} config.text
+     * 
+     *
+     * @param {String} [config.fill] fill color
+     *
+     * @param {Image} [config.fillPatternImage] fill pattern image
+     * @param {Number} [config.fillPatternX]
+     * @param {Number} [config.fillPatternY]
+     * @param {Array|Object} [config.fillPatternOffset] array with two elements or object with x and y component
+     * @param {Array|Object} [config.fillPatternScale] array with two elements or object with x and y component
+     * @param {Number} [config.fillPatternRotation]
+     * @param {String} [config.fillPatternRepeat] can be 'repeat', 'repeat-x', 'repeat-y', or 'no-repeat'.  The default is 'no-repeat'
+     *
+     * @param {Array|Object} [config.fillLinearGradientStartPoint] array with two elements or object with x and y component
+     * @param {Array|Object} [config.fillLinearGradientEndPoint] array with two elements or object with x and y component
+     * @param {Array} [config.fillLinearGradientColorStops] array of color stops
+     *
+     * @param {Array|Object} [config.fillRadialGradientStartPoint] array with two elements or object with x and y component
+     * @param {Array|Object} [config.fillRadialGradientEndPoint] array with two elements or object with x and y component
+     * @param {Number} [config.fillRadialGradientStartRadius]
+     * @param {Number} [config.fillRadialGradientEndRadius]
+     * @param {Array} [config.fillRadialGradientColorStops] array of color stops
+     *
+     * @param {String} [config.stroke] stroke color
+     * @param {Number} [config.strokeWidth] stroke width
+     * @param {String} [config.lineJoin] can be miter, round, or bevel.  The default
+     *  is miter
+     * @param {String} [config.lineCap] can be butt, round, or sqare.  The default
+     *  is butt
+     * @param {String} [config.shadowColor]
+     * @param {Number} [config.shadowBlur]
+     * @param {Obect} [config.shadowOffset]
+     * @param {Number} [config.shadowOffset.x]
+     * @param {Number} [config.shadowOffset.y]
+     * @param {Number} [config.shadowOpacity] shadow opacity.  Can be any real number
+     *  between 0 and 1
+     * @param {Array} [config.dashArray]
+     * 
+     * 
+     * 
+     * @param {Number} [config.x]
+     * @param {Number} [config.y]
+     * @param {Number} [config.width]
+     * @param {Number} [config.height]
+     * @param {Boolean} [config.visible]
+     * @param {Boolean} [config.listening] whether or not the node is listening for events
+     * @param {String} [config.id] unique id
+     * @param {String} [config.name] non-unique name
+     * @param {Number} [config.opacity] determines node opacity.  Can be any number between 0 and 1
+     * @param {Object} [config.scale]
+     * @param {Number} [config.scale.x]
+     * @param {Number} [config.scale.y]
+     * @param {Number} [config.rotation] rotation in radians
+     * @param {Number} [config.rotationDeg] rotation in degrees
+     * @param {Object} [config.offset] offset from center point and rotation point
+     * @param {Number} [config.offset.x]
+     * @param {Number} [config.offset.y]
+     * @param {Boolean} [config.draggable]
+     * @param {Function} [config.dragBoundFunc]
      */
     Kinetic.TextPath = function(config) {
         this._initTextPath(config);
@@ -16,17 +78,16 @@
                 fontFamily: 'Calibri',
                 fontSize: 12,
                 fontStyle: 'normal',
-                detectionType: 'path',
                 text: ''
             });
 
             this.dummyCanvas = document.createElement('canvas');
-            this.shapeType = "TextPath";
             this.dataArray = [];
             var that = this;
 
             // call super constructor
             Kinetic.Shape.call(this, config);
+            this.shapeType = 'TextPath';
             this._setDrawFuncs();
 
             this.dataArray = Kinetic.Path.parsePathData(this.attrs.data);
@@ -292,11 +353,10 @@
     Kinetic.Global.extend(Kinetic.TextPath, Kinetic.Shape);
 
     // add setters and getters
-    Kinetic.Node.addGettersSetters(Kinetic.TextPath, ['fontFamily', 'fontSize', 'fontStyle', 'textFill', 'textStroke', 'textStrokeWidth']);
-    Kinetic.Node.addGetters(Kinetic.TextPath, ['text', 'textShadow']);
+    Kinetic.Node.addGettersSetters(Kinetic.TextPath, ['fontFamily', 'fontSize', 'fontStyle']);
+    Kinetic.Node.addGetters(Kinetic.TextPath, ['text']);
 
     // reference Text methods
-    Kinetic.TextPath.prototype.setTextShadow = Kinetic.Text.prototype.setTextShadow;
     Kinetic.TextPath.prototype.fillText = Kinetic.Text.prototype.fillText;
     Kinetic.TextPath.prototype.strokeText = Kinetic.Text.prototype.strokeText;
     Kinetic.TextPath.prototype.fillStrokeText = Kinetic.Text.prototype.strokeText;
@@ -316,31 +376,10 @@
      */
 
     /**
-     * set font style.  Can be "normal", "italic", or "bold".  "normal" is the default.
+     * set font style.  Can be 'normal', 'italic', or 'bold'.  'normal' is the default.
      * @name setFontStyle
      * @methodOf Kinetic.TextPath.prototype
      * @param {String} fontStyle
-     */
-
-    /**
-     * set text fill color
-     * @name setTextFill
-     * @methodOf Kinetic.TextPath.prototype
-     * @param {String} textFill
-     */
-
-    /**
-     * set text stroke color
-     * @name setFontStroke
-     * @methodOf Kinetic.TextPath.prototype
-     * @param {String} textStroke
-     */
-
-    /**
-     * set text stroke width
-     * @name setTextStrokeWidth
-     * @methodOf Kinetic.TextPath.prototype
-     * @param {int} textStrokeWidth
      */
 
     /**
@@ -358,24 +397,6 @@
     /**
      * get font style
      * @name getFontStyle
-     * @methodOf Kinetic.TextPath.prototype
-     */
-
-    /**
-     * get text fill color
-     * @name getTextFill
-     * @methodOf Kinetic.TextPath.prototype
-     */
-
-    /**
-     * get text stroke color
-     * @name getTextStroke
-     * @methodOf Kinetic.TextPath.prototype
-     */
-
-    /**
-     * get text stroke width
-     * @name getTextStrokeWidth
      * @methodOf Kinetic.TextPath.prototype
      */
 

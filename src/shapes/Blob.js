@@ -1,12 +1,13 @@
 (function() {
     /**
-     * Rect constructor
+     * Blob constructor.&nbsp; Blobs are defined by an array of points and
+     *  a tension
      * @constructor
-     * @augments Kinetic.Shape
+     * @augments Kinetic.Spline
      * @param {Object} config
-     * @param {Number} [config.cornerRadius]
-     * 
-
+     * @param {Array} config.points can be a flattened array of points, an array of point arrays, or an array of point objects.
+     *  e.g. [0,1,2,3], [[0,1],[2,3]] and [{x:0,y:1},{x:2,y:3}] are equivalent
+     * @param {Number} [config.tension] default value is 1.  Higher values will result in a more curvy line.  A value of 0 will result in no interpolation.
      * @param {String} [config.fill] fill color
      * @param {Image} [config.fillPatternImage] fill pattern image
      * @param {Number} [config.fillPatternX]
@@ -37,9 +38,6 @@
      * @param {Number} [config.shadowOpacity] shadow opacity.  Can be any real number
      *  between 0 and 1
      * @param {Array} [config.dashArray]
-     * 
-     * 
-     * 
      * @param {Number} [config.x]
      * @param {Number} [config.y]
      * @param {Number} [config.width]
@@ -60,62 +58,56 @@
      * @param {Boolean} [config.draggable]
      * @param {Function} [config.dragBoundFunc]
      */
-    Kinetic.Rect = function(config) {
-        this._initRect(config);
+    Kinetic.Blob = function(config) {
+        this._initBlob(config);
     };
-    
-    Kinetic.Rect.prototype = {
-        _initRect: function(config) {
-            this.setDefaultAttrs({
-                width: 0,
-                height: 0,
-                cornerRadius: 0
-            });
 
-            Kinetic.Shape.call(this, config);
-            this.shapeType = 'Rect';
-            this._setDrawFuncs();
+    Kinetic.Blob.prototype = {
+        _initBlob: function(config) {
+            // call super constructor
+            Kinetic.Spline.call(this, config);
+            this.shapeType = 'Blob';
         },
         drawFunc: function(canvas) {
-            var context = canvas.getContext();
+            var points = this.getPoints(), length = points.length, context = canvas.getContext(), tension = this.getTension();
             context.beginPath();
-            var cornerRadius = this.getCornerRadius(), width = this.getWidth(), height = this.getHeight();
-            if(cornerRadius === 0) {
-                // simple rect - don't bother doing all that complicated maths stuff.
-                context.rect(0, 0, width, height);
+            context.moveTo(points[0].x, points[0].y);
+
+            // tension
+            if(tension !== 0 && length > 2) {
+                var ap = this.allPoints, len = ap.length;
+                var n = 0;
+                while(n < len-1) {
+                    context.bezierCurveTo(ap[n].x, ap[n++].y, ap[n].x, ap[n++].y, ap[n].x, ap[n++].y);
+                } 
             }
+            // no tension
             else {
-                // arcTo would be nicer, but browser support is patchy (Opera)
-                context.moveTo(cornerRadius, 0);
-                context.lineTo(width - cornerRadius, 0);
-                context.arc(width - cornerRadius, cornerRadius, cornerRadius, Math.PI * 3 / 2, 0, false);
-                context.lineTo(width, height - cornerRadius);
-                context.arc(width - cornerRadius, height - cornerRadius, cornerRadius, 0, Math.PI / 2, false);
-                context.lineTo(cornerRadius, height);
-                context.arc(cornerRadius, height - cornerRadius, cornerRadius, Math.PI / 2, Math.PI, false);
-                context.lineTo(0, cornerRadius);
-                context.arc(cornerRadius, cornerRadius, cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+                for(var n = 1; n < length; n++) {
+                    var point = points[n];
+                    context.lineTo(point.x, point.y);
+                }
             }
-            context.closePath();
+
+			context.closePath();
             canvas.fillStroke(this);
+        },
+        _setAllPoints: function() {
+            var points = this.getPoints(), length = points.length, tension = this.getTension(), firstControlPoints = Kinetic.Spline._getControlPoints(points[length - 1], points[0], points[1], tension), lastControlPoints = Kinetic.Spline._getControlPoints(points[length - 2], points[length - 1], points[0], tension);
+
+            Kinetic.Spline.prototype._setAllPoints.call(this);
+
+            // prepend control point
+            this.allPoints.unshift(firstControlPoints[1]);
+
+            // append cp, point, cp, cp, first point
+            this.allPoints.push(lastControlPoints[0]);
+            this.allPoints.push(points[length - 1]);
+            this.allPoints.push(lastControlPoints[1]);
+            this.allPoints.push(firstControlPoints[0]);
+            this.allPoints.push(points[0]);
         }
     };
 
-    Kinetic.Global.extend(Kinetic.Rect, Kinetic.Shape);
-
-    Kinetic.Node.addGettersSetters(Kinetic.Rect, ['cornerRadius']);
-
-    /**
-     * set corner radius
-     * @name setCornerRadius
-     * @methodOf Kinetic.Shape.prototype
-     * @param {Number} corner radius
-     */
-
-    /**
-     * get corner radius
-     * @name getCornerRadius
-     * @methodOf Kinetic.Shape.prototype
-     */
-
+    Kinetic.Global.extend(Kinetic.Blob, Kinetic.Spline);
 })();

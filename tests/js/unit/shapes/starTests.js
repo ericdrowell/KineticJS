@@ -30,7 +30,7 @@ Test.Modules.STAR = {
         layer.add(star);
         stage.add(layer);
     },
-    'add five point star with line join and shadow': function(containerId) {
+    '*add five point star with line join and shadow': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -56,12 +56,10 @@ Test.Modules.STAR = {
             stroke: 'blue',
             strokeWidth: 5,
             lineJoin: "round",
-            shadow: {
-                color: 'black',
-                blur: 10,
-                offset: [20, 20],
-                opacity: 0.5
-            },
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: [20, 20],
+            shadowOpacity: 0.5,
             draggable: true
         });
 

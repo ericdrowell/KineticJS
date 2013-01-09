@@ -177,7 +177,7 @@ Test.Modules.MANUAL = {
             anim.stop();
         }, 3000);
     },
-    '*ANIMATION - test multiple animations': function(containerId) {
+    'ANIMATION - test multiple animations': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -792,13 +792,11 @@ Test.Modules.MANUAL = {
             stroke: 'blue',
             strokeWidth: 5,
             lineJoin: "round",
-            shadow: {
-                color: '#aaa',
-                blur: 10,
-                offset: {
-                    x: 5,
-                    y: 5
-                }
+            shadowColor: '#aaa',
+            shadowBlur: 10,
+            shadowOffset: {
+           		x: 5,
+                y: 5
             },
             draggable: true
         });
@@ -809,7 +807,7 @@ Test.Modules.MANUAL = {
         layer.draw();
 
         var trans = null;
-
+/*
         star.on('dragstart', function() {
             if(trans) {
                 trans.stop();
@@ -845,6 +843,7 @@ Test.Modules.MANUAL = {
                 }
             })
         });
+        */
         
         showHit(layer);
     },
@@ -1025,12 +1024,10 @@ Test.Modules.MANUAL = {
         var hbox = new Kinetic.Text({
             x: 380,
             y: 70,
-            fill: "#00D2FF",
-            strokeWidth: 4,
             fontSize: 18,
             fontFamily: "Calibri",
             text: "shiftKey",
-            textFill: "black",
+            fill: "black",
             padding: 15,
             draggable: true,
             dragBoundFunc: function(pos, evt) {
@@ -1046,13 +1043,11 @@ Test.Modules.MANUAL = {
         var vbox = new Kinetic.Text({
             x: 70,
             y: 70,
-            fill: "yellow",
-            strokeWidth: 4,
             draggable: true,
             fontSize: 18,
             fontFamily: "Calibri",
             text: "diagonal",
-            textFill: "black",
+            fill: "black",
             padding: 15,
             draggable: true,
             dragBoundFunc: function(pos) {

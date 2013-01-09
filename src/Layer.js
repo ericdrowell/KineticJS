@@ -5,10 +5,13 @@
      * @constructor
      * @augments Kinetic.Container
      * @param {Object} config
-     * @param {Boolean} [config.clearBeforeDraw] set this property to true if you'd like to disable
-     *  canvas clearing before each new layer draw
+     * @param {Boolean} [config.clearBeforeDraw] set this property to false if you don't want
+     * to clear the canvas before each layer draw.  The default value is true.
+     * 
      * @param {Number} [config.x]
      * @param {Number} [config.y]
+     * @param {Number} [config.width]
+     * @param {Number} [config.height]
      * @param {Boolean} [config.visible]
      * @param {Boolean} [config.listening] whether or not the node is listening for events
      * @param {String} [config.id] unique id
@@ -19,11 +22,11 @@
      * @param {Number} [config.scale.y]
      * @param {Number} [config.rotation] rotation in radians
      * @param {Number} [config.rotationDeg] rotation in degrees
-     * @param {Object} [config.offset] offsets default position point and rotation point
+     * @param {Object} [config.offset] offset from center point and rotation point
      * @param {Number} [config.offset.x]
      * @param {Number} [config.offset.y]
      * @param {Boolean} [config.draggable]
-     * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
+     * @param {Function} [config.dragBoundFunc]
      */
     Kinetic.Layer = function(config) {
         this._initLayer(config);
@@ -40,7 +43,7 @@
             this.afterDrawFunc = undefined;
             this.canvas = new Kinetic.SceneCanvas();
             this.canvas.getElement().style.position = 'absolute';
-            this.hitCanvas = new Kinetic.HitCanvas(0, 0);
+            this.hitCanvas = new Kinetic.HitCanvas();
 
             // call super constructor
             Kinetic.Container.call(this, config);
@@ -87,6 +90,19 @@
                 canvas.clear();
             }
             Kinetic.Container.prototype.drawScene.call(this, canvas);
+        },
+        toDataURL: function(config) {
+            config = config || {};
+            var mimeType = config.mimeType || null, quality = config.quality || null, canvas, context, x = config.x || 0, y = config.y || 0;
+
+            // if dimension or position is defined, use Node toDataURL
+            if(config.width || config.height || config.x || config.y) {
+                return Kinetic.Node.prototype.toDataURL.call(this, config);
+            }
+            // otherwise get data url of the currently drawn layer
+            else {
+            	return this.getCanvas().toDataURL(mimeType, quality);
+            }
         },
         /**
          * set before draw handler
