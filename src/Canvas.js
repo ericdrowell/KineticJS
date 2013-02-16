@@ -11,7 +11,7 @@
      * @param {Number} width
      * @param {Number} height
      */
-    Kinetic.Canvas = function(width, height, pixelRatio) {
+    Kinetic.Canvas = function(width, height, pixelRatio, contextId) {
         this.pixelRatio = pixelRatio || _pixelRatio;
         this.width = width;
         this.height = height;
@@ -20,7 +20,8 @@
         this.element.style.margin = 0;
         this.element.style.border = 0;
         this.element.style.background = 'transparent';
-        this.context = this.element.getContext('2d');
+        if(typeof (contextId) != "string") contextId = '2d';
+        this.context = this.element.getContext(contextId);
         this.setSize(width || 0, height || 0);
     };
 
@@ -216,8 +217,8 @@
         }
     };
 
-    Kinetic.SceneCanvas = function(width, height, pixelRatio) {
-        Kinetic.Canvas.call(this, width, height, pixelRatio);
+    Kinetic.SceneCanvas = function(width, height, pixelRatio, contextId) {
+        Kinetic.Canvas.call(this, width, height, pixelRatio, contextId);
     };
 
     Kinetic.SceneCanvas.prototype = {
@@ -394,4 +395,27 @@
         }
     };
     Kinetic.Global.extend(Kinetic.HitCanvas, Kinetic.Canvas);
+
+    Kinetic.WebGLCanvas = function(width, height, pixelRatio) {
+        Kinetic.SceneCanvas.call(this, width, height, pixelRatio, 'experimental-webgl');
+    };
+
+    Kinetic.WebGLCanvas.prototype = {
+        /**
+         * does nothing, do not remove
+         * @name clear
+         * @methodOf Kinetic.WebGLCanvas.prototype
+         */
+        clear: function() { },
+        setWidth: function(width) {
+            var pixelRatio = this.pixelRatio;
+            Kinetic.Canvas.prototype.setWidth.call(this, width);
+        },
+        setHeight: function(height) {
+            var pixelRatio = this.pixelRatio;
+            Kinetic.Canvas.prototype.setHeight.call(this, height);
+        },
+    };
+
+    Kinetic.Global.extend(Kinetic.WebGLCanvas, Kinetic.SceneCanvas);
 })();
