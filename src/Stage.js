@@ -170,11 +170,13 @@
          */
         toDataURL: function(config) {
             config = config || {};
-            var mimeType = config.mimeType || null, quality = config.quality || null, x = config.x || 0, y = config.y || 0, canvas = new Kinetic.SceneCanvas(config.width || this.getWidth(), config.height || this.getHeight()), context = canvas.getContext(), layers = this.children;
+            var mimeType = config.mimeType || null, quality = config.quality || null, x = config.x || 0, y = config.y || 0, canvas = new Kinetic.SceneCanvas(config.width || this.getWidth(), config.height || this.getHeight(), 1), context = canvas.getContext(), layers = this.children, defaultRatio = new Kinetic.SceneCanvas(config.width || this.getWidth(), config.height || this.getHeight()).pixelRatio;
 
             if(x || y) {
                 context.translate(-1 * x, -1 * y);
             }
+            
+            context.scale(1 / defaultRatio, 1 / defaultRatio);
 
             function drawLayer(n) {
                 var layer = layers[n];
