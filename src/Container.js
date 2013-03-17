@@ -172,7 +172,7 @@
          * @methodOf Kinetic.Container.prototype
          * @param {Object} point
          */
-        getIntersections: function() {
+        getIntersections: function(arguments) {
             var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
             var arr = [];
             var shapes = this.get('Shape');
