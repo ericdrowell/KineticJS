@@ -280,9 +280,9 @@
             };
         },
         _getRandomColorKey: function() {
-            var r = Math.round(Math.random() * 255);
-            var g = Math.round(Math.random() * 255);
-            var b = Math.round(Math.random() * 255);
+            var r = Math.floor(Math.random() * 256);
+            var g = Math.floor(Math.random() * 256);
+            var b = Math.floor(Math.random() * 256);
             return this._rgbToHex(r, g, b);
         },
         // o1 takes precedence over o2
