@@ -155,7 +155,7 @@
 
             // stop DD
             if(dd && dd.node && dd.node._id === this._id) {
-                node._endDrag();
+                dd.node.stopDrag();
             }
 
             // stop transition
