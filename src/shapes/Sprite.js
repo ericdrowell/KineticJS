@@ -17,7 +17,10 @@
     Kinetic.Sprite.prototype = {
         _initSprite: function(config) {
             this.createAttrs();
-            
+            if (this.attrs.index) {
+                this.setIndex(this.attrs.index)
+            }
+
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.shapeType = 'Sprite';
@@ -31,14 +34,14 @@
             });
         },
         drawFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.attrs.index, f = this.attrs.animations[anim][index], context = canvas.getContext(), image = this.attrs.image;
+            var anim = this.attrs.animation, index = this.index, f = this.attrs.animations[anim][index], context = canvas.getContext(), image = this.attrs.image;
 
             if(image) {
                 context.drawImage(image, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
             }
         },
         drawHitFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.attrs.index, f = this.attrs.animations[anim][index], context = canvas.getContext();
+            var anim = this.attrs.animation, index = this.index, f = this.attrs.animations[anim][index], context = canvas.getContext();
 
             context.beginPath();
             context.rect(0, 0, f.width, f.height);
@@ -95,13 +98,13 @@
             this.afterFrameFunc = func;
         },
         _updateIndex: function() {
-            var i = this.attrs.index;
+            var i = this.index;
             var a = this.attrs.animation;
             if(i < this.attrs.animations[a].length - 1) {
-                this.attrs.index++;
+                this.index++;
             }
             else {
-                this.attrs.index = 0;
+                this.index = 0;
             }
         }
     };
