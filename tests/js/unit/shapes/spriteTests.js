@@ -231,7 +231,7 @@ Test.Modules.SPRITE = {
             }, 3000);
             //document.body.appendChild(layer.bufferCanvas.element)
             
-            test(sprite.getShapeType() === 'Sprite', 'shape type should be Sprite');
+            test(sprite.animations.length >= 0, 'Sprite should have animation frames');
         };
         imageObj.src = '../assets/scorpion-sprite.png';
     }    
