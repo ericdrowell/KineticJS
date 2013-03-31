@@ -17,9 +17,6 @@
     Kinetic.Sprite.prototype = {
         _initSprite: function(config) {
             this.createAttrs();
-            if (this.attrs.index) {
-                this.setIndex(this.attrs.index)
-            }
 
             // call super constructor
             Kinetic.Shape.call(this, config);
