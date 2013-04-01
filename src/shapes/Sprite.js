@@ -152,4 +152,10 @@
      * @name getIndex
      * @methodOf Kinetic.Sprite.prototype
      */
+
+    /**
+     * get animation image
+     * @name getImage
+     * @methodOf Kinetic.Sprite.prototype
+     */
 })();
