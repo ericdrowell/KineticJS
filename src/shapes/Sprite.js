@@ -31,14 +31,14 @@
             });
         },
         drawFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.getIndex(), f = this.attrs.animations[anim][index], context = canvas.getContext(), image = this.attrs.image;
+            var anim = this.getAnimation(), index = this.getIndex(), f = this.attrs.animations[anim][index], context = canvas.getContext(), image = this.attrs.image;
 
             if(image) {
                 context.drawImage(image, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
             }
         },
         drawHitFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.getIndex(), f = this.attrs.animations[anim][index], context = canvas.getContext();
+            var anim = this.getAnimation(), index = this.getIndex(), f = this.attrs.animations[anim][index], context = canvas.getContext();
 
             context.beginPath();
             context.rect(0, 0, f.width, f.height);
@@ -96,7 +96,7 @@
         },
         _updateIndex: function() {
             var i = this.getIndex();
-            var a = this.attrs.animation;
+            var a = this.getAnimation();
             if(i < this.attrs.animations[a].length - 1) {
                 this.setIndex(this.getIndex()+1);
             }
