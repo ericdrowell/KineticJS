@@ -31,14 +31,14 @@
             });
         },
         drawFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.attrs.index, f = this.attrs.animations[anim][index], context = canvas.getContext(), image = this.attrs.image;
+            var anim = this.getAnimation(), index = this.getIndex(), f = this.getAnimations()[anim][index], context = canvas.getContext(), image = this.getImage();
 
             if(image) {
                 context.drawImage(image, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
             }
         },
         drawHitFunc: function(canvas) {
-            var anim = this.attrs.animation, index = this.attrs.index, f = this.attrs.animations[anim][index], context = canvas.getContext();
+            var anim = this.getAnimation(), index = this.getIndex(), f = this.getAnimations()[anim][index], context = canvas.getContext();
 
             context.beginPath();
             context.rect(0, 0, f.width, f.height);
@@ -63,7 +63,7 @@
             this.anim.node = layer;
 
             this.interval = setInterval(function() {
-                var index = that.attrs.index;
+                var index = that.getIndex();
                 that._updateIndex();
                 if(that.afterFrameFunc && index === that.afterFrameIndex) {
                     that.afterFrameFunc();
@@ -95,13 +95,13 @@
             this.afterFrameFunc = func;
         },
         _updateIndex: function() {
-            var i = this.attrs.index;
-            var a = this.attrs.animation;
-            if(i < this.attrs.animations[a].length - 1) {
-                this.attrs.index++;
+            var i = this.getIndex();
+            var a = this.getAnimation();
+            if(i < this.getAnimations()[a].length - 1) {
+                this.setIndex(this.getIndex()+1);
             }
             else {
-                this.attrs.index = 0;
+                this.setIndex(0);
             }
         }
     };
@@ -112,6 +112,7 @@
     Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'animations');
     Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'index', 0);
     Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'frameRate', 17);
+    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'image');
 
     /**
      * set animation key
@@ -149,6 +150,12 @@
     /**
      * get animation frame index
      * @name getIndex
+     * @methodOf Kinetic.Sprite.prototype
+     */
+
+    /**
+     * get animation image
+     * @name getImage
      * @methodOf Kinetic.Sprite.prototype
      */
 })();
