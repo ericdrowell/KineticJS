@@ -395,15 +395,18 @@
                         shape._handleEvent(MOUSEMOVE, evt);
                     }
                 }
-            }
-            /*
-             * if no shape was detected, clear target shape and try
-             * to run mouseout from previous target shape
-             */
-            else if(this.targetShape && !go.isDragging()) {
-                this.targetShape._handleEvent(MOUSEOUT, evt);
-                this.targetShape._handleEvent(MOUSELEAVE, evt);
-                this.targetShape = null;
+            }else{ //stage event
+                if(this.targetShape != this){
+                    if(this.targetShape) {
+                        this.targetShape._handleEvent(MOUSEOUT, evt, shape);
+                        this.targetShape._handleEvent(MOUSELEAVE, evt, shape);
+                    }
+                    this._handleEvent(MOUSEOVER, evt, this.targetShape);
+                    this._handleEvent(MOUSEENTER, evt, this.targetShape);
+                    this.targetShape = this;
+                }else{
+                    this._handleEvent(MOUSEMOVE, evt);
+                }
             }
 
             if(dd) {
@@ -419,15 +422,11 @@
 
             if(obj && obj.shape) {
                 shape = obj.shape;
-                this.clickStart = true;
-                this.clickStartShape = shape;
-                shape._handleEvent(MOUSEDOWN, evt);
+            }else{
+                shape = this;
             }
-
-            //init stage drag and drop
-            if(this.isDraggable() && !dd.node) {
-                this.startDrag(evt);
-            }
+            this.clickStartShape = shape;
+            shape._handleEvent(MOUSEDOWN, evt);
         },
         _mouseup: function(evt) {
             this._setPointerPosition(evt);
@@ -435,31 +434,32 @@
                 go = Kinetic.Global, 
                 obj = this.getIntersection(this.getPointerPosition()),
                 shape;
-                
+
             if(obj && obj.shape) {
-                shape = obj.shape;
-                shape._handleEvent(MOUSEUP, evt);
-
-                // detect if click or double click occurred
-                if(this.clickStart) {
-                    /*
-                     * if dragging and dropping, or if click doesn't map to 
-                     * the correct shape, don't fire click or dbl click event
-                     */
-                    if(!go.isDragging() && shape._id === this.clickStartShape._id) {
-                        shape._handleEvent(CLICK, evt);
-
-                        if(this.inDoubleClickWindow) {
-                            shape._handleEvent(DBL_CLICK, evt);
-                        }
-                        this.inDoubleClickWindow = true;
-                        setTimeout(function() {
-                            that.inDoubleClickWindow = false;
-                        }, this.dblClickWindow);
-                    }
-                }
+                shape = obj.shape
+            }else{
+                shape = this;
             }
-            this.clickStart = false;
+
+            shape._handleEvent(MOUSEUP, evt);
+
+
+            /*
+             * if dragging and dropping, or if click doesn't map to
+             * the correct shape, don't fire click or dbl click event
+             */
+            if(!go.isDragging() && shape._id === this.clickStartShape._id) {
+                shape._handleEvent(CLICK, evt);
+
+                if(this.inDoubleClickWindow) {
+                    shape._handleEvent(DBL_CLICK, evt);
+                }
+                this.inDoubleClickWindow = true;
+                setTimeout(function() {
+                    that.inDoubleClickWindow = false;
+                }, this.dblClickWindow);
+            }
+
         },
         _touchstart: function(evt) {
           this._setPointerPosition(evt);
@@ -473,15 +473,13 @@
 
             if(obj && obj.shape) {
                 shape = obj.shape;
-                this.tapStart = true;
-                this.tapStartShape = shape;
-                shape._handleEvent(TOUCHSTART, evt);
+            }else{
+                shape = this;
             }
 
-            // init stage drag and drop
-            if(dd && !go.isDragging() && this.isDraggable()) {
-                this.startDrag(evt);
-            }
+            this.tapStartShape = shape;
+            shape._handleEvent(TOUCHSTART, evt);
+
         },
         _touchend: function(evt) {
             this._setPointerPosition(evt);
@@ -492,29 +490,29 @@
 
             if(obj && obj.shape) {
                 shape = obj.shape;
-                shape._handleEvent(TOUCHEND, evt);
-
-                // detect if tap or double tap occurred
-                if(this.tapStart) {
-                    /*
-                     * if dragging and dropping, don't fire tap or dbltap
-                     * event
-                     */
-                    if(!go.isDragging() && shape._id === this.tapStartShape._id) {
-                        shape._handleEvent(TAP, evt);
-
-                        if(this.inDoubleClickWindow) {
-                            shape._handleEvent(DBL_TAP, evt);
-                        }
-                        this.inDoubleClickWindow = true;
-                        setTimeout(function() {
-                            that.inDoubleClickWindow = false;
-                        }, this.dblClickWindow);
-                    }
-                }
+            }else{
+                shape = this;
             }
 
-            this.tapStart = false;
+            shape._handleEvent(TOUCHEND, evt);
+
+
+            /*
+             * if dragging and dropping, don't fire tap or dbltap
+             * event
+             */
+            if(!go.isDragging() && shape._id === this.tapStartShape._id) {
+                shape._handleEvent(TAP, evt);
+
+                if(this.inDoubleClickWindow) {
+                    shape._handleEvent(DBL_TAP, evt);
+                }
+                this.inDoubleClickWindow = true;
+                setTimeout(function() {
+                    that.inDoubleClickWindow = false;
+                }, this.dblClickWindow);
+            }
+
         },
         _touchmove: function(evt) {
             this._setPointerPosition(evt);
@@ -526,8 +524,10 @@
             
             if(obj && obj.shape) {
                 shape = obj.shape;
-                shape._handleEvent(TOUCHMOVE, evt);
+            }else{
+                shape = this;
             }
+            shape._handleEvent(TOUCHMOVE, evt);
 
             // start drag and drop
             if(dd) {
