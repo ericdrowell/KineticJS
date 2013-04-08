@@ -51,6 +51,10 @@
             }
 
             Kinetic.Container.prototype.drawScene.call(this, canvas);
+            
+            if(this.afterDrawFunc !== undefined) {
+                this.afterDrawFunc.call(this);
+            }
         },
         drawHit: function() {
             var layer = this.getLayer();
