@@ -156,12 +156,14 @@ Test.Modules.CONTAINER = {
 
         test(shapes.length === 2, 'shapes array should have 2 elements');
 
-        shapes.apply('setX', 200);
+        shapes.each(function(node) {
+            node.setX(200);
+        });
 
         layer.draw();
 
-        shapes.each(function() {
-            test(this.getX() === 200, 'shape x should be 200');
+        shapes.each(function(node) {
+            test(node.getX() === 200, 'shape x should be 200');
         });
     },
     'set fill on array by Shape-selector': function(containerId) {
@@ -200,12 +202,14 @@ Test.Modules.CONTAINER = {
 
         test(shapes.length === 2, 'shapes array should have 2 elements');
 
-        shapes.apply('setFill', 'gray');
+        shapes.each(function(node) {
+            node.setFill('gray');
+        });
 
         layer.draw();
 
-        shapes.each(function() {
-            test(this.getFill() === 'gray', 'shape x should be 200');
+        shapes.each(function(node) {
+            test(node.getFill() === 'gray', 'shape x should be 200');
         });
     },
     'add listener to an array of nodes': function(containerId) {
@@ -247,9 +251,9 @@ Test.Modules.CONTAINER = {
         shapes.on('mouseover', function() {
             a++;
         });
-        circle.simulate('mouseover');
+        circle.fire('mouseover');
         test(a === 1, 'listener should have fired for circle');
-        rect.simulate('mouseover');
+        rect.fire('mouseover');
         test(a === 2, 'listener should have fired for rect');
     },
     'test ids and names hashes': function(containerId) {
@@ -606,7 +610,7 @@ Test.Modules.CONTAINER = {
         stage.toDataURL({
             callback: function(dataUrl) {
             	//console.log(dataUrl)
-                warn(dataUrl === dataUrls['node shape type selector'], 'problem with node and shape type selector render.');
+                testDataUrl(dataUrl,'node shape type selector', 'problem with node and shape type selector render.');
             }
         });
     },
@@ -855,6 +859,8 @@ Test.Modules.CONTAINER = {
         stage.add(greenLayer);
 
         blueLayer.setZIndex(1);
+        
+        //console.log(greenLayer.getZIndex());
 
         test(greenLayer.getZIndex() === 0, 'green layer should have z index of 0');
         test(blueLayer.getZIndex() === 1, 'blue layer should have z index of 1');
@@ -862,7 +868,7 @@ Test.Modules.CONTAINER = {
         stage.toDataURL({
             callback: function(dataUrl) {
                 //console.log(dataUrl)
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer setZIndex is not working');
+                testDataUrl(dataUrl, 'blue on top of green', 'layer setZIndex is not working');
             }
         });
     },
@@ -903,7 +909,7 @@ Test.Modules.CONTAINER = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToTop is not working');
+                testDataUrl(dataUrl, 'blue on top of green', 'layer moveToTop is not working');
             }
         });
     },
@@ -944,7 +950,7 @@ Test.Modules.CONTAINER = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveToBottom is not working');
+                testDataUrl(dataUrl, 'blue on top of green', 'layer moveToBottom is not working');
             }
         });
     },
@@ -984,7 +990,7 @@ Test.Modules.CONTAINER = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveDown is not working');
+                testDataUrl(dataUrl, 'blue on top of green', 'layer moveDown is not working');
             }
         });
     },
@@ -1024,7 +1030,7 @@ Test.Modules.CONTAINER = {
 
         stage.toDataURL({
             callback: function(dataUrl) {
-                warn(dataUrls['blue on top of green'] === dataUrl, 'layer moveUp is not working');
+                testDataUrl(dataUrl, 'blue on top of green', 'layer moveUp is not working');
             }
         });
     },

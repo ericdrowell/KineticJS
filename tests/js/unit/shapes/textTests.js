@@ -54,6 +54,8 @@ Test.Modules.Text = {
         group.add(text);
         layer.add(group);
         stage.add(layer);
+        
+        test(text.getShapeType() === 'Text', 'shape type should be Text');
     },
     'text getters and setters': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -162,38 +164,54 @@ Test.Modules.Text = {
             height: 200
         });
         var layer = new Kinetic.Layer();
+        
+        var rect = new Kinetic.Rect({
+          x: 10,
+          y: 10,
+          width: 380,
+          height: 300,
+          fill: 'red'
+        });
 
         var text = new Kinetic.Text({
             x: 10,
             y: 10,
-            text: 'HEADING\n\nAll the world\'s a stage, and all the men and women merely players. They have their exits and their entrances; And one man in his time plays many parts.',
+            text: 'HEADING\n\nAll the world\'s a stage, merely players. They have their exits and their entrances; And one man in his time plays many parts.',
             //text: 'HEADING\n\nThis is a really cool paragraph. \n And this is a footer.',
-            fontSize: 16,
+            fontSize: 24,
             fontFamily: 'Calibri',
             fontStyle: 'normal',
             fill: '#555',
             //width: 20,
             width: 380,
             //width: 200,
-            padding: 20,
+            padding: 10,
             align: 'center',
-            draggable: true
+            draggable: true,
+            wrap: 'WORD'
         });
 
         // center text box
         //text.setOffset(text.getBoxWidth() / 2, text.getBoxHeight() / 2);
 
-        layer.add(text);
+        layer.add(rect).add(text);
         stage.add(layer);
 
         test(text.getLineHeight() === 1, 'text line height should be defaulted to 1');
 
-        /*
+         /*
          text.transitionTo({
-         width: 500,
-         duration: 10
+             width: 50,
+             duration: 20
+         });
+         
+         rect.transitionTo({
+             width: 50,
+             duration: 20
          });
          */
+         
+         
     },
     'text multi line with shadows': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -231,7 +249,7 @@ Test.Modules.Text = {
 
         //console.log(layer.toDataURL());
 
-        warn(layer.toDataURL() === dataUrls['multiline text with shadows'], 'multi line text with shadows data url is incorrect');
+        testDataUrl(layer.toDataURL(),'multiline text with shadows', 'multi line text with shadows data url is incorrect');
     },
     'change font size should update text data': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -256,12 +274,16 @@ Test.Modules.Text = {
 
         var width = text.getWidth();
         var height = text.getHeight();
+        
+        
 
         layer.add(text);
         stage.add(layer);
 
         text.setFontSize(30);
         layer.draw();
+        
+        //console.log(text.getHeight() + ',' + height);
 
         test(text.getWidth() > width, 'text box width should have increased.');
         test(text.getHeight() > height, 'text box height should have increased.');
@@ -295,7 +317,7 @@ Test.Modules.Text = {
         stage.add(layer);
 
         //console.log(layer.toDataURL());
-        warn(layer.toDataURL() === dataUrls['text everything enabled'], 'should be text with blue fill and red stroke');
+        testDataUrl(layer.toDataURL(), 'text everything enabled', 'should be text with blue fill and red stroke');
     },
     'text fill disabled': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -325,7 +347,7 @@ Test.Modules.Text = {
         stage.add(layer);
 
         //console.log(layer.toDataURL());
-        warn(layer.toDataURL() === dataUrls['text fill disabled'], 'should be text with no fill and red stroke');
+        testDataUrl(layer.toDataURL(), 'text fill disabled', 'should be text with no fill and red stroke');
     },
     'text stroke disabled': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -355,6 +377,41 @@ Test.Modules.Text = {
         stage.add(layer);
 
         //console.log(layer.toDataURL());
-        warn(layer.toDataURL() === dataUrls['text stroke disabled'], 'should be text with blue fill and no stroke');
+        testDataUrl(layer.toDataURL(),'text stroke disabled', 'should be text with blue fill and no stroke');
+    },
+    'wrapped text': function (containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var txt = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+            arr = [txt, txt];
+
+        var layer = new Kinetic.Layer();
+        var text = new Kinetic.Text({
+            x: 0,
+            y: 0,
+            width: 578,
+            text: arr.join(''),
+            fontSize: 15,
+            fontFamily: 'Calibri',
+            fill: '#000',
+            wrap: 'word'
+        });
+
+        layer.add(text);
+        stage.add(layer);
+
+        testDataUrl(layer.toDataURL(),'wrapping to words', 'text should be wrapped to words');
+
+        text.setWrap('none');
+        layer.draw();
+        testDataUrl(layer.toDataURL(),'no wrapping', 'text should not be wrapped');
+
+        text.setWrap('char');
+        layer.draw();
+        testDataUrl(layer.toDataURL(), 'wrapping to chars', 'text should be wrapped to chars');
+
     }
 };

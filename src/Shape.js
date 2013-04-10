@@ -26,14 +26,6 @@
 
     Kinetic.Shape.prototype = {
         _initShape: function(config) {
-            this.setDefaultAttrs({
-                fillEnabled: true,
-                strokeEnabled: true,
-                shadowEnabled: true,
-                dashArrayEnabled: true,
-                fillPriority: 'color'
-            });
-
             this.nodeType = 'Shape';
             this._fillFunc = _fillFunc;
             this._strokeFunc = _strokeFunc;
@@ -54,6 +46,7 @@
             this.colorKey = key;
             shapes[key] = this;
 
+            this.createAttrs();
             // call super constructor
             Kinetic.Node.call(this, config);
         },
@@ -135,6 +128,18 @@
             this.setAttr('strokeEnabled', false);
         },
         /**
+         * enable stroke scale
+         */
+        enableStrokeScale: function() {
+            this.setAttr('strokeScaleEnabled', true);
+        },
+        /**
+         * disable stroke scale
+         */
+        disableStrokeScale: function() {
+            this.setAttr('strokeScaleEnabled', false);
+        },
+        /**
          * enable shadow
          */
         enableShadow: function() {
@@ -158,27 +163,40 @@
         disableDashArray: function() {
             this.setAttr('dashArrayEnabled', false);
         },
+        /**
+         * get shape type.  Ex. 'Circle', 'Rect', 'Text', etc.
+         * @name getShapeType
+         * @methodOf Kinetic.Shape.prototype
+         */
+        getShapeType: function() {
+            return this.shapeType;
+        },
         remove: function() {
             Kinetic.Node.prototype.remove.call(this);
             delete Kinetic.Global.shapes[this.colorKey];
         },
         drawScene: function(canvas) {
-            var attrs = this.attrs, drawFunc = attrs.drawFunc, canvas = canvas || this.getLayer().getCanvas(), context = canvas.getContext();
+            var attrs = this.getAttrs(), 
+                drawFunc = attrs.drawFunc, 
+                canvas = canvas || this.getLayer().getCanvas(), 
+                context = canvas.getContext();
 
             if(drawFunc && this.isVisible()) {
                 context.save();
                 canvas._applyOpacity(this);
-                canvas._applyLineJoin(this);
+                canvas._applyLineJoin(this);                
                 canvas._applyAncestorTransforms(this);
-
                 drawFunc.call(this, canvas);
                 context.restore();
             }
         },
         drawHit: function() {
-            var attrs = this.attrs, drawFunc = attrs.drawHitFunc || attrs.drawFunc, canvas = this.getLayer().hitCanvas, context = canvas.getContext();
+            var attrs = this.getAttrs(), 
+                drawFunc = attrs.drawHitFunc || attrs.drawFunc, 
+                canvas = this.getLayer().hitCanvas, 
+                context = canvas.getContext();
 
-            if(drawFunc && this.isVisible() && this.isListening()) {
+            if(drawFunc && this.shouldDrawHit()) {
                 context.save();
                 canvas._applyLineJoin(this);
                 canvas._applyAncestorTransforms(this);
@@ -199,7 +217,31 @@
     Kinetic.Global.extend(Kinetic.Shape, Kinetic.Node);
 
     // add getters and setters
-    Kinetic.Node.addGettersSetters(Kinetic.Shape, ['stroke', 'lineJoin', 'lineCap', 'strokeWidth', 'drawFunc', 'drawHitFunc', 'dashArray', 'shadowColor', 'shadowBlur', 'shadowOpacity', 'fillPatternImage', 'fill', 'fillPatternX', 'fillPatternY', 'fillLinearGradientColorStops', 'fillRadialGradientStartRadius', 'fillRadialGradientEndRadius', 'fillRadialGradientColorStops', 'fillPatternRepeat', 'fillEnabled', 'strokeEnabled', 'shadowEnabled', 'dashArrayEnabled', 'fillPriority']);
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'stroke');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'lineJoin');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'lineCap');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'strokeWidth');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'drawFunc');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'drawHitFunc');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'dashArray');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'shadowColor');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'shadowBlur');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'shadowOpacity');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillPatternImage');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fill');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillPatternX');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillPatternY');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillLinearGradientColorStops');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillRadialGradientStartRadius');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillRadialGradientEndRadius');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillRadialGradientColorStops');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillPatternRepeat');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillEnabled', true);
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'strokeEnabled', true);
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'shadowEnabled', true);
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'dashArrayEnabled', true);
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'fillPriority', 'color');
+    Kinetic.Node.addGetterSetter(Kinetic.Shape, 'strokeScaleEnabled', true);
 
     /**
      * set stroke color
@@ -470,7 +512,13 @@
      * @methodOf Kinetic.Shape.prototype
      */
 
-    Kinetic.Node.addPointGettersSetters(Kinetic.Shape, ['fillPatternOffset', 'fillPatternScale', 'fillLinearGradientStartPoint', 'fillLinearGradientEndPoint', 'fillRadialGradientStartPoint', 'fillRadialGradientEndPoint', 'shadowOffset']);
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillPatternOffset');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillPatternScale');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillLinearGradientStartPoint');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillLinearGradientEndPoint');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillRadialGradientStartPoint');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'fillRadialGradientEndPoint');
+    Kinetic.Node.addPointGetterSetter(Kinetic.Shape, 'shadowOffset');
 
     /**
      * set fill pattern offset
@@ -563,7 +611,7 @@
      * @methodOf Kinetic.Shape.prototype
      */
 
-    Kinetic.Node.addRotationGettersSetters(Kinetic.Shape, ['fillPatternRotation']);
+    Kinetic.Node.addRotationGetterSetter(Kinetic.Shape, 'fillPatternRotation', 0);
 
     /**
      * set fill pattern rotation in radians

@@ -1,4 +1,27 @@
 (function() {
+    // CONSTANTS
+    var SPACE = ' ',
+        EMPTY_STRING = '',
+        DOT = '.',
+        GET = 'get',
+        SET = 'set',
+        SHAPE = 'Shape',
+        STAGE = 'Stage',
+        X = 'x',
+        Y = 'y',
+        KINETIC = 'kinetic',
+        BEFORE = 'before',
+        CHANGE = 'Change',
+        ID = 'id',
+        NAME = 'name',
+        MOUSEENTER = 'mouseenter',
+        MOUSELEAVE = 'mouseleave',
+        DEG = 'Deg',
+        ON = 'on',
+        OFF = 'off',
+        BEFORE_DRAW = 'beforeDraw',
+        DRAW = 'draw';
+        
     /**
      * Node constructor. Nodes are entities that can be transformed, layered,
      * and have bound events. The stage, layers, groups, and shapes all extend Node.
@@ -13,28 +36,6 @@
     Kinetic.Node.prototype = {
         _nodeInit: function(config) {
             this._id = Kinetic.Global.idCounter++;
-
-            this.defaultNodeAttrs = {
-                visible: true,
-                listening: true,
-                name: undefined,
-                opacity: 1,
-                x: 0,
-                y: 0,
-                scale: {
-                    x: 1,
-                    y: 1
-                },
-                rotation: 0,
-                offset: {
-                    x: 0,
-                    y: 0
-                },
-                draggable: false,
-                dragOnTop: true
-            };
-
-            this.setDefaultAttrs(this.defaultNodeAttrs);
             this.eventListeners = {};
             this.setAttrs(config);
         },
@@ -51,19 +52,21 @@
          * @param {Function} handler The handler function is passed an event object
          */
         on: function(typesStr, handler) {
-            var types = typesStr.split(' ');
-            /*
+            var types = typesStr.split(SPACE),
+                len = types.length,
+                n, type, event, parts, baseEvent, name;
+            
+             /*
              * loop through types and attach event listeners to
              * each one.  eg. 'click mouseover.namespace mouseout'
              * will create three event bindings
              */
-            var len = types.length;
-            for(var n = 0; n < len; n++) {
-                var type = types[n];
-                var event = type;
-                var parts = event.split('.');
-                var baseEvent = parts[0];
-                var name = parts.length > 1 ? parts[1] : '';
+            for(n = 0; n < len; n++) {
+                type = types[n];
+                event = type;
+                parts = event.split(DOT);
+                baseEvent = parts[0];
+                name = parts.length > 1 ? parts[1] : EMPTY_STRING;
 
                 if(!this.eventListeners[baseEvent]) {
                     this.eventListeners[baseEvent] = [];
@@ -74,6 +77,7 @@
                     handler: handler
                 });
             }
+            return this;
         },
         /**
          * remove event bindings from the node. Pass in a string of
@@ -87,14 +91,15 @@
          * @param {String} typesStr e.g. 'click', 'mousedown touchstart', '.foobar'
          */
         off: function(typesStr) {
-            var types = typesStr.split(' ');
-            var len = types.length;
-            for(var n = 0; n < len; n++) {
-                var type = types[n];
-                //var event = (type.indexOf('touch') === -1) ? 'on' + type : type;
-                var event = type;
-                var parts = event.split('.');
-                var baseEvent = parts[0];
+            var types = typesStr.split(SPACE),
+                len = types.length,
+                n, type, event, parts, baseEvent;
+                
+            for(n = 0; n < len; n++) {
+                type = types[n];
+                event = type;
+                parts = event.split(DOT);
+                baseEvent = parts[0];
 
                 if(parts.length > 1) {
                     if(baseEvent) {
@@ -112,6 +117,7 @@
                     delete this.eventListeners[baseEvent];
                 }
             }
+            return this;
         },
         /**
          * remove child from container, but don't destroy it
@@ -120,6 +126,7 @@
          */
         remove: function() {
             var parent = this.getParent();
+            
             if(parent && parent.children) {
                 parent.children.splice(this.index, 1);
                 parent._setChildrenIndices();
@@ -132,7 +139,10 @@
          * @methodOf Kinetic.Node.prototype
          */
         destroy: function() {
-            var parent = this.getParent(), stage = this.getStage(), dd = Kinetic.DD, go = Kinetic.Global;
+            var parent = this.getParent(), 
+                stage = this.getStage(), 
+                dd = Kinetic.DD, 
+                go = Kinetic.Global;
 
             // destroy children
             while(this.children && this.children.length > 0) {
@@ -143,11 +153,6 @@
             go._removeId(this.getId());
             go._removeName(this.getName(), this._id);
 
-            // stop DD
-            if(dd && dd.node && dd.node._id === this._id) {
-                node._endDrag();
-            }
-
             // stop transition
             if(this.trans) {
                 this.trans.stop();
@@ -156,41 +161,33 @@
             this.remove();
         },
         /**
+         * get attr
+         * @name getAttr
+         * @methodOf Kinetic.Node.prototype
+         * @param {String} attr  
+         */
+        getAttr: function(attr) {
+            var method = GET + Kinetic.Type._capitalize(attr);
+            return this[method](); 
+        },
+        /**
          * get attrs
          * @name getAttrs
          * @methodOf Kinetic.Node.prototype
          */
         getAttrs: function() {
-            return this.attrs;
+            return this.attrs || {};
         },
         /**
-         * set default attrs.  This method should only be used if
-         *  you're creating a custom node
-         * @name setDefaultAttrs
+         * @name createAttrs
          * @methodOf Kinetic.Node.prototype
-         * @param {Object} confic
          */
-        setDefaultAttrs: function(config) {
-            // create attrs object if undefined
+        createAttrs: function() {
             if(this.attrs === undefined) {
                 this.attrs = {};
             }
-
-            if(config) {
-                for(var key in config) {
-                    /*
-                     * only set the attr if it's undefined in case
-                     * a developer writes a custom class that extends
-                     * a Kinetic Class such that their default property
-                     * isn't overwritten by the Kinetic Class default
-                     * property
-                     */
-                    if(this.attrs[key] === undefined) {
-                        this.attrs[key] = config[key];
-                    }
-                }
-            }
         },
+        
         /**
          * set attrs
          * @name setAttrs
@@ -198,9 +195,11 @@
          * @param {Object} config object containing key value pairs
          */
         setAttrs: function(config) {
+            var key, method;
+            
             if(config) {
-                for(var key in config) {
-                    var method = 'set' + key.charAt(0).toUpperCase() + key.slice(1);
+                for(key in config) {
+                    method = SET + Kinetic.Type._capitalize(key);
                     // use setter if available
                     if(Kinetic.Type._isFunction(this[method])) {
                         this[method](config[key]);
@@ -220,7 +219,14 @@
          * @methodOf Kinetic.Node.prototype
          */
         getVisible: function() {
-            var visible = this.attrs.visible, parent = this.getParent();
+            var visible = this.attrs.visible, 
+                parent = this.getParent();
+              
+            // default  
+            if (visible === undefined) {
+                visible = true;  
+            }
+            
             if(visible && parent && !parent.getVisible()) {
                 return false;
             }
@@ -234,7 +240,14 @@
          * @methodOf Kinetic.Node.prototype
          */
         getListening: function() {
-            var listening = this.attrs.listening, parent = this.getParent();
+            var listening = this.attrs.listening, 
+                parent = this.getParent();
+                
+            // default  
+            if (listening === undefined) {
+                listening = true;  
+            }
+            
             if(listening && parent && !parent.getListening()) {
                 return false;
             }
@@ -262,7 +275,7 @@
          * @methodOf Kinetic.Node.prototype
          */
         getZIndex: function() {
-            return this.index;
+            return this.index || 0;
         },
         /**
          * get absolute z-index which takes into account sibling
@@ -271,18 +284,20 @@
          * @methodOf Kinetic.Node.prototype
          */
         getAbsoluteZIndex: function() {
-            var level = this.getLevel();
-            var stage = this.getStage();
-            var that = this;
-            var index = 0;
+            var level = this.getLevel(),
+                stage = this.getStage(),
+                that = this,
+                index = 0,
+                nodes, len, n, child;
+                
             function addChildren(children) {
-                var nodes = [];
-                var len = children.length;
-                for(var n = 0; n < len; n++) {
-                    var child = children[n];
+                nodes = [];
+                len = children.length;
+                for(n = 0; n < len; n++) {
+                    child = children[n];
                     index++;
 
-                    if(child.nodeType !== 'Shape') {
+                    if(child.nodeType !== SHAPE) {
                         nodes = nodes.concat(child.getChildren());
                     }
 
@@ -295,7 +310,7 @@
                     addChildren(nodes);
                 }
             }
-            if(that.nodeType !== 'Stage') {
+            if(that.nodeType !== STAGE) {
                 addChildren(that.getStage().getChildren());
             }
 
@@ -309,8 +324,9 @@
          * @methodOf Kinetic.Node.prototype
          */
         getLevel: function() {
-            var level = 0;
-            var parent = this.parent;
+            var level = 0,
+                parent = this.parent;
+                
             while(parent) {
                 level++;
                 parent = parent.parent;
@@ -326,8 +342,8 @@
          */
         setPosition: function() {
             var pos = Kinetic.Type._getXY([].slice.call(arguments));
-            this.setAttr('x', pos.x);
-            this.setAttr('y', pos.y);
+            this.setAttr(X, pos.x);
+            this.setAttr(Y, pos.y);
         },
         /**
          * get node position relative to parent
@@ -335,10 +351,9 @@
          * @methodOf Kinetic.Node.prototype
          */
         getPosition: function() {
-            var attrs = this.attrs;
             return {
-                x: attrs.x,
-                y: attrs.y
+                x: this.getX(),
+                y: this.getY()
             };
         },
         /**
@@ -347,8 +362,9 @@
          * @methodOf Kinetic.Node.prototype
          */
         getAbsolutePosition: function() {
-            var trans = this.getAbsoluteTransform();
-            var o = this.getOffset();
+            var trans = this.getAbsoluteTransform(),
+                o = this.getOffset();
+                
             trans.translate(o.x, o.y);
             return trans.getTranslation();
         },
@@ -360,8 +376,10 @@
          * @param {Number} y
          */
         setAbsolutePosition: function() {
-            var pos = Kinetic.Type._getXY([].slice.call(arguments));
-            var trans = this._clearTransform();
+            var pos = Kinetic.Type._getXY([].slice.call(arguments)),
+                trans = this._clearTransform(),
+                it;
+                
             // don't clear translation
             this.attrs.x = trans.x;
             this.attrs.y = trans.y;
@@ -369,7 +387,7 @@
             delete trans.y;
 
             // unravel transform
-            var it = this.getAbsoluteTransform();
+            it = this.getAbsoluteTransform();
 
             it.invert();
             it.translate(pos.x, pos.y);
@@ -389,9 +407,9 @@
          * @param {Number} y
          */
         move: function() {
-            var pos = Kinetic.Type._getXY([].slice.call(arguments));
-            var x = this.getX();
-            var y = this.getY();
+            var pos = Kinetic.Type._getXY([].slice.call(arguments)),
+                x = this.getX(),
+                y = this.getY();
 
             if(pos.x !== undefined) {
                 x += pos.x;
@@ -404,7 +422,9 @@
             this.setPosition(x, y);
         },
         _eachAncestorReverse: function(func, includeSelf) {
-            var family = [], parent = this.getParent();
+            var family = [], 
+                parent = this.getParent(),
+                len, n;
 
             // build family by traversing ancestors
             if(includeSelf) {
@@ -415,8 +435,8 @@
                 parent = parent.parent;
             }
 
-            var len = family.length;
-            for(var n = 0; n < len; n++) {
+            len = family.length;
+            for(n = 0; n < len; n++) {
                 func(family[n]);
             }
         },
@@ -456,8 +476,8 @@
          * @methodOf Kinetic.Node.prototype
          */
         moveUp: function() {
-            var index = this.index;
-            var len = this.parent.getChildren().length;
+            var index = this.index,
+                len = this.parent.getChildren().length;
             if(index < len - 1) {
                 this.parent.children.splice(index, 1);
                 this.parent.children.splice(index + 1, 0, this);
@@ -533,13 +553,16 @@
          * @methodOf Kinetic.Node.prototype
          */
         toObject: function() {
-            var type = Kinetic.Type, obj = {}, attrs = this.attrs;
+            var type = Kinetic.Type, 
+                obj = {}, 
+                attrs = this.getAttrs(),
+                key, val;
 
             obj.attrs = {};
 
             // serialize only attributes that are not function, image, DOM, or objects with methods
-            for(var key in attrs) {
-                var val = attrs[key];
+            for(key in attrs) {
+                val = attrs[key];
                 if(!type._isFunction(val) && !type._isElement(val) && !(type._isObject(val) && type._hasMethods(val))) {
                     obj.attrs[key] = val;
                 }
@@ -588,24 +611,22 @@
             }
         },
         /**
-         * simulate event with event bubbling
-         * @name simulate
-         * @methodOf Kinetic.Node.prototype
-         * @param {String} eventType
-         * @param {EventObject} evt event object
-         */
-        simulate: function(eventType, evt) {
-            this._handleEvent(eventType, evt || {});
-        },
-        /**
-         * synthetically fire an event. The event object will not bubble up the Node tree. You can also pass in custom properties
+         * fire event
          * @name fire
          * @methodOf Kinetic.Node.prototype
-         * @param {String} eventType
-         * @param {Object} obj optional object which can be used to pass parameters
+         * @param {String} eventType event type.  can be a regular event, like click, mouseover, or mouseout, or it can be a custom event, like myCustomEvent
+         * @param {EventObject} evt event object
+         * @param {Boolean} preventBubble setting the value to false, or leaving it undefined, will result in the event bubbling.  Setting the value to true will result in the event not bubbling.
          */
-        fire: function(eventType, obj) {
-            this._executeHandlers(eventType, obj || {});
+        fire: function(eventType, evt, preventBubble) {
+            // no bubble
+            if (preventBubble) {
+                this._executeHandlers(eventType, evt || {});
+            }
+            // bubble
+            else {
+                this._handleEvent(eventType, evt || {});
+            }
         },
         /**
          * get absolute transform of the node which takes into
@@ -615,10 +636,11 @@
          */
         getAbsoluteTransform: function() {
             // absolute transform
-            var am = new Kinetic.Transform();
+            var am = new Kinetic.Transform(),
+                m;
 
             this._eachAncestorReverse(function(node) {
-                var m = node.getTransform();
+                m = node.getTransform();
                 am.multiply(m);
             }, true);
             return am;
@@ -630,14 +652,13 @@
          */
         getTransform: function() {
             var m = new Kinetic.Transform(), 
-                attrs = this.attrs, 
-                x = attrs.x, 
-                y = attrs.y, 
-                rotation = attrs.rotation, 
-                scale = attrs.scale, 
+                x = this.getX(), 
+                y = this.getY(), 
+                rotation = this.getRotation(),
+                scale = this.getScale(), 
                 scaleX = scale.x, 
                 scaleY = scale.y, 
-                offset = attrs.offset, 
+                offset = this.getOffset(), 
                 offsetX = offset.x, 
                 offsetY = offset.y;
                 
@@ -664,20 +685,21 @@
          */
         clone: function(obj) {
             // instantiate new node
-            var classType = this.shapeType || this.nodeType;
-            var node = new Kinetic[classType](this.attrs);
+            var classType = this.shapeType || this.nodeType,
+                node = new Kinetic[classType](this.attrs),
+                key, allListeners, len, n, listener;
 
-            // copy over user listeners
-            for(var key in this.eventListeners) {
-                var allListeners = this.eventListeners[key];
-                var len = allListeners.length;
-                for(var n = 0; n < len; n++) {
-                    var listener = allListeners[n];
+            // copy over listeners
+            for(key in this.eventListeners) {
+                allListeners = this.eventListeners[key];
+                len = allListeners.length;
+                for(n = 0; n < len; n++) {
+                    listener = allListeners[n];
                     /*
                      * don't include kinetic namespaced listeners because
                      *  these are generated by the constructors
                      */
-                    if(listener.name.indexOf('kinetic') < 0) {
+                    if(listener.name.indexOf(KINETIC) < 0) {
                         // if listeners array doesn't exist, then create it
                         if(!node.eventListeners[key]) {
                             node.eventListeners[key] = [];
@@ -710,12 +732,20 @@
          *  is very high quality
          */
         toDataURL: function(config) {
-            config = config || {};
-            var mimeType = config.mimeType || null, quality = config.quality || null, canvas, context, x = config.x || 0, y = config.y || 0;
+            var config = config || {},
+                mimeType = config.mimeType || null, 
+                quality = config.quality || null,
+                x = config.x || 0, 
+                y = config.y || 0,
+                canvas, context;
 
             //if width and height are defined, create new canvas to draw on, else reuse stage buffer canvas
             if(config.width && config.height) {
-                canvas = new Kinetic.SceneCanvas(config.width, config.height, 1);
+                canvas = new Kinetic.SceneCanvas({
+                  width: config.width, 
+                  height: config.height, 
+                  pixelRatio: 1
+                });
             }
             else {
                 canvas = this.getStage().bufferCanvas;
@@ -799,10 +829,13 @@
             return this.nodeType === selector ? [this] : [];
         },
         _off: function(type, name) {
-            for(var i = 0; i < this.eventListeners[type].length; i++) {
-                if(this.eventListeners[type][i].name === name) {
-                    this.eventListeners[type].splice(i, 1);
-                    if(this.eventListeners[type].length === 0) {
+            var evtListeners = this.eventListeners[type],
+                i;
+                
+            for(i = 0; i < evtListeners.length; i++) {
+                if(evtListeners[i].name === name) {
+                    evtListeners.splice(i, 1);
+                    if(evtListeners.length === 0) {
                         delete this.eventListeners[type];
                         break;
                     }
@@ -811,13 +844,12 @@
             }
         },
         _clearTransform: function() {
-            var attrs = this.attrs, 
-              scale = attrs.scale, 
-              offset = attrs.offset,
+            var scale = this.getScale(), 
+              offset = this.getOffset(),
               trans = {
-                  x: attrs.x,
-                  y: attrs.y,
-                  rotation: attrs.rotation,
+                  x: this.getX(),
+                  y: this.getY(),
+                  rotation: this.getRotation(),
                   scale: {
                       x: scale.x,
                       y: scale.y
@@ -843,18 +875,20 @@
             return trans;
         },
         _setTransform: function(trans) {
-            for(var key in trans) {
+            var key;
+            
+            for(key in trans) {
                 this.attrs[key] = trans[key];
             }
         },
         _fireBeforeChangeEvent: function(attr, oldVal, newVal) {
-            this._handleEvent('before' + attr.toUpperCase() + 'Change', {
+            this._handleEvent(BEFORE + Kinetic.Type._capitalize(attr) + CHANGE, {
                 oldVal: oldVal,
                 newVal: newVal
             });
         },
         _fireChangeEvent: function(attr, oldVal, newVal) {
-            this._handleEvent(attr + 'Change', {
+            this._handleEvent(attr + CHANGE, {
                 oldVal: oldVal,
                 newVal: newVal
             });
@@ -866,10 +900,13 @@
          * @param {String} id
          */
         setId: function(id) {
-            var oldId = this.getId(), stage = this.getStage(), go = Kinetic.Global;
+            var oldId = this.getId(), 
+                stage = this.getStage(), 
+                go = Kinetic.Global;
+                
             go._removeId(oldId);
             go._addId(this, id);
-            this.setAttr('id', id);
+            this.setAttr(ID, id);
         },
         /**
          * set name
@@ -878,38 +915,48 @@
          * @param {String} name
          */
         setName: function(name) {
-            var oldName = this.getName(), stage = this.getStage(), go = Kinetic.Global;
+            var oldName = this.getName(), 
+                stage = this.getStage(), 
+                go = Kinetic.Global;
+                
             go._removeName(oldName, this._id);
             go._addName(this, name);
-            this.setAttr('name', name);
+            this.setAttr(NAME, name);
+        },
+        /**
+         * get node type.  Returns 'Stage', 'Layer', 'Group', or 'Shape'
+         * @name getNodeType
+         * @methodOf Kinetic.Node.prototype
+         */
+        getNodeType: function() {
+            return this.nodeType;
         },
         setAttr: function(key, val) {
+            var oldVal;
             if(val !== undefined) {
-                var oldVal = this.attrs[key];
+                oldVal = this.attrs[key];
                 this._fireBeforeChangeEvent(key, oldVal, val);
                 this.attrs[key] = val;
                 this._fireChangeEvent(key, oldVal, val);
             }
         },
         _handleEvent: function(eventType, evt, compareShape) {
-            if(evt && this.nodeType === 'Shape') {
-                evt.shape = this;
+            if(evt && this.nodeType === SHAPE) {
+                evt.targetNode = this;
             }
             var stage = this.getStage();
             var el = this.eventListeners;
             var okayToRun = true;
 
-            if(eventType === 'mouseenter' && compareShape && this._id === compareShape._id) {
+            if(eventType === MOUSEENTER && compareShape && this._id === compareShape._id) {
                 okayToRun = false;
             }
-            else if(eventType === 'mouseleave' && compareShape && this._id === compareShape._id) {
+            else if(eventType === MOUSELEAVE && compareShape && this._id === compareShape._id) {
                 okayToRun = false;
             }
 
-            if(okayToRun) {
-                if(el[eventType]) {
-                    this.fire(eventType, evt);
-                }
+            if(okayToRun) {                
+                this._executeHandlers(eventType, evt);
 
                 // simulate event bubbling
                 if(evt && !evt.cancelBubble && this.parent) {
@@ -923,74 +970,71 @@
             }
         },
         _executeHandlers: function(eventType, evt) {
-            var events = this.eventListeners[eventType];
-            var len = events.length;
-            for(var i = 0; i < len; i++) {
-                events[i].handler.apply(this, [evt]);
+            var events = this.eventListeners[eventType],
+                len, i;
+                
+            if (events) {
+                len = events.length;
+                for(i = 0; i < len; i++) {
+                    events[i].handler.apply(this, [evt]);
+                }
             }
+        },
+        /*
+         * draw both scene and hit graphs.  If the node being drawn is the stage, all of the layers will be cleared and redra
+         * @name draw
+         * @methodOf Kinetic.Node.prototype
+         *  the scene renderer
+         */
+        draw: function() {
+            var evt = {
+                    node: this
+                };
+            
+            this.fire(BEFORE_DRAW, evt);
+            this.drawScene();
+            this.drawHit();
+            this.fire(DRAW, evt);
+        },
+        shouldDrawHit: function() { 
+            return this.isVisible() && this.isListening() && !Kinetic.Global.isDragging(); 
         }
     };
 
     // add getter and setter methods
-    Kinetic.Node.addSetters = function(constructor, arr) {
-        var len = arr.length;
-        for(var n = 0; n < len; n++) {
-            var attr = arr[n];
-            this._addSetter(constructor, attr);
-        }
+
+    Kinetic.Node.addGetterSetter = function(constructor, arr, def) {
+        this.addGetter(constructor, arr, def);
+        this.addSetter(constructor, arr);
     };
-    Kinetic.Node.addPointSetters = function(constructor, arr) {
-        var len = arr.length;
-        for(var n = 0; n < len; n++) {
-            var attr = arr[n];
-            this._addPointSetter(constructor, attr);
-        }
+    Kinetic.Node.addPointGetterSetter = function(constructor, arr, def) {
+        this.addGetter(constructor, arr, def);
+        this.addPointSetter(constructor, arr);     
     };
-    Kinetic.Node.addRotationSetters = function(constructor, arr) {
-        var len = arr.length;
-        for(var n = 0; n < len; n++) {
-            var attr = arr[n];
-            this._addRotationSetter(constructor, attr);
-        }
+    Kinetic.Node.addRotationGetterSetter = function(constructor, arr, def) {
+        this.addRotationGetter(constructor, arr, def);
+        this.addRotationSetter(constructor, arr);    
     };
-    Kinetic.Node.addGetters = function(constructor, arr) {
-        var len = arr.length;
-        for(var n = 0; n < len; n++) {
-            var attr = arr[n];
-            this._addGetter(constructor, attr);
-        }
-    };
-    Kinetic.Node.addRotationGetters = function(constructor, arr) {
-        var len = arr.length;
-        for(var n = 0; n < len; n++) {
-            var attr = arr[n];
-            this._addRotationGetter(constructor, attr);
-        }
-    };
-    Kinetic.Node.addGettersSetters = function(constructor, arr) {
-        this.addSetters(constructor, arr);
-        this.addGetters(constructor, arr);
-    };
-    Kinetic.Node.addPointGettersSetters = function(constructor, arr) {
-        this.addPointSetters(constructor, arr);
-        this.addGetters(constructor, arr);
-    };
-    Kinetic.Node.addRotationGettersSetters = function(constructor, arr) {
-        this.addRotationSetters(constructor, arr);
-        this.addRotationGetters(constructor, arr);
-    };
-    Kinetic.Node._addSetter = function(constructor, attr) {
-        var that = this;
-        var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
+    Kinetic.Node.addSetter = function(constructor, attr) {
+        var that = this,
+            method = SET + Kinetic.Type._capitalize(attr);
+            
         constructor.prototype[method] = function(val) {
             this.setAttr(attr, val);
         };
     };
-    Kinetic.Node._addPointSetter = function(constructor, attr) {
-        var that = this;
-        var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
+    Kinetic.Node.addPointSetter = function(constructor, attr) {
+        var that = this,
+            method = SET + Kinetic.Type._capitalize(attr);
+            
         constructor.prototype[method] = function() {
             var pos = Kinetic.Type._getXY([].slice.call(arguments));
+            
+            // default
+            if (!this.attrs[attr]) {
+                this.attrs[attr] = {x:1,y:1};  
+            }
+            
             if(pos && pos.x === undefined) {
                 pos.x = this.attrs[attr].x;
             }
@@ -1000,35 +1044,50 @@
             this.setAttr(attr, pos);
         };
     };
-    Kinetic.Node._addRotationSetter = function(constructor, attr) {
-        var that = this;
-        var method = 'set' + attr.charAt(0).toUpperCase() + attr.slice(1);
+    Kinetic.Node.addRotationSetter = function(constructor, attr) {
+        var that = this,
+            method = SET + Kinetic.Type._capitalize(attr);
+            
         // radians
         constructor.prototype[method] = function(val) {
             this.setAttr(attr, val);
         };
         // degrees
-        constructor.prototype[method + 'Deg'] = function(deg) {
+        constructor.prototype[method + DEG] = function(deg) {
             this.setAttr(attr, Kinetic.Type._degToRad(deg));
         };
     };
-    Kinetic.Node._addGetter = function(constructor, attr) {
-        var that = this;
-        var method = 'get' + attr.charAt(0).toUpperCase() + attr.slice(1);
+    Kinetic.Node.addGetter = function(constructor, attr, def) {
+        var that = this,
+            method = GET + Kinetic.Type._capitalize(attr);
+            
         constructor.prototype[method] = function(arg) {
-            return this.attrs[attr];
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return val;    
         };
     };
-    Kinetic.Node._addRotationGetter = function(constructor, attr) {
-        var that = this;
-        var method = 'get' + attr.charAt(0).toUpperCase() + attr.slice(1);
+    Kinetic.Node.addRotationGetter = function(constructor, attr, def) {
+        var that = this,
+            method = GET + Kinetic.Type._capitalize(attr);
+            
         // radians
         constructor.prototype[method] = function() {
-            return this.attrs[attr];
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return val;
         };
         // degrees
-        constructor.prototype[method + 'Deg'] = function() {
-            return Kinetic.Type._radToDeg(this.attrs[attr])
+        constructor.prototype[method + DEG] = function() {
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return Kinetic.Type._radToDeg(val);
         };
     };
     /**
@@ -1048,13 +1107,13 @@
         return this._createNode(JSON.parse(json), container);
     };
     Kinetic.Node._createNode = function(obj, container) {
-        var type;
+        var type, no, len, n;
 
         // determine type
-        if(obj.nodeType === 'Shape') {
+        if(obj.nodeType === SHAPE) {
             // add custom shape
             if(obj.shapeType === undefined) {
-                type = 'Shape';
+                type = SHAPE;
             }
             // add standard shape
             else {
@@ -1070,10 +1129,10 @@
             obj.attrs.container = container;
         }
 
-        var no = new Kinetic[type](obj.attrs);
+        no = new Kinetic[type](obj.attrs);
         if(obj.children) {
-            var len = obj.children.length;
-            for(var n = 0; n < len; n++) {
+            len = obj.children.length;
+            for(n = 0; n < len; n++) {
                 no.add(this._createNode(obj.children[n]));
             }
         }
@@ -1081,7 +1140,9 @@
         return no;
     };
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.Node, ['x', 'y', 'opacity']);
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'x', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'y', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'opacity', 1);
 
     /**
      * set x position
@@ -1124,7 +1185,8 @@
      * @methodOf Kinetic.Node.prototype
      */
 
-    Kinetic.Node.addGetters(Kinetic.Node, ['name', 'id']);
+    Kinetic.Node.addGetter(Kinetic.Node, 'name');
+    Kinetic.Node.addGetter(Kinetic.Node, 'id');
 
     /**
      * get name
@@ -1138,7 +1200,7 @@
      * @methodOf Kinetic.Node.prototype
      */
 
-    Kinetic.Node.addRotationGettersSetters(Kinetic.Node, ['rotation']);
+    Kinetic.Node.addRotationGetterSetter(Kinetic.Node, 'rotation', 0);
 
     /**
      * set rotation in radians
@@ -1166,7 +1228,8 @@
      * @methodOf Kinetic.Node.prototype
      */
 
-    Kinetic.Node.addPointGettersSetters(Kinetic.Node, ['scale', 'offset']);
+    Kinetic.Node.addPointGetterSetter(Kinetic.Node, 'scale', {x:1,y:1});
+    Kinetic.Node.addPointGetterSetter(Kinetic.Node, 'offset', {x:0,y:0});
 
     /**
      * set scale
@@ -1196,7 +1259,10 @@
      * @methodOf Kinetic.Node.prototype
      */
 
-    Kinetic.Node.addSetters(Kinetic.Node, ['width', 'height', 'listening', 'visible']);
+    Kinetic.Node.addSetter(Kinetic.Node, 'width');
+    Kinetic.Node.addSetter(Kinetic.Node, 'height');
+    Kinetic.Node.addSetter(Kinetic.Node, 'listening');
+    Kinetic.Node.addSetter(Kinetic.Node, 'visible');
 
     /**
      * set width
@@ -1239,18 +1305,6 @@
      * @methodOf Kinetic.Node.prototype
      */
     Kinetic.Node.prototype.isVisible = Kinetic.Node.prototype.getVisible;
-
-    // collection mappings
-    var collectionMappings = ['on', 'off'];
-    for(var n = 0; n < 2; n++) {
-        // induce scope
-        (function(i) {
-            var method = collectionMappings[i];
-            Kinetic.Collection.prototype[method] = function() {
-                var args = [].slice.call(arguments);
-                args.unshift(method);
-                this.apply.apply(this, args);
-            };
-        })(n);
-    }
+    
+    Kinetic.Collection.mapMethods(['on', 'off']);
 })();

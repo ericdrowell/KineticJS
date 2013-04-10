@@ -16,11 +16,7 @@
 
     Kinetic.Star.prototype = {
         _initStar: function(config) {
-            this.setDefaultAttrs({
-                numPoints: 0,
-                innerRadius: 0,
-                outerRadius: 0
-            });
+            this.createAttrs();
 
             // call super constructor
             Kinetic.Shape.call(this, config);
@@ -47,7 +43,9 @@
     Kinetic.Global.extend(Kinetic.Star, Kinetic.Shape);
 
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.Star, ['numPoints', 'innerRadius', 'outerRadius']);
+    Kinetic.Node.addGetterSetter(Kinetic.Star, 'numPoints', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Star, 'innerRadius', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Star, 'outerRadius', 0);
 
     /**
      * set number of points

@@ -25,16 +25,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/**
- * @namespace
+/** 
+ * @namespace 
  */
-var Kinetic = {}; (function() {
+var Kinetic = {}; 
+(function() {
     Kinetic.version = '{{version}}';
-    /**
-     * @namespace
+    
+    /** 
+     * @namespace 
      */
     Kinetic.Filters = {};
-    Kinetic.Plugins = {};
+    Kinetic.DD = {};
+    
+    /** 
+     * @namespace 
+     */
     Kinetic.Global = {
         stages: [],
         idCounter: 0,
@@ -42,6 +48,42 @@ var Kinetic = {}; (function() {
         names: {},
         //shapes hash.  rgb keys and shape values
         shapes: {},
+        /**
+         * @method isDragging returns whether or not drag and drop
+         *  is currently active
+         * @methodOf Kinetic.Global
+         */
+        isDragging: function() {
+            var dd = Kinetic.DD;  
+
+            // if DD is not included with the build, then
+            // drag and drop is not even possible
+            if (!dd) {
+                return false;
+            } 
+            // if DD is included with the build
+            else {
+                return dd.isDragging;
+            }
+        },
+        /**
+        * @method isDragReady returns whether or not a drag and drop operation is ready, but may
+        *  not necessarily have started
+        * @methodOf Kinetic.Global
+        */
+        isDragReady: function() {
+            var dd = Kinetic.DD;  
+
+            // if DD is not included with the build, then
+            // drag and drop is not even possible
+            if (!dd) {
+                return false;
+            } 
+            // if DD is included with the build
+            else {
+                return !!dd.node;
+            }
+        },
         warn: function(str) {
             /*
              * IE9 on Windows7 64bit will throw a JS error

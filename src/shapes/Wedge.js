@@ -5,6 +5,7 @@
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Number} config.angle
+     * @param {Number} config.angleDeg angle in degrees
      * @param {Number} config.radius
      * @param {Boolean} [config.clockwise]
      * {{ShapeParams}}
@@ -16,11 +17,7 @@
 
     Kinetic.Wedge.prototype = {
         _initWedge: function(config) {
-            this.setDefaultAttrs({
-                radius: 0,
-                angle: 0,
-                clockwise: false
-            });
+            this.createAttrs();
 
             // call super constructor
             Kinetic.Shape.call(this, config);
@@ -35,20 +32,9 @@
             context.closePath();
             canvas.fillStroke(this);
         },
-        /**
-         * set angle in degrees
-         * @name setAngleDeg
-         * @methodOf Kinetic.Wedge.prototype
-         * @param {Number} deg
-         */
         setAngleDeg: function(deg) {
             this.setAngle(Kinetic.Type._degToRad(deg));
         },
-        /**
-         * set angle in degrees
-         * @name getAngleDeg
-         * @methodOf Kinetic.Wedge.prototype
-         */
         getAngleDeg: function() {
             return Kinetic.Type._radToDeg(this.getAngle());
         }
@@ -56,7 +42,9 @@
     Kinetic.Global.extend(Kinetic.Wedge, Kinetic.Shape);
 
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.Wedge, ['radius', 'angle', 'clockwise']);
+    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'radius', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'angle', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'clockwise', false);
 
     /**
      * set radius
@@ -70,6 +58,13 @@
      * @name setAngle
      * @methodOf Kinetic.Wedge.prototype
      * @param {Number} angle
+     */
+    
+    /**
+     * set angle in degrees
+     * @name setAngleDeg
+     * @methodOf Kinetic.Wedge.prototype
+     * @param {Number} angleDeg
      */
 
     /**
@@ -89,6 +84,12 @@
     /**
      * get angle
      * @name getAngle
+     * @methodOf Kinetic.Wedge.prototype
+     */
+    
+    /**
+     * get angle in degrees
+     * @name getAngleDeg
      * @methodOf Kinetic.Wedge.prototype
      */
 

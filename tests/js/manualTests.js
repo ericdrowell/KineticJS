@@ -24,11 +24,11 @@ Test.Modules.TRANSITION = {
 
         rect.transitionTo({
             duration: 2,
+            x: 400,
+            y: 30,
             shadowOffset: {
                 x: 80
             },
-            x: 400,
-            y: 30,
             rotation: Math.PI * 2,
             easing: 'bounce-ease-out'
         });
@@ -76,7 +76,10 @@ Test.Modules.TRANSITION = {
                         y: 1.5
                     },
                     duration: 1,
-                    easing: easing
+                    easing: easing,
+                    callback: function() {
+                        console.log('finished');
+                    }
                 });
             });
             shape.on("mouseout", function() {
@@ -732,7 +735,7 @@ Test.Modules.EVENTS = {
         var group = new Kinetic.Group();
 
         layer.on('click', function(evt) {
-            log(evt.shape.getName());
+            log(evt.targetNode.getName());
 
         });
         var redCircle = new Kinetic.Circle({
@@ -1297,7 +1300,7 @@ Test.Modules.DRAG_AND_DROP = {
         layer.add(group);
         stage.add(layer);
     },
-    '*translate, rotate, center offset, and scale shape, and then drag and drop': function(containerId) {
+    'translate, rotate, center offset, and scale shape, and then drag and drop': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -1352,12 +1355,13 @@ Test.Modules.DRAG_AND_DROP = {
     'stage and shape draggable': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
+            draggable: true,
             width: 578,
-            height: 200,
-            draggable: true
+            height: 200
         });
-        var layer = new Kinetic.Layer();
-        var group = new Kinetic.Group();
+        var layer = new Kinetic.Layer({
+            draggable: true 
+        });
 
         var rect = new Kinetic.Rect({
             x: 150,
@@ -1366,8 +1370,7 @@ Test.Modules.DRAG_AND_DROP = {
             height: 50,
             fill: 'red',
             stroke: 'black',
-            strokeWidth: 4,
-            draggable: true,
+            strokeWidth: 4
         });
         
         var rect2 = new Kinetic.Rect({
@@ -1385,5 +1388,34 @@ Test.Modules.DRAG_AND_DROP = {
         stage.add(layer);
 
 
+    },
+    'transition stage width': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+
+        var layer = new Kinetic.Layer();
+
+        layer.canvas.element.style.backgroundColor = 'blue';
+
+        var rect = new Kinetic.Rect({
+            x: 10,
+            y: 10,
+            width: 100,
+            height: 50,
+            fill: 'red'
+        });
+
+        layer.add(rect);
+        stage.add(layer);
+
+        stage.transitionTo({
+            width: 300,
+            duration: 2
+        });
+
+        
     }
 };

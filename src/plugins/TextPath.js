@@ -1,4 +1,8 @@
 (function() {
+    var EMPTY_STRING = '',
+        CALIBRI = 'Calibri',
+        NORMAL = 'normal';
+
     /**
      * Path constructor.
      * @author Jason Follas
@@ -25,21 +29,17 @@
 
     Kinetic.TextPath.prototype = {
         _initTextPath: function(config) {
-            this.setDefaultAttrs({
-                fontFamily: 'Calibri',
-                fontSize: 12,
-                fontStyle: 'normal',
-                text: ''
-            });
-
+            var that = this;
+          
+            this.createAttrs();
             this.dummyCanvas = document.createElement('canvas');
             this.dataArray = [];
-            var that = this;
-
+            
             // call super constructor
             Kinetic.Shape.call(this, config);
 
             // overrides
+            // TODO: shouldn't this be on the prototype?
             this._fillFunc = _fillFunc;
             this._strokeFunc = _strokeFunc;
 
@@ -61,7 +61,7 @@
         drawFunc: function(canvas) {
             var charArr = this.charArr, context = canvas.getContext();
 
-            context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+            context.font = this._getContextFont();
             context.textBaseline = 'middle';
             context.textAlign = 'left';
             context.save();
@@ -77,6 +77,7 @@
                 context.translate(p0.x, p0.y);
                 context.rotate(glyphInfo[i].rotation);
                 this.partialText = glyphInfo[i].text;
+                
                 canvas.fillStroke(this);
                 context.restore();
 
@@ -124,7 +125,7 @@
 
             context.save();
 
-            context.font = this.attrs.fontStyle + ' ' + this.attrs.fontSize + 'pt ' + this.attrs.fontFamily;
+            context.font = this._getContextFont();
             var metrics = context.measureText(text);
 
             context.restore();
@@ -304,11 +305,18 @@
             }
         }
     };
+
+    // map TextPath methods to Text
+    Kinetic.TextPath.prototype._getContextFont = Kinetic.Text.prototype._getContextFont;
+    
     Kinetic.Global.extend(Kinetic.TextPath, Kinetic.Shape);
 
     // add setters and getters
-    Kinetic.Node.addGettersSetters(Kinetic.TextPath, ['fontFamily', 'fontSize', 'fontStyle']);
-    Kinetic.Node.addGetters(Kinetic.TextPath, ['text']);
+    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontFamily', CALIBRI);
+    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontSize', 12);
+    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontStyle', NORMAL);
+    
+    Kinetic.Node.addGetter(Kinetic.TextPath, 'text', EMPTY_STRING);
 
     /**
      * set font family

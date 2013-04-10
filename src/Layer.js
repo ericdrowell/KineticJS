@@ -16,13 +16,7 @@
 
     Kinetic.Layer.prototype = {
         _initLayer: function(config) {
-            this.setDefaultAttrs({
-                clearBeforeDraw: true
-            });
-
             this.nodeType = 'Layer';
-            this.beforeDrawFunc = undefined;
-            this.afterDrawFunc = undefined;
             if (config != null && config.canvas != null)
                 this.canvas = config.canvas;
             else
@@ -30,57 +24,17 @@
             this.canvas.getElement().style.position = 'absolute';
             this.hitCanvas = new Kinetic.HitCanvas();
 
+            this.createAttrs();
             // call super constructor
             Kinetic.Container.call(this, config);
         },
-        /**
-         * draw children nodes.  this includes any groups
-         *  or shapes
-         * @name draw
-         * @methodOf Kinetic.Layer.prototype
-         */
-        draw: function() {
-            var context = this.getContext();
-            
-            // before draw  handler
-            if(this.beforeDrawFunc !== undefined) {
-                this.beforeDrawFunc.call(this);
-            }
-            
-            Kinetic.Container.prototype.draw.call(this);
-
-            // after draw  handler
-            if(this.afterDrawFunc !== undefined) {
-                this.afterDrawFunc.call(this);
-            }
-        },
-        /**
-         * draw children nodes on hit.  this includes any groups
-         *  or shapes
-         * @name drawHit
-         * @methodOf Kinetic.Layer.prototype
-         */
-        drawHit: function() {
-            this.hitCanvas.clear();
-            Kinetic.Container.prototype.drawHit.call(this);
-        },
-        /**
-         * draw children nodes on scene.  this includes any groups
-         *  or shapes
-         * @name drawScene
-         * @methodOf Kinetic.Layer.prototype
-         * @param {Kinetic.Canvas} [canvas]
-         */
-        drawScene: function(canvas) {
-            canvas = canvas || this.getCanvas();
-            if(this.attrs.clearBeforeDraw) {
-                canvas.clear();
-            }
-            Kinetic.Container.prototype.drawScene.call(this, canvas);
-        },
         toDataURL: function(config) {
             config = config || {};
-            var mimeType = config.mimeType || null, quality = config.quality || null, canvas, context, x = config.x || 0, y = config.y || 0;
+            var mimeType = config.mimeType || null, 
+                quality = config.quality || null, 
+                canvas, context, 
+                x = config.x || 0, 
+                y = config.y || 0;
 
             // if dimension or position is defined, use Node toDataURL
             if(config.width || config.height || config.x || config.y) {
@@ -90,24 +44,25 @@
             else {
                 return this.getCanvas().toDataURL(mimeType, quality);
             }
+  
         },
-        /**
-         * set before draw handler
-         * @name beforeDraw
-         * @methodOf Kinetic.Layer.prototype
-         * @param {Function} handler
-         */
-        beforeDraw: function(func) {
-            this.beforeDrawFunc = func;
+        drawScene: function(canvas) {
+            var layer = this.getLayer();
+
+            if(layer && layer.getClearBeforeDraw()) {
+                layer.getCanvas().clear();
+            }
+
+            Kinetic.Container.prototype.drawScene.call(this, canvas);
         },
-        /**
-         * set after draw handler
-         * @name afterDraw
-         * @methodOf Kinetic.Layer.prototype
-         * @param {Function} handler
-         */
-        afterDraw: function(func) {
-            this.afterDrawFunc = func;
+        drawHit: function() {
+            var layer = this.getLayer();
+            
+            if(layer && layer.getClearBeforeDraw()) {
+                layer.getHitCanvas().clear();
+            }
+
+            Kinetic.Container.prototype.drawHit.call(this);
         },
         /**
          * get layer canvas
@@ -115,7 +70,15 @@
          * @methodOf Kinetic.Layer.prototype
          */
         getCanvas: function() {
-            return this.canvas;
+            return this.canvas;     
+        },
+        /**
+         * get layer hit canvas
+         * @name getHitCanvas
+         * @methodOf Kinetic.Layer.prototype
+         */
+        getHitCanvas: function() {
+            return this.hitCanvas;
         },
         /**
          * get layer canvas context
@@ -123,7 +86,7 @@
          * @methodOf Kinetic.Layer.prototype
          */
         getContext: function() {
-            return this.canvas.context;
+            return this.getCanvas().getContext(); 
         },
         /**
          * clear canvas tied to the layer
@@ -137,11 +100,11 @@
         setVisible: function(visible) {
             Kinetic.Node.prototype.setVisible.call(this, visible);
             if(visible) {
-                this.canvas.element.style.display = 'block';
+                this.getCanvas().element.style.display = 'block';
                 this.hitCanvas.element.style.display = 'block';
             }
             else {
-                this.canvas.element.style.display = 'none';
+                this.getCanvas().element.style.display = 'none';
                 this.hitCanvas.element.style.display = 'none';
             }
         },
@@ -149,13 +112,13 @@
             Kinetic.Node.prototype.setZIndex.call(this, index);
             var stage = this.getStage();
             if(stage) {
-                stage.content.removeChild(this.canvas.element);
+                stage.content.removeChild(this.getCanvas().element);
 
                 if(index < stage.getChildren().length - 1) {
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[index + 1].canvas.element);
+                    stage.content.insertBefore(this.getCanvas().element, stage.getChildren()[index + 1].getCanvas().element);
                 }
                 else {
-                    stage.content.appendChild(this.canvas.element);
+                    stage.content.appendChild(this.getCanvas().element);
                 }
             }
         },
@@ -163,21 +126,21 @@
             Kinetic.Node.prototype.moveToTop.call(this);
             var stage = this.getStage();
             if(stage) {
-                stage.content.removeChild(this.canvas.element);
-                stage.content.appendChild(this.canvas.element);
+                stage.content.removeChild(this.getCanvas().element);
+                stage.content.appendChild(this.getCanvas().element);
             }
         },
         moveUp: function() {
             if(Kinetic.Node.prototype.moveUp.call(this)) {
                 var stage = this.getStage();
                 if(stage) {
-                    stage.content.removeChild(this.canvas.element);
+                    stage.content.removeChild(this.getCanvas().element);
 
                     if(this.index < stage.getChildren().length - 1) {
-                        stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
+                        stage.content.insertBefore(this.getCanvas().element, stage.getChildren()[this.index + 1].getCanvas().element);
                     }
                     else {
-                        stage.content.appendChild(this.canvas.element);
+                        stage.content.appendChild(this.getCanvas().element);
                     }
                 }
             }
@@ -187,8 +150,8 @@
                 var stage = this.getStage();
                 if(stage) {
                     var children = stage.getChildren();
-                    stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, children[this.index + 1].canvas.element);
+                    stage.content.removeChild(this.getCanvas().element);
+                    stage.content.insertBefore(this.getCanvas().element, children[this.index + 1].getCanvas().element);
                 }
             }
         },
@@ -197,8 +160,8 @@
                 var stage = this.getStage();
                 if(stage) {
                     var children = stage.getChildren();
-                    stage.content.removeChild(this.canvas.element);
-                    stage.content.insertBefore(this.canvas.element, children[1].canvas.element);
+                    stage.content.removeChild(this.getCanvas().element);
+                    stage.content.insertBefore(this.getCanvas().element, children[1].getCanvas().element);
                 }
             }
         },
@@ -209,7 +172,7 @@
          * remove layer from stage
          */
         remove: function() {
-            var stage = this.getStage(), canvas = this.canvas, element = canvas.element;
+            var stage = this.getStage(), canvas = this.getCanvas(), element = canvas.element;
             Kinetic.Node.prototype.remove.call(this);
 
             if(stage && canvas && Kinetic.Type._isInDocument(element)) {
@@ -220,7 +183,7 @@
     Kinetic.Global.extend(Kinetic.Layer, Kinetic.Container);
 
     // add getters and setters
-    Kinetic.Node.addGettersSetters(Kinetic.Layer, ['clearBeforeDraw']);
+    Kinetic.Node.addGetterSetter(Kinetic.Layer, 'clearBeforeDraw', true);
 
     /**
      * set flag which determines if the layer is cleared or not

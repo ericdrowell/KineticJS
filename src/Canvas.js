@@ -11,21 +11,32 @@
      * @param {Number} width
      * @param {Number} height
      */
-    Kinetic.Canvas = function(width, height, pixelRatio, contextId) {
-        this.pixelRatio = pixelRatio || _pixelRatio;
-        this.width = width;
-        this.height = height;
-        this.element = document.createElement('canvas');
-        this.element.style.padding = 0;
-        this.element.style.margin = 0;
-        this.element.style.border = 0;
-        this.element.style.background = 'transparent';
-        if(typeof (contextId) != "string") contextId = '2d';
-        this.context = this.element.getContext(contextId);
-        this.setSize(width || 0, height || 0);
+    Kinetic.Canvas = function(config) {
+        this.init(config);
     };
 
     Kinetic.Canvas.prototype = {
+        init: function(config) {
+            var config = config || {},
+                width = config.width || 0,
+                height = config.height || 0,
+                pixelRatio = config.pixelRatio || _pixelRatio;
+                
+            this.pixelRatio = pixelRatio;
+            this.width = width;
+            this.height = height;
+            this.element = document.createElement('canvas');
+            this.element.style.padding = 0;
+            this.element.style.margin = 0;
+            this.element.style.border = 0;
+            this.element.style.background = 'transparent';
+            
+			if (config.contextId != null)
+				this.context = this.element.getContext(config.contextId);
+			else
+				this.context = this.element.getContext('2d');
+            this.setSize(width, height);   
+        },
         /**
          * clear canvas
          * @name clear
@@ -217,8 +228,8 @@
         }
     };
 
-    Kinetic.SceneCanvas = function(width, height, pixelRatio, contextId) {
-        Kinetic.Canvas.call(this, width, height, pixelRatio, contextId);
+    Kinetic.SceneCanvas = function(width, height, pixelRatio) {
+        Kinetic.Canvas.call(this, width, height, pixelRatio);
     };
 
     Kinetic.SceneCanvas.prototype = {
@@ -321,6 +332,10 @@
             var context = this.context, stroke = shape.getStroke(), strokeWidth = shape.getStrokeWidth(), dashArray = shape.getDashArray();
             if(stroke || strokeWidth) {
                 context.save();
+                if (!shape.getStrokeScaleEnabled()) {
+                  
+                    context.setTransform(1, 0, 0, 1, 0, 0);
+                }
                 this._applyLineCap(shape);
                 if(dashArray && shape.getDashArrayEnabled()) {
                     if(context.setLineDash) {
@@ -397,7 +412,13 @@
     Kinetic.Global.extend(Kinetic.HitCanvas, Kinetic.Canvas);
 
     Kinetic.WebGLCanvas = function(width, height, pixelRatio) {
-        Kinetic.SceneCanvas.call(this, width, height, pixelRatio, 'experimental-webgl');
+        Kinetic.Canvas.call(this,
+		{
+			width: width,
+			height: height,
+			pixelRatio : pixelRatio,
+			contextId : 'experimental-webgl'
+		});
     };
 
     Kinetic.WebGLCanvas.prototype = {

@@ -196,45 +196,55 @@
                 children[n].index = n;
             }
         },
-        /*
-         * draw both scene and hit graphs
-         */
-        draw: function() {
-            this.drawScene();
-            this.drawHit();
-        },
         drawScene: function(canvas) {
-            var clip = !!this.getClipFunc() && canvas;
+            var layer = this.getLayer(),
+                clip = !!this.getClipFunc(),
+                stage = this.getStage(),
+                children, len;
+                
+            if (!canvas && layer) {
+                canvas = layer.getCanvas(); 
+            }  
 
-            if (clip) {
-                canvas._clip(this);
-            }
             if(this.isVisible()) {
-                var children = this.children, len = children.length;
+                if (clip) {
+                    canvas._clip(this);
+                }
+                
+                children = this.children; 
+                len = children.length;
+                
                 for(var n = 0; n < len; n++) {
                     children[n].drawScene(canvas);
                 }
-            }
-            if (clip) {
-                canvas.getContext().restore();
+                
+                if (clip) {
+                    canvas.getContext().restore();
+                }
             }
         },
         drawHit: function() {
             var clip = !!this.getClipFunc() && this.nodeType !== 'Stage',
+                n = 0, 
+                len = 0, 
+                children = [],
                 hitCanvas;
 
-            if (clip) {
-                hitCanvas = this.getLayer().hitCanvas; 
-                hitCanvas._clip(this);
-            }
-            if(this.isVisible() && this.isListening()) {
-                var children = this.children, len = children.length;
-                for(var n = 0; n < len; n++) {
+            if(this.shouldDrawHit()) {
+                if (clip) {
+                    hitCanvas = this.getLayer().hitCanvas; 
+                    hitCanvas._clip(this);
+                }
+                
+                children = this.children; 
+                len = children.length;
+
+                for(n = 0; n < len; n++) {
                     children[n].drawHit();
                 }
-            }
-            if (clip) {
-                hitCanvas.getContext().restore();
+                if (clip) {
+                    hitCanvas.getContext().restore();
+                }
             }
         }
     };
@@ -242,7 +252,7 @@
     Kinetic.Global.extend(Kinetic.Container, Kinetic.Node);
 
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.Container, ['clipFunc']);
+    Kinetic.Node.addGetterSetter(Kinetic.Container, 'clipFunc');
 
     /**
      * set clipping function 

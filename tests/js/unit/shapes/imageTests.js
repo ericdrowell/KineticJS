@@ -117,6 +117,8 @@ Test.Modules.IMAGE = {
             });
 
             //document.body.appendChild(layer.bufferCanvas.element)
+            
+            test(darth.getShapeType() === 'Image', 'shape type should be Image');
 
         };
         imageObj.src = '../assets/darth-vader.jpg';
@@ -185,7 +187,7 @@ Test.Modules.IMAGE = {
                 var hitDataUrl = layer.hitCanvas.toDataURL();
 
                 //console.log(hitDataUrl);
-                warn(hitDataUrl === dataUrls['transparent image hit render'], 'problem rendering image on hit graph');
+                testDataUrl(hitDataUrl,'transparent image hit render', 'problem rendering image on hit graph');
             });
         };
         imageObj.src = '../assets/lion.png';
@@ -289,7 +291,43 @@ Test.Modules.IMAGE = {
                 layer.draw();
                 var dataUrl = layer.toDataURL();
                 //console.log(dataUrl);
-                warn(dataUrl === dataUrls['adjust image brightness'], 'problem with Brighten filter.');
+                testDataUrl(dataUrl, 'adjust image brightness', 'problem with Brighten filter.');
+
+            });
+        };
+        imageObj.src = '../assets/darth-vader.jpg';
+    },
+    'gaussian blur filter': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var stage = new Kinetic.Stage({
+                container: containerId,
+                width: 578,
+                height: 200
+            });
+            var layer = new Kinetic.Layer({
+                throttle: 999
+            });
+            darth = new Kinetic.Image({
+                x: 10,
+                y: 10,
+                image: imageObj,
+                draggable: true
+            });
+
+            layer.add(darth);
+            stage.add(layer);
+
+            test(darth.getWidth() === 438, 'image width should be 438');
+            test(darth.getHeight() === 300, 'image height should be 300');
+
+            darth.applyFilter(Kinetic.Filters.Blur, {
+                radius: 10
+            }, function() {
+                layer.draw();
+                var dataUrl = layer.toDataURL();
+                //console.log(dataUrl);
+                testDataUrl(dataUrl, 'blur filter', 'problem with Blur filter.');
 
             });
         };
@@ -369,5 +407,44 @@ Test.Modules.IMAGE = {
         imageObj.src = '../assets/lion.png';
 
         showHit(layer);
+    },
+     'mask unicolor background filter': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var stage = new Kinetic.Stage({
+                container: containerId,
+                width: 600,
+                height: 200
+            });
+            var layer = new Kinetic.Layer({
+                throttle: 999
+            });
+            var bamoon = new Kinetic.Image({
+                x: 0,
+                y: 0,
+                image: imageObj,
+                draggable: true
+            }),
+            filtered = new Kinetic.Image({
+                x: 300,
+                y: 0,
+                image: imageObj,
+                draggable: true
+            });
+
+            layer.add(bamoon);
+            layer.add(filtered);
+            stage.add(layer);
+
+            filtered.applyFilter(Kinetic.Filters.Mask, {
+                threshold: 10
+            }, function() {
+                layer.draw();
+                var dataUrl = layer.toDataURL();
+                //console.log(dataUrl);
+                testDataUrl(dataUrl, 'mask filter', 'problem with Mask filter.');
+            });
+        };
+        imageObj.src = '../assets/bamoon.jpg';
     }
 };

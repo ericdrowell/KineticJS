@@ -1,143 +1,120 @@
 (function() {
     Kinetic.DD = {
+        // properties
         anim: new Kinetic.Animation(),
-        moving: false,
+        isDragging: false,
         offset: {
             x: 0,
             y: 0
-        }
-    };
-
-    Kinetic.getNodeDragging = function() {
-        return Kinetic.DD.node;
-    };
-
-    Kinetic.DD._setupDragLayerAndGetContainer = function(no) {
-        var stage = no.getStage(), nodeType = no.nodeType, lastContainer, group;
-
-        // re-construct node tree
-        no._eachAncestorReverse(function(node) {
-            if(node.nodeType === 'Layer') {
-                stage.dragLayer.setAttrs(node.getAttrs());
-                lastContainer = stage.dragLayer;
-                stage.add(stage.dragLayer);
-            }
-            else if(node.nodeType === 'Group') {
-                group = new Kinetic.Group(node.getAttrs());
-                lastContainer.add(group);
-                lastContainer = group;
-            }
-        });
-        return lastContainer;
-    };
-    Kinetic.DD._initDragLayer = function(stage) {
-        stage.dragLayer = new Kinetic.Layer();
-        stage.dragLayer.getCanvas().getElement().className = 'kinetic-drag-and-drop-layer';
-    };
-    Kinetic.DD._drag = function(evt) {
-        var dd = Kinetic.DD, node = dd.node;
-
-        if(node) {
-            var pos = node.getStage().getUserPosition();
-            var dbf = node.attrs.dragBoundFunc;
-
-            var newNodePos = {
-                x: pos.x - dd.offset.x,
-                y: pos.y - dd.offset.y
-            };
-
-            if(dbf !== undefined) {
-                newNodePos = dbf.call(node, newNodePos, evt);
-            }
-
-            node.setAbsolutePosition(newNodePos);
-
-            if(!dd.moving) {
-                dd.moving = true;
-                node.setListening(false);
-
-                // execute dragstart events if defined
-                node._handleEvent('dragstart', evt);
-            }
-
-            // execute ondragmove if defined
-            node._handleEvent('dragmove', evt);
-        }
-    };
-    Kinetic.DD._endDrag = function(evt) {
-        var dd = Kinetic.DD, node = dd.node;
-
-        if(node) {
-            var nodeType = node.nodeType, stage = node.getStage();
-            node.setListening(true);
-            if(nodeType === 'Stage') {
-                node.draw();
-            }
-            // else if group, shape, or layer
-            else {
-                if((nodeType === 'Group' || nodeType === 'Shape') && node.getDragOnTop() && dd.prevParent) {
-                    node.moveTo(dd.prevParent);
-                    node.getStage().dragLayer.remove();
-                    dd.prevParent = null;
+        },
+        node: null,
+        
+        // methods
+        _drag: function(evt) {
+            var dd = Kinetic.DD, 
+                node = dd.node;
+    
+            if(node) {
+                var pos = node.getStage().getPointerPosition();
+                var dbf = node.getDragBoundFunc();
+    
+                var newNodePos = {
+                    x: pos.x - dd.offset.x,
+                    y: pos.y - dd.offset.y
+                };
+    
+                if(dbf !== undefined) {
+                    newNodePos = dbf.call(node, newNodePos, evt);
                 }
-
-                node.getLayer().draw();
+    
+                node.setAbsolutePosition(newNodePos);
+    
+                if(!dd.isDragging) {
+                    dd.isDragging = true;
+                    node._handleEvent('dragstart', evt);
+                }
+                
+                // execute ondragmove if defined
+                node._handleEvent('dragmove', evt);
             }
-            
-            delete dd.node;
-            dd.anim.stop();
+        },
+        _endDragBefore: function(evt) {
+            var dd = Kinetic.DD, 
+                node = dd.node,
+                nodeType, layer;
+    
+            if(node) {
+                nodeType = node.nodeType,
+                layer = node.getLayer();
+                dd.anim.stop();
+    
+                // only fire dragend event if the drag and drop
+                // operation actually started. 
+                if(dd.isDragging) {
+                    dd.isDragging = false;
 
-            // only fire dragend event if the drag and drop
-            // operation actually started.  This can be detected by
-            // checking dd.moving
-            if(dd.moving) {
-                dd.moving = false;
-                node._handleEvent('dragend', evt);
+                    if (evt) {
+                        evt.dragEndNode = node;
+                    } 
+                }
+                
+                delete dd.node;
+               
+                (layer || node).draw();
+            }
+        },
+        _endDragAfter: function(evt) {
+            var evt = evt || {},
+                dragEndNode = evt.dragEndNode;
+                  
+            if (evt && dragEndNode) {
+              dragEndNode._handleEvent('dragend', evt); 
             }
         }
     };
-    Kinetic.Node.prototype._startDrag = function(evt) {
-        var dd = Kinetic.DD, that = this, stage = this.getStage(), pos = stage.getUserPosition();
 
+    // Node extenders
+    
+    /**
+     * initiate drag and drop
+     * @name startDrag
+     * @methodOf Kinetic.Node.prototype
+     */
+    Kinetic.Node.prototype.startDrag = function() {
+        var dd = Kinetic.DD, 
+            that = this, 
+            stage = this.getStage(),
+            layer = this.getLayer(), 
+            pos = stage.getPointerPosition(),
+            m = this.getTransform().getTranslation(), 
+            ap = this.getAbsolutePosition(), 
+            animNode = layer || this;
+                
         if(pos) {
-            var m = this.getTransform().getTranslation(), ap = this.getAbsolutePosition(), nodeType = this.nodeType, container;
-
+            if (dd.node) {
+                dd.node.stopDrag(); 
+            }
+          
             dd.node = this;
             dd.offset.x = pos.x - ap.x;
             dd.offset.y = pos.y - ap.y;
-
-            // Stage and Layer node types
-            if(nodeType === 'Stage' || nodeType === 'Layer') {
-                dd.anim.node = this;
-                dd.anim.start();
-            }
-
-            // Group or Shape node types
-            else {
-                if(this.getDragOnTop()) {
-                    container = dd._setupDragLayerAndGetContainer(this);
-                    dd.anim.node = stage.dragLayer;
-                    dd.prevParent = this.getParent();
-                    // WARNING: it's important to delay the moveTo operation,
-                    // layer redraws, and anim.start() until after the method execution
-                    // has completed or else there will be a flicker on mobile devices
-                    // due to the time it takes to append the dd canvas to the DOM
-                    setTimeout(function() {
-                        if(dd.node) {
-                            that.moveTo(container);
-                            dd.prevParent.getLayer().draw();
-                            stage.dragLayer.draw();
-                            dd.anim.start();
-                        }
-                    }, 0);
-                }
-                else {
-                    dd.anim.node = this.getLayer();
-                    dd.anim.start();
-                }
-            }
+            dd.anim.node = animNode;
+            dd.anim.start();
         }
     };
+    
+    /**
+     * stop drag and drop
+     * @name stopDrag
+     * @methodOf Kinetic.Node.prototype
+     */
+    Kinetic.Node.prototype.stopDrag = function() {
+        var dd = Kinetic.DD,
+            evt = {};
+        dd._endDragBefore(evt);
+        dd._endDragAfter(evt);
+    };
+            
     /**
      * set draggable
      * @name setDraggable
@@ -148,14 +125,21 @@
         this.setAttr('draggable', draggable);
         this._dragChange();
     };
-    /**
-     * get draggable
-     * @name getDraggable
-     * @methodOf Kinetic.Node.prototype
-     */
-    Kinetic.Node.prototype.getDraggable = function() {
-        return this.attrs.draggable;
+
+    var origDestroy = Kinetic.Node.prototype.destroy;
+
+    Kinetic.Node.prototype.destroy = function() {
+        var dd = Kinetic.DD;
+
+        // stop DD
+        if(dd.node && dd.node._id === this._id) {
+
+            this.stopDrag();
+        } 
+
+        origDestroy.call(this); 
     };
+
     /**
      * determine if node is currently in drag and drop mode
      * @name isDragging
@@ -163,15 +147,15 @@
      */
     Kinetic.Node.prototype.isDragging = function() {
         var dd = Kinetic.DD;
-        return dd.node && dd.node._id === this._id && dd.moving;
+        return dd.node && dd.node._id === this._id && dd.isDragging;
     };
 
     Kinetic.Node.prototype._listenDrag = function() {
         this._dragCleanup();
         var that = this;
         this.on('mousedown.kinetic touchstart.kinetic', function(evt) {
-            if(!Kinetic.getNodeDragging()) {
-                that._startDrag(evt);
+            if(!Kinetic.DD.node) {
+                that.startDrag(evt);
             }
         });
     };
@@ -192,22 +176,20 @@
             var stage = this.getStage();
             var dd = Kinetic.DD;
             if(stage && dd.node && dd.node._id === this._id) {
-                dd._endDrag();
+                dd.node.stopDrag();
             }
         }
     };
+    
     Kinetic.Node.prototype._dragCleanup = function() {
         this.off('mousedown.kinetic');
         this.off('touchstart.kinetic');
     };
-    /**
-     * get draggable.  Alias of getDraggable()
-     * @name isDraggable
-     * @methodOf Kinetic.Node.prototype
-     */
-    Kinetic.Node.prototype.isDraggable = Kinetic.Node.prototype.getDraggable;
 
-    Kinetic.Node.addGettersSetters(Kinetic.Node, ['dragBoundFunc', 'dragOnTop']);
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragBoundFunc');
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragOnTop', true);
+    
+    Kinetic.Node.addGetter(Kinetic.Node, 'draggable', false);
 
     /**
      * set drag bound function.  This is used to override the default
@@ -237,11 +219,25 @@
      * @name getDragOnTop
      * @methodOf Kinetic.Node.prototype
      */
+    
+     /**
+     * get draggable
+     * @name getDraggable
+     * @methodOf Kinetic.Node.prototype
+     */
 
-    // listen for capturing phase so that the _endDrag method is
-    // called before the stage mouseup event is triggered in order
-    // to render the hit graph just in time to pick up the event
+    /**
+     * get draggable.  Alias of getDraggable()
+     * @name isDraggable
+     * @methodOf Kinetic.Node.prototype
+     */
+    Kinetic.Node.prototype.isDraggable = Kinetic.Node.prototype.getDraggable;
+
     var html = document.getElementsByTagName('html')[0];
-    html.addEventListener('mouseup', Kinetic.DD._endDrag, true);
-    html.addEventListener('touchend', Kinetic.DD._endDrag, true);
+    html.addEventListener('mouseup', Kinetic.DD._endDragBefore, true);
+    html.addEventListener('touchend', Kinetic.DD._endDragBefore, true);
+    
+    html.addEventListener('mouseup', Kinetic.DD._endDragAfter, false);
+    html.addEventListener('touchend', Kinetic.DD._endDragAfter, false);
+    
 })();

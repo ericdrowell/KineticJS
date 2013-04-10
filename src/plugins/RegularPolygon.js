@@ -15,10 +15,7 @@
 
     Kinetic.RegularPolygon.prototype = {
         _initRegularPolygon: function(config) {
-            this.setDefaultAttrs({
-                radius: 0,
-                sides: 0
-            });
+            this.createAttrs();
 
             // call super constructor
             Kinetic.Shape.call(this, config);
@@ -42,7 +39,8 @@
     Kinetic.Global.extend(Kinetic.RegularPolygon, Kinetic.Shape);
 
     // add getters setters
-    Kinetic.Node.addGettersSetters(Kinetic.RegularPolygon, ['radius', 'sides']);
+    Kinetic.Node.addGetterSetter(Kinetic.RegularPolygon, 'radius', 0);
+    Kinetic.Node.addGetterSetter(Kinetic.RegularPolygon, 'sides', 0);
 
     /**
      * set radius
