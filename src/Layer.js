@@ -16,10 +16,10 @@
 
     Kinetic.Layer.prototype = {
         _initLayer: function(config) {
-			var config = config || {},
-				canvas = config.canvas || new Kinetic.SceneCanvas();
+            var config = config || {},
+                canvas = config.canvas || new Kinetic.SceneCanvas();
             this.nodeType = 'Layer';
-			this.canvas = canvas;
+            this.canvas = canvas;
             this.canvas.getElement().style.position = 'absolute';
             this.hitCanvas = new Kinetic.HitCanvas();
 

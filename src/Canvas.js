@@ -21,7 +21,7 @@
                 width = config.width || 0,
                 height = config.height || 0,
                 pixelRatio = config.pixelRatio || _pixelRatio,
-				context = config.context || '2d';
+                context = config.context || '2d';
                 
             this.pixelRatio = pixelRatio;
             this.width = width;
@@ -31,7 +31,7 @@
             this.element.style.margin = 0;
             this.element.style.border = 0;
             this.element.style.background = 'transparent';
-			this.context = this.element.getContext(context);
+            this.context = this.element.getContext(context);
             this.setSize(width, height);   
         },
         /**
