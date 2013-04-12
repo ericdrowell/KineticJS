@@ -20,7 +20,8 @@
             var config = config || {},
                 width = config.width || 0,
                 height = config.height || 0,
-                pixelRatio = config.pixelRatio || _pixelRatio;
+                pixelRatio = config.pixelRatio || _pixelRatio,
+                context = config.context || '2d';
                 
             this.pixelRatio = pixelRatio;
             this.width = width;
@@ -30,7 +31,7 @@
             this.element.style.margin = 0;
             this.element.style.border = 0;
             this.element.style.background = 'transparent';
-            this.context = this.element.getContext('2d');
+            this.context = this.element.getContext(context);
             this.setSize(width, height);   
         },
         /**
@@ -406,4 +407,32 @@
         }
     };
     Kinetic.Global.extend(Kinetic.HitCanvas, Kinetic.Canvas);
+
+    Kinetic.WebGLCanvas = function(width, height, pixelRatio) {
+        Kinetic.Canvas.call(this, {
+			width: width,
+			height: height,
+			pixelRatio : pixelRatio,
+			context : 'experimental-webgl'
+		});
+    };
+
+    Kinetic.WebGLCanvas.prototype = {
+        /**
+         * does nothing, do not remove
+         * @name clear
+         * @methodOf Kinetic.WebGLCanvas.prototype
+         */
+        clear: function() { },
+        setWidth: function(width) {
+            var pixelRatio = this.pixelRatio;
+            Kinetic.Canvas.prototype.setWidth.call(this, width);
+        },
+        setHeight: function(height) {
+            var pixelRatio = this.pixelRatio;
+            Kinetic.Canvas.prototype.setHeight.call(this, height);
+        },
+    };
+
+    Kinetic.Global.extend(Kinetic.WebGLCanvas, Kinetic.Canvas);
 })();
