@@ -153,7 +153,8 @@
                 cornerRadius = this.getCornerRadius();
                 
             context.beginPath();
-            context.moveTo(0,0);
+            context.moveTo(0, 0);
+            cornerRadius && context.moveTo(cornerRadius, 0);
             
             if (pointerDirection === UP) {
                 context.lineTo((width - pointerWidth)/2, 0);
@@ -161,7 +162,8 @@
                 context.lineTo((width + pointerWidth)/2, 0);
             }
             
-            context.lineTo(width, 0);
+            context.lineTo(width - cornerRadius, 0);
+            cornerRadius && context.arc(width - cornerRadius, cornerRadius, cornerRadius, Math.PI * 3 / 2, 0, false);
            
             if (pointerDirection === RIGHT) {
                 context.lineTo(width, (height - pointerHeight)/2);
@@ -169,7 +171,8 @@
                 context.lineTo(width, (height + pointerHeight)/2);
             }
             
-            context.lineTo(width, height);
+            context.lineTo(width, height - cornerRadius);
+            cornerRadius && context.arc(width - cornerRadius, height - cornerRadius, cornerRadius, 0, Math.PI / 2, false);
     
             if (pointerDirection === DOWN) {
                 context.lineTo((width + pointerWidth)/2, height);
@@ -177,13 +180,17 @@
                 context.lineTo((width - pointerWidth)/2, height); 
             }
             
-            context.lineTo(0, height);
+            context.lineTo(cornerRadius, height);
+            cornerRadius && context.arc(cornerRadius, height - cornerRadius, cornerRadius, Math.PI / 2, Math.PI, false);
             
             if (pointerDirection === LEFT) {
                 context.lineTo(0, (height + pointerHeight)/2);
                 context.lineTo(-1 * pointerWidth, height/2);
                 context.lineTo(0, (height - pointerHeight)/2);
             } 
+            
+            context.lineTo(0, cornerRadius);
+            cornerRadius && context.arc(cornerRadius, cornerRadius, cornerRadius, Math.PI, Math.PI * 3 / 2, false);
             
             context.closePath();
             canvas.fillStroke(this);
