@@ -39,7 +39,14 @@
                 image = this.getImage();
 
             if(image) {
-                context.drawImage(image, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
+                if(image instanceof Array) {
+                    for(var i = 0;i<image.length;i++) {
+                        context.drawImage(image[i], f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
+                    }
+                }
+                else {
+                    context.drawImage(image, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height);
+                }
             }
         },
         drawHitFunc: function(canvas) {
