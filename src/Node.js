@@ -660,6 +660,9 @@
                 x = this.getX(), 
                 y = this.getY(), 
                 rotation = this.getRotation(),
+                skew = this.getSkew(), 
+                skewX = skew.x,
+                skewY = skew.y,
                 scale = this.getScale(), 
                 scaleX = scale.x, 
                 scaleY = scale.y, 
@@ -679,7 +682,9 @@
             if(offsetX !== 0 || offsetY !== 0) {
                 m.translate(-1 * offsetX, -1 * offsetY);
             }
-             
+            if(skewX !== 0 || skewY !== 0) {
+                m.skew(skewX, skewY);
+            }            
             // cache result
             this.cachedTransform = m;
             return m;
@@ -859,12 +864,17 @@
             }
         },
         _clearTransform: function() {
-            var scale = this.getScale(), 
+            var scale = this.getScale(),
               offset = this.getOffset(),
+              skew = this.getSkew(),
               trans = {
                   x: this.getX(),
                   y: this.getY(),
                   rotation: this.getRotation(),
+                  skew: {
+                      x: skew.x,
+                      y: skew.y
+                  },
                   scale: {
                       x: scale.x,
                       y: scale.y
@@ -878,6 +888,10 @@
             this.attrs.x = 0;
             this.attrs.y = 0;
             this.attrs.rotation = 0;
+            this.attrs.skew = {
+                x: 0,
+                y: 0
+            };
             this.attrs.scale = {
                 x: 1,
                 y: 1
@@ -1058,6 +1072,11 @@
             return this[baseMethod + RGB]()[c];
         };
     };
+    Kinetic.Node.addSkewGetterSetter = function(constructor, arr, def, isTransform) {
+        this.addSkewGetter(constructor, arr, def);
+        this.addSkewSetter(constructor, arr, isTransform);    
+    };
+    
     Kinetic.Node.addSetter = function(constructor, attr, isTransform) {
         var that = this,
             method = SET + Kinetic.Type._capitalize(attr);
@@ -1113,6 +1132,25 @@
             }
         };
     };
+    Kinetic.Node.addSkewSetter = function(constructor, attr, isTransform) {
+        var that = this,
+            method = SET + Kinetic.Type._capitalize(attr);
+            
+        // radians
+        constructor.prototype[method] = function(val) {
+            this.setAttr(attr, val);
+            if (isTransform) {
+                this.cachedTransform = null;
+            }
+        };
+        // degrees
+        constructor.prototype[method + DEG] = function(deg) {
+            this.setAttr(attr, Kinetic.Type._degToRad(deg));
+            if (isTransform) {
+                this.cachedTransform = null;
+            }
+        };
+    };
     Kinetic.Node.addGetter = function(constructor, attr, def) {
         var that = this,
             method = GET + Kinetic.Type._capitalize(attr);
@@ -1139,6 +1177,27 @@
         };
     };
     Kinetic.Node.addRotationGetter = function(constructor, attr, def) {
+        var that = this,
+            method = GET + Kinetic.Type._capitalize(attr);
+            
+        // radians
+        constructor.prototype[method] = function() {
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return val;
+        };
+        // degrees
+        constructor.prototype[method + DEG] = function() {
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return Kinetic.Type._radToDeg(val);
+        };
+    };
+    Kinetic.Node.addSkewGetter = function(constructor, attr, def) {
         var that = this,
             method = GET + Kinetic.Type._capitalize(attr);
             
@@ -1297,7 +1356,35 @@
      * @methodOf Kinetic.Node.prototype
      */
 
-    Kinetic.Node.addPointGetterSetter(Kinetic.Node, 'scale', {x:1,y:1}, true);
+    Kinetic.Node.addSkewGetterSetter(Kinetic.Node, 'skew', {x:0,y:0}, true);
+
+    /**
+     * set skew in radians
+     * @name setSkew
+     * @methodOf Kinetic.Node.prototype
+     * @param {Number} theta
+     */
+
+    /**
+     * set skew in degrees
+     * @name setSkewDeg
+     * @methodOf Kinetic.Node.prototype
+     * @param {Number} deg
+     */
+
+    /**
+     * get skew in degrees
+     * @name getSkewDeg
+     * @methodOf Kinetic.Node.prototype
+     */
+
+    /**
+     * get skew in radians
+     * @name getSkew
+     * @methodOf Kinetic.Node.prototype
+     */
+
+     Kinetic.Node.addPointGetterSetter(Kinetic.Node, 'scale', {x:1,y:1}, true);
     Kinetic.Node.addPointGetterSetter(Kinetic.Node, 'offset', {x:0,y:0}, true);
 
     /**

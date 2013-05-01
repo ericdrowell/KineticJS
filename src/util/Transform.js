@@ -61,6 +61,17 @@
             this.m[3] = m22;
         },
         /**
+         * Apply skew
+         * @param {Number} radX  Angle in radians
+         * @param {Number} radY  Angle in radians
+        */
+        skew: function(radX, radY) {
+            var tx = Math.tan(radX);
+            var ty = Math.tan(radY);
+            var sm = {m: [1, ty, tx, 1, 0, 0]};
+            this.multiply(sm);
+        },
+        /**
          * Returns the translation
          * @returns {Object} 2D point(x, y)
          */
