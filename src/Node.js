@@ -37,6 +37,7 @@
         _nodeInit: function(config) {
             this._id = Kinetic.Global.idCounter++;
             this.eventListeners = {};
+            this.cache = {};
             this.setAttrs(config);
         },
         /**
@@ -222,18 +223,27 @@
          * @methodOf Kinetic.Node.prototype
          */
         getVisible: function() {
-            var visible = this.attrs.visible, 
+            var cache = this.cache,
+                visible, parent;
+
+            if (cache.visible !== undefined) {
+                return cache.visible;
+            }
+            else {
+                visible = this.attrs.visible, 
                 parent = this.getParent();
+
+                if (visible === undefined) {
+                    visible = true;
+                }
               
-            // default  
-            if (visible === undefined) {
-                visible = true;  
+                if(visible && parent && !parent.getVisible()) {
+                    cache.visible = false;
+                    return false;
+                }
+                cache.visible = visible;
+                return visible;
             }
-            
-            if(visible && parent && !parent.getVisible()) {
-                return false;
-            }
-            return visible;
         },
         /**
          * determine if node is listening or not.  Node is listening only
@@ -534,11 +544,23 @@
          * @methodOf Kinetic.Node.prototype
          */
         getAbsoluteOpacity: function() {
-            var absOpacity = this.getOpacity();
-            if(this.getParent()) {
-                absOpacity *= this.getParent().getAbsoluteOpacity();
+            var cache = this.cache,
+                absOpacity, parent;
+
+            if (cache.absoluteOpacity !== undefined) {
+                return cache.absoluteOpacity;
             }
-            return absOpacity;
+            else {
+                absOpacity = this.getOpacity(),
+                parent = this.getParent();
+
+                if(parent) {
+                    absOpacity *= parent.getAbsoluteOpacity();
+                }
+
+                cache.absoluteOpacity = absOpacity;
+                return absOpacity;
+            }
         },
         /**
          * move node to another container
@@ -598,7 +620,14 @@
          * @methodOf Kinetic.Node.prototype
          */
         getLayer: function() {
-            return this.getParent().getLayer();
+            var cache = this.cache;
+            if (cache.layer) {
+                return cache.layer;
+            }
+            else {
+                cache.layer = this.getParent().getLayer();
+                return cache.layer;
+            }
         },
         /**
          * get stage ancestor
@@ -606,8 +635,13 @@
          * @methodOf Kinetic.Node.prototype
          */
         getStage: function() {
-            if(this.getParent()) {
-                return this.getParent().getStage();
+            var cache = this.cache;
+            if (cache.stage) {
+                return cache.stage;
+            }
+            else if(this.getParent()) {
+                cache.stage = this.getParent().getStage();
+                return cache.stage;
             }
             else {
                 return undefined;
