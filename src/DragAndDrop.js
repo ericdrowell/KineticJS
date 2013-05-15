@@ -80,7 +80,7 @@
      * @name startDrag
      * @methodOf Kinetic.Node.prototype
      */
-    Kinetic.Node.prototype.startDrag = function() {
+    Kinetic.Node.prototype.startDrag = function(evt) {
         var dd = Kinetic.DD, 
             that = this, 
             stage = this.getStage(),
@@ -88,6 +88,16 @@
             pos = stage.getPointerPosition(),
             m = this.getTransform().getTranslation(), 
             ap = this.getAbsolutePosition();
+
+        if (this.attrs.dragButton) {
+            var which = evt.which;
+            if (!which && evt.button !== undefined) {
+                which = (evt.button & 1 ? 1 : (evt.button & 2 ? 3 : (evt.button & 4 ? 2 : 0)))
+            }
+            if (this.attrs.dragButton != which) {
+                return;
+            }
+        }
                 
         if(pos) {
             if (dd.node) {
@@ -187,6 +197,7 @@
 
     Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragBoundFunc');
     Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragOnTop', true);
+    Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragButton', 0);
     
     Kinetic.Node.addGetter(Kinetic.Node, 'draggable', false);
 
