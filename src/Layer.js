@@ -24,11 +24,15 @@
                 // this indicates that a hit pixel may have been found
                 if(p[3] === 255) {
                     colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
-                    shape = Kinetic.Global.shapes[colorKey];
+                    shape = Kinetic.Global.shapes[colorKey] || this.lastShape;
+                    this.lastShape = shape;
+
                     return {
                         shape: shape,
                         pixel: p
                     };
+                } else if (p[3] == 0) {
+                    this.lastShape = null;
                 }
                 // if no shape mapped to that pixel, return pixel array
                 else if(p[0] > 0 || p[1] > 0 || p[2] > 0 || p[3] > 0) {
