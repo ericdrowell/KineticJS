@@ -56,6 +56,7 @@ Test.Modules.Text = {
         stage.add(layer);
         
         test(text.getClassName() === 'Text', 'getClassName should be Text');
+        test(text.getTextWidth() > 0);
     },
     'text getters and setters': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -198,7 +199,7 @@ Test.Modules.Text = {
         stage.add(layer);
 
         test(text.getLineHeight() === 1, 'text line height should be defaulted to 1');
-
+        test(text.getTextWidth() > 0);
          /*
          text.transitionTo({
              width: 50,
@@ -280,6 +281,9 @@ Test.Modules.Text = {
         layer.add(text);
         stage.add(layer);
 
+        var previousTextWidth = text.getTextWidth();
+        test(previousTextWidth > 0);
+
         text.setFontSize(30);
         layer.draw();
         
@@ -287,6 +291,7 @@ Test.Modules.Text = {
 
         test(text.getWidth() > width, 'text box width should have increased.');
         test(text.getHeight() > height, 'text box height should have increased.');
+        test(text.getTextWidth() > previousTextWidth);
 
     },
     'text everything enabled': function(containerId) {
@@ -404,14 +409,14 @@ Test.Modules.Text = {
         stage.add(layer);
 
         testDataUrl(layer.toDataURL(),'wrapping to words', 'text should be wrapped to words');
-
+        test(text.getTextWidth() > 0);
         text.setWrap('none');
         layer.draw();
         testDataUrl(layer.toDataURL(),'no wrapping', 'text should not be wrapped');
-
+        test(text.getTextWidth() > 0);
         text.setWrap('char');
         layer.draw();
         testDataUrl(layer.toDataURL(), 'wrapping to chars', 'text should be wrapped to chars');
-
+        test(text.getTextWidth() > 0);
     }
 };
