@@ -3,11 +3,20 @@
      * Path constructor.
      * @author Jason Follas
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {String} config.data SVG data string
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var path = new Kinetic.Path({<br>
+     *   x: 240,<br>
+     *   y: 40,<br>
+     *   data: 'M12.582,9.551C3.251,16.237,0.921,29.021,7.08,38.564l-2.36,1.689l4.893,2.262l4.893,2.262l-0.568-5.36l-0.567-5.359l-2.365,1.694c-4.657-7.375-2.83-17.185,4.352-22.33c7.451-5.338,17.817-3.625,23.156,3.824c5.337,7.449,3.625,17.813-3.821,23.152l2.857,3.988c9.617-6.893,11.827-20.277,4.935-29.896C35.591,4.87,22.204,2.658,12.582,9.551z',<br>
+     *   fill: 'green',<br>
+     *   scale: 2<br>
+     * });
      */
     Kinetic.Path = function(config) {
         this._initPath(config);
@@ -20,7 +29,7 @@
 
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Path';
+            this.className = 'Path';
             this._setDrawFuncs();
 
             this.dataArray = Kinetic.Path.parsePathData(this.getData());
@@ -72,7 +81,7 @@
             canvas.fillStroke(this);
         }
     };
-    Kinetic.Global.extend(Kinetic.Path, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Path, Kinetic.Shape);
 
     Kinetic.Path.getLineLength = function(x1, y1, x2, y2) {
         return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -175,7 +184,7 @@
             y: cy + (pt.x * sinPsi + pt.y * cosPsi)
         };
     };
-    /**
+    /*
      * get parsed data array from the data
      *  string.  V, v, H, h, and l data are converted to
      *  L data for the purpose of high performance Path
@@ -547,13 +556,15 @@
      *  into a data array.  Currently supported SVG data:
      *  M, m, L, l, H, h, V, v, Q, q, T, t, C, c, S, s, A, a, Z, z
      * @name setData
-     * @methodOf Kinetic.Path.prototype
+     * @method
+     * @memberof Kinetic.Path.prototype
      * @param {String} SVG path command string
      */
 
     /**
      * get SVG path data string
      * @name getData
-     * @methodOf Kinetic.Path.prototype
+     * @method
+     * @memberof Kinetic.Path.prototype
      */
 })();

@@ -2,11 +2,20 @@
     /**
      * Rect constructor
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Number} [config.cornerRadius]
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var rect = new Kinetic.Rect({<br>
+     *   width: 100,<br>
+     *   height: 50,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black'<br>
+     *   strokeWidth: 5<br>
+     * });
      */
     Kinetic.Rect = function(config) {
         this._initRect(config);
@@ -16,7 +25,7 @@
         _initRect: function(config) {
             this.createAttrs();
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Rect';
+            this.className = 'Rect';
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
@@ -48,21 +57,23 @@
         }
     };
 
-    Kinetic.Global.extend(Kinetic.Rect, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Rect, Kinetic.Shape);
 
     Kinetic.Node.addGetterSetter(Kinetic.Rect, 'cornerRadius', 0);
 
     /**
      * set corner radius
      * @name setCornerRadius
-     * @methodOf Kinetic.Shape.prototype
+     * @method
+     * @memberof Kinetic.Rect.prototype
      * @param {Number} corner radius
      */
 
     /**
      * get corner radius
      * @name getCornerRadius
-     * @methodOf Kinetic.Shape.prototype
+     * @method
+     * @memberof Kinetic.Rect.prototype
      */
 
 })();

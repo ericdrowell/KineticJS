@@ -10,6 +10,16 @@
      * @param {Boolean} [config.clockwise]
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * // draw a wedge that's pointing downwards<br>
+     * var wedge = new Kinetic.Wedge({<br>
+     *   radius: 40,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black'<br>
+     *   strokeWidth: 5,<br>
+     *   angleDeg: 60,<br>
+     *   rotationDeg: -120<br>
+     * });
      */
     Kinetic.Wedge = function(config) {
         this._initWedge(config);
@@ -21,7 +31,7 @@
 
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Wedge';
+            this.className = 'Wedge';
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
@@ -31,71 +41,75 @@
             context.lineTo(0, 0);
             context.closePath();
             canvas.fillStroke(this);
-        },
-        setAngleDeg: function(deg) {
-            this.setAngle(Kinetic.Type._degToRad(deg));
-        },
-        getAngleDeg: function() {
-            return Kinetic.Type._radToDeg(this.getAngle());
         }
     };
-    Kinetic.Global.extend(Kinetic.Wedge, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Wedge, Kinetic.Shape);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'radius', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'angle', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'clockwise', false);
 
     /**
      * set radius
      * @name setRadius
-     * @methodOf Kinetic.Wedge.prototype
+     * @method
+     * @memberof Kinetic.Wedge.prototype
      * @param {Number} radius
      */
+
+     /**
+     * get radius
+     * @name getRadius
+     * @method
+     * @memberof Kinetic.Wedge.prototype
+     */
+
+    Kinetic.Node.addRotationGetterSetter(Kinetic.Wedge, 'angle', 0);
 
     /**
      * set angle
      * @name setAngle
-     * @methodOf Kinetic.Wedge.prototype
+     * @method
+     * @memberof Kinetic.Wedge.prototype
      * @param {Number} angle
      */
-    
-    /**
+
+     /**
      * set angle in degrees
      * @name setAngleDeg
-     * @methodOf Kinetic.Wedge.prototype
+     * @method
+     * @memberof Kinetic.Wedge.prototype
      * @param {Number} angleDeg
      */
+
+     /**
+     * get angle
+     * @name getAngle
+     * @method
+     * @memberof Kinetic.Wedge.prototype
+     */
+
+     /**
+     * get angle in degrees
+     * @name getAngleDeg
+     * @method
+     * @memberof Kinetic.Wedge.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Wedge, 'clockwise', false);
 
     /**
      * set clockwise draw direction.  If set to true, the wedge will be drawn clockwise
      *  If set to false, the wedge will be drawn anti-clockwise.  The default is false.
      * @name setClockwise
-     * @methodOf Kinetic.Wedge.prototype
+     * @method
+     * @memberof Kinetic.Wedge.prototype
      * @param {Boolean} clockwise
-     */
-
-    /**
-     * get radius
-     * @name getRadius
-     * @methodOf Kinetic.Wedge.prototype
-     */
-
-    /**
-     * get angle
-     * @name getAngle
-     * @methodOf Kinetic.Wedge.prototype
-     */
-    
-    /**
-     * get angle in degrees
-     * @name getAngleDeg
-     * @methodOf Kinetic.Wedge.prototype
      */
 
     /**
      * get clockwise
      * @name getClockwise
-     * @methodOf Kinetic.Wedge.prototype
+     * @method
+     * @memberof Kinetic.Wedge.prototype
      */
 })();

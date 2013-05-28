@@ -1,5 +1,5 @@
-Test.Modules.TRANSITION = {
-    'transition position and rotation': function(containerId) {
+Test.Modules.Tween = {
+    '!transition position and rotation': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -22,19 +22,37 @@ Test.Modules.TRANSITION = {
         layer.add(rect);
         stage.add(layer);
 
+        var blue = Kinetic.Type.getRGB('blue');
+        var yellow = Kinetic.Type.getRGB('yellow');
+        var red = Kinetic.Type.getRGB('red');
+
+
+        // transition 1
         rect.transitionTo({
-            duration: 2,
+            duration: 3,
             x: 400,
             y: 30,
-            shadowOffset: {
-                x: 80
-            },
-            rotation: Math.PI * 2,
+            fillR: blue.r,
+            fillG: blue.g,
+            fillB: blue.b,
+            strokeR: red.r,
+            strokeG: red.g,
+            strokeB: red.b,
+            shadowColorR: yellow.r,
+            shadowColorG: yellow.g,
+            shadowColorB: yellow.b,
             easing: 'bounce-ease-out'
         });
 
+        // transition 2
+        rect.transitionTo({
+            duration: 3,
+            shadowOffsetX: 80, 
+            rotation: Math.PI * 2,
+            easing: 'bounce-ease-out'
+        });
     },
-    'all transition types': function(containerId) {
+    '!all transition types': function(containerId) {
         document.getElementById(containerId).style.height = '300px';
 
         var stage = new Kinetic.Stage({
@@ -67,32 +85,96 @@ Test.Modules.TRANSITION = {
 
         stage.add(layer);
     },
-    'ease-in, ease-out, ease-in-out hovers': function(containerId) {
-        function addHovers(shape, easing) {
-            shape.on("mouseover", function() {
-                this.transitionTo({
-                    scale: {
-                        x: 1.5,
-                        y: 1.5
-                    },
-                    duration: 1,
-                    easing: easing,
-                    callback: function() {
-                        console.log('finished');
-                    }
-                });
-            });
-            shape.on("mouseout", function() {
-                this.transitionTo({
-                    scale: {
-                        x: 1,
-                        y: 1
-                    },
-                    duration: 1,
-                    easing: easing
-                });
-            });
-        }
+    'ease-in, ease-out, ease-in-out hovers': function(containerId) {    
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var greenBox = new Kinetic.Rect({
+            x: 50,
+            y: stage.getHeight() / 2 - 25,
+            width: 100,
+            height: 50,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            offset: {
+                x: 50,
+                y: 25
+            } 
+        });
+
+        var blueBox = new Kinetic.Rect({
+            x: stage.getWidth() / 2 - 50,
+            y: stage.getHeight() / 2 - 25,
+            width: 100,
+            height: 50,
+            fill: 'blue',
+            stroke: 'black',
+            strokeWidth: 4,
+            offset: {
+                x: 50,
+                y: 25
+            }
+        });
+
+
+
+        var redBox = new Kinetic.Rect({
+            x: 428,
+            y: stage.getHeight() / 2 - 25,
+            width: 100,
+            height: 50,
+            fill: 'red',
+            stroke: 'black',
+            strokeWidth: 4,
+            offset: {
+                x: 50,
+                y: 25
+            }
+        });
+
+
+
+        layer.add(greenBox);
+        layer.add(blueBox);
+        layer.add(redBox);
+        stage.add(layer);
+
+        greenBox.tween = new Kinetic.Tween({
+            node: greenBox,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            duration: 1, 
+            easing: Kinetic.Easings.EaseIn
+        });
+
+        blueBox.tween = new Kinetic.Tween({
+            node: blueBox,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            duration: 1, 
+            easing: Kinetic.Easings.EaseOut
+        });
+
+        redBox.tween = new Kinetic.Tween({
+            node: redBox,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            duration: 1, 
+            easing: Kinetic.Easings.EaseInOut
+        });
+
+        layer.on("mouseover", function(evt) {
+            evt.targetNode.tween.play();
+        });
+        layer.on("mouseout", function(evt) {
+            evt.targetNode.tween.reverse();
+        });
+    },
+    'simple transition': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -113,12 +195,42 @@ Test.Modules.TRANSITION = {
             }
         });
 
-        var blueBox = new Kinetic.Rect({
-            x: stage.getWidth() / 2 - 50,
+        layer.add(greenBox);
+        stage.add(layer);
+
+        var tween = new Kinetic.Tween({
+            node: greenBox,
+            duration: 2,
+            x: 400,
+            scaleX: 2,
+            scaleY: 2,
+            easing: Kinetic.Easings.BounceEaseOut,
+            yoyo: false,
+            onFinish: function() {
+                console.log('finished!')
+            }
+        });
+
+        tween.play();
+
+        document.getElementById(containerId).addEventListener('click', function() {
+            tween.seek(1.5);
+            tween.reverse();
+        });
+    },
+    'tween stage': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var greenBox = new Kinetic.Rect({
+            x: 50,
             y: stage.getHeight() / 2 - 25,
             width: 100,
             height: 50,
-            fill: 'blue',
+            fill: 'green',
             stroke: 'black',
             strokeWidth: 4,
             offset: {
@@ -126,29 +238,25 @@ Test.Modules.TRANSITION = {
                 y: 25
             }
         });
-
-        var redBox = new Kinetic.Rect({
-            x: 428,
-            y: stage.getHeight() / 2 - 25,
-            width: 100,
-            height: 50,
-            fill: 'red',
-            stroke: 'black',
-            strokeWidth: 4,
-            offset: {
-                x: 50,
-                y: 25
-            }
-        });
-
-        addHovers(greenBox, "ease-in");
-        addHovers(blueBox, "ease-out");
-        addHovers(redBox, "ease-in-out");
 
         layer.add(greenBox);
-        layer.add(blueBox);
-        layer.add(redBox);
         stage.add(layer);
+
+        var tween = new Kinetic.Tween({
+            node: stage,
+            duration: 2,
+            x: 400,
+            scaleX: 2,
+            scaleY: 2,
+            easing: Kinetic.Easings.BounceEaseOut,
+            yoyo: false,
+            onFinish: function() {
+                console.log('finished!')
+            }
+        });
+
+        tween.play();
+      
     }
 };
 
@@ -188,6 +296,48 @@ Test.Modules.ANIMATION = {
         setTimeout(function() {
             anim.stop();
         }, 3000);
+    },
+    'animation with two layers': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var rect = new Kinetic.Rect({
+            x: 200,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        layer.add(rect);
+
+        var layer2 = new Kinetic.Layer();
+        var rect2 = new Kinetic.Rect({
+            x: 250,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'red',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        layer2.add(rect2);
+        stage.add(layer);
+        stage.add(layer2);
+
+        var anim = new Kinetic.Animation(function(frame) {
+            rect.rotateDeg(1);
+            rect2.rotateDeg(1);
+        }, [layer, layer2]);
+
+        anim.start();
+
     },
     'test multiple animations': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1389,7 +1539,7 @@ Test.Modules.DRAG_AND_DROP = {
 
 
     },
-    'transition stage width': function(containerId) {
+    '!transition stage width': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -1417,5 +1567,54 @@ Test.Modules.DRAG_AND_DROP = {
         });
 
         
+    },
+    '!transition gaussian blur filter': function(containerId) {
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var stage = new Kinetic.Stage({
+                container: containerId,
+                width: 578,
+                height: 200
+            });
+            var layer = new Kinetic.Layer();
+            darth = new Kinetic.Image({
+                x: 10,
+                y: 10,
+                image: imageObj,
+                draggable: true,
+                filter: Kinetic.Filters.Blur,
+                filterRadius: 20
+            });
+
+            layer.add(darth);
+            stage.add(layer);
+
+            var trans = null;
+
+    
+            darth.on('mouseover', function() {
+                if (trans) {
+                    trans.stop();
+                }
+                trans = darth.transitionTo({
+                    easing: 'ease-in-out',
+                    duration: 0.5,
+                    filterRadius: 0
+                });
+            });
+
+            darth.on('mouseout', function() {
+                if (trans) {
+                    trans.stop();
+                }
+                trans = darth.transitionTo({
+                    easing: 'ease-in-out',
+                    duration: 0.5,
+                    filterRadius: 20
+                });
+            });
+            
+        };
+        imageObj.src = '../assets/darth-vader.jpg';
     }
 };

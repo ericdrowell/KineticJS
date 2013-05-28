@@ -34,21 +34,8 @@
         ctx['_' + eventName](evt);
       }, false);
     }
-    
-    /**
-     * Stage constructor.  A stage is used to contain multiple layers
-     * @constructor
-     * @augments Kinetic.Container
-     * @param {Object} config
-     * @param {String|DomElement} config.container Container id or DOM element
-     * {{NodeParams}}
-     * {{ContainerParams}}
-     */
-    Kinetic.Stage = function(config) {
-        this._initStage(config);
-    };
 
-    Kinetic.Stage.prototype = {
+    Kinetic.Util.addMethods(Kinetic.Stage, {
         _initStage: function(config) {
             this.createAttrs();
             // call super constructor
@@ -62,15 +49,15 @@
         },
         /**
          * set container dom element which contains the stage wrapper div element
-         * @name setContainer
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {DomElement} container can pass in a dom element or id string
          */
         setContainer: function(container) {
             if( typeof container === STRING) {
                 container = document.getElementById(container);
             }
-            this.setAttr(CONTAINER, container);
+            this._setAttr(CONTAINER, container);
         },
         draw: function() {
             // clear children layers
@@ -91,19 +78,21 @@
         /**
          * draw layer scene graphs
          * @name draw
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
 
         /**
          * draw layer hit graphs
          * @name drawHit
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
 
         /**
          * set height
-         * @name setHeight
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Number} height
          */
         setHeight: function(height) {
@@ -112,8 +101,8 @@
         },
         /**
          * set width
-         * @name setWidth
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Number} width
          */
         setWidth: function(width) {
@@ -122,8 +111,8 @@
         },
         /**
          * clear all layers
-         * @name clear
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         clear: function() {
             var layers = this.children,
@@ -136,35 +125,37 @@
         },
         /**
          * remove stage
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         remove: function() {
             var content = this.content;
             Kinetic.Node.prototype.remove.call(this);
 
-            if(content && Kinetic.Type._isInDocument(content)) {
+            if(content && Kinetic.Util._isInDocument(content)) {
                 this.getContainer().removeChild(content);
             }
         },
         /**
          * get mouse position for desktop apps
-         * @name getMousePosition
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         getMousePosition: function() {
             return this.mousePos;
         },
         /**
          * get touch position for mobile apps
-         * @name getTouchPosition
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         getTouchPosition: function() {
             return this.touchPos;
         },
         /**
          * get pointer position which can be a touc position or mouse position
-         * @name getPointerPosition
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         getPointerPosition: function() {
             return this.getTouchPosition() || this.getMousePosition();
@@ -175,16 +166,16 @@
         /**
          * get stage content div element which has the
          *  the class name "kineticjs-content"
-         * @name getContent
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          */
         getContent: function() {
             return this.content;
         },
         /**
          * Creates a composite data URL and requires a callback because the composite is generated asynchronously.
-         * @name toDataURL
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Object} config
          * @param {Function} config.callback function executed when the composite has completed
          * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
@@ -236,8 +227,8 @@
         },
         /**
          * converts stage into an image.
-         * @name toImage
-         * @methodOf Kinetic.Stage.prototype
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Object} config
          * @param {Function} config.callback function executed when the composite has completed
          * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
@@ -254,20 +245,21 @@
             var cb = config.callback;
 
             config.callback = function(dataUrl) {
-                Kinetic.Type._getImage(dataUrl, function(img) {
+                Kinetic.Util._getImage(dataUrl, function(img) {
                     cb(img);
                 });
             };
             this.toDataURL(config);
         },
         /**
-         * get intersection object that contains shape and pixel data
-         * @name getIntersection
-         * @methodOf Kinetic.Stage.prototype
+         * get visible intersection object that contains shape and pixel data. This is the preferred
+         *  method for determining if a point intersects a shape or not
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Object} pos point object
          */
         getIntersection: function() {
-            var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments)),
+            var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments)),
                 layers = this.getChildren(),
                 len = layers.length,
                 end = len - 1,
@@ -308,6 +300,8 @@
         },
         /**
          * add layer to stage
+         * @method
+         * @memberof Kinetic.Stage.prototype
          * @param {Kinetic.Layer} layer
          */
         add: function(layer) {
@@ -328,6 +322,14 @@
         getLayer: function() {
             return null;
         },
+        /**
+         * returns a {@link Kinetic.Collection} of layers
+         * @method
+         * @memberof Kinetic.Stage.prototype
+         */
+        getLayers: function() {
+            return this.getChildren();
+        },
         _setPointerPosition: function(evt) {
             if(!evt) {
                 evt = window.event;
@@ -335,10 +337,6 @@
             this._setMousePosition(evt);
             this._setTouchPosition(evt);
         },
-        /**
-         * begin listening for events by adding event handlers
-         * to the container
-         */
         _bindContentEvents: function() {
             var that = this,
                 n;
@@ -353,8 +351,8 @@
                 targetShape = this.targetShape;
                 
             if(targetShape && !go.isDragging()) {
-                targetShape._handleEvent(MOUSEOUT, evt);
-                targetShape._handleEvent(MOUSELEAVE, evt);
+                targetShape._fireAndBubble(MOUSEOUT, evt);
+                targetShape._fireAndBubble(MOUSELEAVE, evt);
                 this.targetShape = null;
             }
             this.mousePos = undefined;
@@ -371,15 +369,15 @@
                 if(shape) {
                     if(!go.isDragging() && obj.pixel[3] === 255 && (!this.targetShape || this.targetShape._id !== shape._id)) {
                         if(this.targetShape) {
-                            this.targetShape._handleEvent(MOUSEOUT, evt, shape);
-                            this.targetShape._handleEvent(MOUSELEAVE, evt, shape);
+                            this.targetShape._fireAndBubble(MOUSEOUT, evt, shape);
+                            this.targetShape._fireAndBubble(MOUSELEAVE, evt, shape);
                         }
-                        shape._handleEvent(MOUSEOVER, evt, this.targetShape);
-                        shape._handleEvent(MOUSEENTER, evt, this.targetShape);
+                        shape._fireAndBubble(MOUSEOVER, evt, this.targetShape);
+                        shape._fireAndBubble(MOUSEENTER, evt, this.targetShape);
                         this.targetShape = shape;
                     }
                     else {
-                        shape._handleEvent(MOUSEMOVE, evt);
+                        shape._fireAndBubble(MOUSEMOVE, evt);
                     }
                 }
             }
@@ -388,8 +386,8 @@
              * to run mouseout from previous target shape
              */
             else if(this.targetShape && !go.isDragging()) {
-                this.targetShape._handleEvent(MOUSEOUT, evt);
-                this.targetShape._handleEvent(MOUSELEAVE, evt);
+                this.targetShape._fireAndBubble(MOUSEOUT, evt);
+                this.targetShape._fireAndBubble(MOUSELEAVE, evt);
                 this.targetShape = null;
             }
 
@@ -407,7 +405,7 @@
                 shape = obj.shape;
                 this.clickStart = true;
                 this.clickStartShape = shape;
-                shape._handleEvent(MOUSEDOWN, evt);
+                shape._fireAndBubble(MOUSEDOWN, evt);
             }
 
             //init stage drag and drop
@@ -424,7 +422,7 @@
                 
             if(obj && obj.shape) {
                 shape = obj.shape;
-                shape._handleEvent(MOUSEUP, evt);
+                shape._fireAndBubble(MOUSEUP, evt);
 
                 // detect if click or double click occurred
                 if(this.clickStart) {
@@ -433,10 +431,10 @@
                      * the correct shape, don't fire click or dbl click event
                      */
                     if(!go.isDragging() && shape._id === this.clickStartShape._id) {
-                        shape._handleEvent(CLICK, evt);
+                        shape._fireAndBubble(CLICK, evt);
 
                         if(this.inDoubleClickWindow) {
-                            shape._handleEvent(DBL_CLICK, evt);
+                            shape._fireAndBubble(DBL_CLICK, evt);
                         }
                         this.inDoubleClickWindow = true;
                         setTimeout(function() {
@@ -459,7 +457,7 @@
                 shape = obj.shape;
                 this.tapStart = true;
                 this.tapStartShape = shape;
-                shape._handleEvent(TOUCHSTART, evt);
+                shape._fireAndBubble(TOUCHSTART, evt);
             }
 
             //init stage drag and drop
@@ -476,7 +474,7 @@
 
             if(obj && obj.shape) {
                 shape = obj.shape;
-                shape._handleEvent(TOUCHEND, evt);
+                shape._fireAndBubble(TOUCHEND, evt);
 
                 // detect if tap or double tap occurred
                 if(this.tapStart) {
@@ -485,10 +483,10 @@
                      * event
                      */
                     if(!go.isDragging() && shape._id === this.tapStartShape._id) {
-                        shape._handleEvent(TAP, evt);
+                        shape._fireAndBubble(TAP, evt);
 
                         if(this.inDoubleClickWindow) {
-                            shape._handleEvent(DBL_TAP, evt);
+                            shape._fireAndBubble(DBL_TAP, evt);
                         }
                         this.inDoubleClickWindow = true;
                         setTimeout(function() {
@@ -510,7 +508,7 @@
             
             if(obj && obj.shape) {
                 shape = obj.shape;
-                shape._handleEvent(TOUCHMOVE, evt);
+                shape._fireAndBubble(TOUCHMOVE, evt);
             }
 
             // start drag and drop
@@ -518,10 +516,6 @@
                 dd._drag(evt);
             }
         },
-        /**
-         * set mouse positon for desktop apps
-         * @param {Event} evt
-         */
         _setMousePosition: function(evt) {
             var mouseX = evt.clientX - this._getContentPosition().left,
                 mouseY = evt.clientY - this._getContentPosition().top;
@@ -531,10 +525,6 @@
                 y: mouseY
             };
         },
-        /**
-         * set touch position for mobile apps
-         * @param {Event} evt
-         */
         _setTouchPosition: function(evt) {
             var touch, touchX, touchY;
             
@@ -552,9 +542,6 @@
                 };
             }
         },
-        /**
-         * get container position
-         */
         _getContentPosition: function() {
             var rect = this.content.getBoundingClientRect();
             return {
@@ -562,9 +549,6 @@
                 left: rect.left
             };
         },
-        /**
-         * build dom
-         */
         _buildDOM: function() {
             // content
             this.content = document.createElement(DIV);
@@ -578,11 +562,6 @@
 
             this._resizeDOM();
         },
-        /**
-         * bind event listener to container DOM element
-         * @param {String} typesStr
-         * @param {function} handler
-         */
         _onContent: function(typesStr, handler) {
             var types = typesStr.split(SPACE),
                 len = types.length,
@@ -593,8 +572,8 @@
                 this.content.addEventListener(baseEvent, handler, false);
             }
         }
-    };
-    Kinetic.Global.extend(Kinetic.Stage, Kinetic.Container);
+    });
+    Kinetic.Util.extend(Kinetic.Stage, Kinetic.Container);
 
     // add getters and setters
     Kinetic.Node.addGetter(Kinetic.Stage, 'container');
@@ -602,6 +581,7 @@
     /**
      * get container DOM element
      * @name getContainer
-     * @methodOf Kinetic.Stage.prototype
+     * @method
+     * @memberof Kinetic.Stage.prototype
      */
 })();

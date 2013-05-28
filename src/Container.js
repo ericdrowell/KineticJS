@@ -1,33 +1,21 @@
 (function() {
-    /**
-     * Container constructor.&nbsp; Containers are used to contain nodes or other containers
-     * @constructor
-     * @augments Kinetic.Node
-     * @param {Object} config
-     * {{NodeParams}}
-     * {{ContainerParams}}
-     */
-    Kinetic.Container = function(config) {
-        this._containerInit(config);
-    };
-
-    Kinetic.Container.prototype = {
+    Kinetic.Util.addMethods(Kinetic.Container, {
         _containerInit: function(config) {
-            this.children = [];
+            this.children = new Kinetic.Collection();
             Kinetic.Node.call(this, config);
         },
         /**
-         * get children
-         * @name getChildren
-         * @methodOf Kinetic.Container.prototype
+         * returns a {@link Kinetic.Collection} of direct descendant nodes
+         * @method
+         * @memberof Kinetic.Container.prototype
          */
         getChildren: function() {
             return this.children;
         },
         /**
          * remove all children
-         * @name removeChildren
-         * @methodOf Kinetic.Container.prototype
+         * @method
+         * @memberof Kinetic.Container.prototype
          */
         removeChildren: function() {
             while(this.children.length > 0) {
@@ -36,8 +24,8 @@
         },
         /**
          * add node to container
-         * @name add
-         * @methodOf Kinetic.Container.prototype
+         * @method
+         * @memberof Kinetic.Container.prototype
          * @param {Node} child
          */
         add: function(child) {
@@ -45,19 +33,31 @@
             child.index = children.length;
             child.parent = this;
             children.push(child);
+            this._fire('add', {
+                child: child
+            });
 
             // chainable
             return this;
         },
         /**
-         * return an array of nodes that match the selector.  Use '#' for id selections
-         * and '.' for name selections
-         * ex:
-         * var node = stage.get('#foo'); // selects node with id foo
-         * var nodes = layer.get('.bar'); // selects nodes with name bar inside layer
-         * @name get
-         * @methodOf Kinetic.Container.prototype
+         * return a {@link Kinetic.Collection} of nodes that match the selector.  Use '#' for id selections
+         * and '.' for name selections.  You can also select by type or class name
+         * @method
+         * @memberof Kinetic.Container.prototype
          * @param {String} selector
+         * @example
+         * // select node with id foo<br>
+         * var node = stage.get('#foo');<br><br>
+         *
+         * // select nodes with name bar inside layer<br>
+         * var nodes = layer.get('.bar');<br><br>
+         *
+         * // select all groups inside layer<br>
+         * var nodes = layer.get('Group');<br><br>
+         *
+         * // select all rectangles inside layer<br>
+         * var nodes = layer.get('Rect');
          */
         get: function(selector) {
             var collection = new Kinetic.Collection();
@@ -135,8 +135,8 @@
         /**
          * determine if node is an ancestor
          * of descendant
-         * @name isAncestorOf
-         * @methodOf Kinetic.Container.prototype
+         * @method
+         * @memberof Kinetic.Container.prototype
          * @param {Kinetic.Node} node
          */
         isAncestorOf: function(node) {
@@ -150,30 +150,26 @@
 
             return false;
         },
-        /**
-         * clone node
-         * @name clone
-         * @methodOf Kinetic.Container.prototype
-         * @param {Object} attrs override attrs
-         */
         clone: function(obj) {
             // call super method
-            var node = Kinetic.Node.prototype.clone.call(this, obj)
+            var node = Kinetic.Node.prototype.clone.call(this, obj);
 
-            // perform deep clone on containers
-            for(var key in this.children) {
-                node.add(this.children[key].clone());
-            }
+            this.getChildren().each(function(no) {
+                node.add(no.clone());
+            });
             return node;
         },
         /**
-         * get shapes that intersect a point
-         * @name getIntersections
-         * @methodOf Kinetic.Container.prototype
-         * @param {Object} point
+         * get all shapes that intersect a point.  Note: because this method must clear a temporary
+         * canvas and redraw every shape inside the container, it should only be used for special sitations 
+         * because it performs very poorly.  Please use the {@link Kinetic.Stage#getIntersection} method if at all possible
+         * because it performs much better
+         * @method
+         * @memberof Kinetic.Container.prototype
+         * @param {Object} pos
          */
-        getIntersections: function() {
-            var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments));
+        getAllIntersections: function() {
+            var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments));
             var arr = [];
             var shapes = this.get('Shape');
 
@@ -187,9 +183,6 @@
 
             return arr;
         },
-        /**
-         * set children indices
-         */
         _setChildrenIndices: function() {
             var children = this.children, len = children.length;
             for(var n = 0; n < len; n++) {
@@ -246,9 +239,9 @@
                 }
             }
         }
-    };
+    });
 
-    Kinetic.Global.extend(Kinetic.Container, Kinetic.Node);
+    Kinetic.Util.extend(Kinetic.Container, Kinetic.Node);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Container, 'clipFunc');
@@ -256,13 +249,15 @@
     /**
      * set clipping function 
      * @name setClipFunc
-     * @methodOf Kinetic.Container.prototype
+     * @method
+     * @memberof Kinetic.Container.prototype
      * @param {Number} deg
      */
 
     /**
      * get clipping function 
      * @name getClipFunc
-     * @methodOf Kinetic.Container.prototype
+     * @method
+     * @memberof Kinetic.Container.prototype
      */
 })();

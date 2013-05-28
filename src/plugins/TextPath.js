@@ -7,14 +7,26 @@
      * Path constructor.
      * @author Jason Follas
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {String} [config.fontFamily] default is Calibri
      * @param {Number} [config.fontSize] default is 12
      * @param {String} [config.fontStyle] can be normal, bold, or italic.  Default is normal
      * @param {String} config.text
+     * @param {String} config.data SVG data string
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var textpath = new Kinetic.TextPath({<br>
+     *   x: 100,<br>
+     *   y: 50,<br>
+     *   fill: '#333',<br>
+     *   fontSize: '24',<br>
+     *   fontFamily: 'Arial',<br>
+     *   text: 'All the world\'s a stage, and all the men and women merely players.',<br>
+     *   data: 'M10,10 C0,0 10,150 100,100 S300,150 400,50'<br>
+     * });
      */
     Kinetic.TextPath = function(config) {
         this._initTextPath(config);
@@ -43,7 +55,7 @@
             this._fillFunc = _fillFunc;
             this._strokeFunc = _strokeFunc;
 
-            this.shapeType = 'TextPath';
+            this.className = 'TextPath';
             this._setDrawFuncs();
 
             this.dataArray = Kinetic.Path.parsePathData(this.attrs.data);
@@ -96,24 +108,24 @@
         },
         /**
          * get text width in pixels
-         * @name getTextWidth
-         * @methodOf Kinetic.TextPath.prototype
+         * @method
+         * @memberof Kinetic.TextPath.prototype
          */
         getTextWidth: function() {
             return this.textWidth;
         },
         /**
          * get text height in pixels
-         * @name getTextHeight
-         * @methodOf Kinetic.TextPath.prototype
+         * @method
+         * @memberof Kinetic.TextPath.prototype
          */
         getTextHeight: function() {
             return this.textHeight;
         },
         /**
          * set text
-         * @name setText
-         * @methodOf Kinetic.TextPath.prototype
+         * @method
+         * @memberof Kinetic.TextPath.prototype
          * @param {String} text
          */
         setText: function(text) {
@@ -135,9 +147,6 @@
                 height: parseInt(this.attrs.fontSize, 10)
             };
         },
-        /**
-         * set text data.
-         */
         _setTextData: function() {
 
             var that = this;
@@ -309,57 +318,66 @@
     // map TextPath methods to Text
     Kinetic.TextPath.prototype._getContextFont = Kinetic.Text.prototype._getContextFont;
     
-    Kinetic.Global.extend(Kinetic.TextPath, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.TextPath, Kinetic.Shape);
 
     // add setters and getters
     Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontFamily', CALIBRI);
-    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontSize', 12);
-    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontStyle', NORMAL);
-    
-    Kinetic.Node.addGetter(Kinetic.TextPath, 'text', EMPTY_STRING);
 
     /**
      * set font family
      * @name setFontFamily
-     * @methodOf Kinetic.TextPath.prototype
+     * @method
+     * @memberof Kinetic.TextPath.prototype
      * @param {String} fontFamily
      */
+
+     /**
+     * get font family
+     * @name getFontFamily
+     * @method
+     * @memberof Kinetic.TextPath.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontSize', 12);
 
     /**
      * set font size
      * @name setFontSize
-     * @methodOf Kinetic.TextPath.prototype
+     * @method
+     * @memberof Kinetic.TextPath.prototype
      * @param {int} fontSize
      */
+
+     /**
+     * get font size
+     * @name getFontSize
+     * @method
+     * @memberof Kinetic.TextPath.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.TextPath, 'fontStyle', NORMAL);
 
     /**
      * set font style.  Can be 'normal', 'italic', or 'bold'.  'normal' is the default.
      * @name setFontStyle
-     * @methodOf Kinetic.TextPath.prototype
+     * @method
+     * @memberof Kinetic.TextPath.prototype
      * @param {String} fontStyle
      */
 
-    /**
-     * get font family
-     * @name getFontFamily
-     * @methodOf Kinetic.TextPath.prototype
-     */
-
-    /**
-     * get font size
-     * @name getFontSize
-     * @methodOf Kinetic.TextPath.prototype
-     */
-
-    /**
+     /**
      * get font style
      * @name getFontStyle
-     * @methodOf Kinetic.TextPath.prototype
+     * @method
+     * @memberof Kinetic.TextPath.prototype
      */
+    
+    Kinetic.Node.addGetter(Kinetic.TextPath, 'text', EMPTY_STRING);
 
     /**
      * get text
      * @name getText
-     * @methodOf Kinetic.TextPath.prototype
+     * @method
+     * @memberof Kinetic.TextPath.prototype
      */
 })();

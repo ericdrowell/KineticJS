@@ -2,6 +2,7 @@
     /**
      * Star constructor
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Integer} config.numPoints
@@ -9,6 +10,17 @@
      * @param {Number} config.outerRadius
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var star = new Kinetic.Star({<br>
+     *   x: 100,<br>
+     *   y: 200,<br>
+     *   numPoints: 5,<br>
+     *   innerRadius: 70,<br>
+     *   outerRadius: 70,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black',<br>
+     *   strokeWidth: 4<br>
+     * });
      */
     Kinetic.Star = function(config) {
         this._initStar(config);
@@ -20,7 +32,7 @@
 
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Star';
+            this.className = 'Star';
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
@@ -40,49 +52,57 @@
             canvas.fillStroke(this);
         }
     };
-    Kinetic.Global.extend(Kinetic.Star, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Star, Kinetic.Shape);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Star, 'numPoints', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Star, 'innerRadius', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Star, 'outerRadius', 0);
 
     /**
      * set number of points
      * @name setNumPoints
-     * @methodOf Kinetic.Star.prototype
+     * @method
+     * @memberof Kinetic.Star.prototype
      * @param {Integer} points
      */
 
-    /**
-     * set outer radius
-     * @name setOuterRadius
-     * @methodOf Kinetic.Star.prototype
-     * @param {Number} radius
+     /**
+     * get number of points
+     * @name getNumPoints
+     * @method
+     * @memberof Kinetic.Star.prototype
      */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Star, 'innerRadius', 0);
 
     /**
      * set inner radius
      * @name setInnerRadius
-     * @methodOf Kinetic.Star.prototype
+     * @method
+     * @memberof Kinetic.Star.prototype
      * @param {Number} radius
      */
 
-    /**
-     * get number of points
-     * @name getNumPoints
-     * @methodOf Kinetic.Star.prototype
-     */
-
-    /**
-     * get outer radius
-     * @name getOuterRadius
-     * @methodOf Kinetic.Star.prototype
-     */
-
-    /**
+     /**
      * get inner radius
      * @name getInnerRadius
-     * @methodOf Kinetic.Star.prototype
+     * @method
+     * @memberof Kinetic.Star.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Star, 'outerRadius', 0);
+
+    /**
+     * set outer radius
+     * @name setOuterRadius
+     * @method
+     * @memberof Kinetic.Star.prototype
+     * @param {Number} radius
+     */
+
+     /**
+     * get outer radius
+     * @name getOuterRadius
+     * @method
+     * @memberof Kinetic.Star.prototype
      */
 })();

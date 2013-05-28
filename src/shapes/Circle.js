@@ -2,11 +2,30 @@
     /**
      * Circle constructor
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Number} config.radius
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * // create simple circle
+     * var circle = new Kinetic.Circle({<br>
+     *   radius: 40,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black'<br>
+     *   strokeWidth: 5<br>
+     * });<br><br>
+     *
+     * // create ellipse<br>
+     * var circle = new Kinetic.Circle({<br>
+     *   radius: 5,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black'<br>
+     *   strokeWidth: 5,<br>
+     *   scaleX: 2,<br>
+     *   strokeScaleEnabled: false<br>
+     * });
      */
     Kinetic.Circle = function(config) {
         this._initCircle(config);
@@ -17,7 +36,7 @@
             this.createAttrs();
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Circle';
+            this.className = 'Circle';
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
@@ -42,21 +61,21 @@
             this.setRadius(height / 2);
         }
     };
-    Kinetic.Global.extend(Kinetic.Circle, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Circle, Kinetic.Shape);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Circle, 'radius', 0);
 
     /**
      * set radius
-     * @name setRadius
-     * @methodOf Kinetic.Circle.prototype
+     * @method
+     * @memberof Kinetic.Circle.prototype
      * @param {Number} radius
      */
 
     /**
      * get radius
-     * @name getRadius
-     * @methodOf Kinetic.Circle.prototype
+     * @method
+     * @memberof Kinetic.Circle.prototype
      */
 })();

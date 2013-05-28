@@ -2,14 +2,69 @@
     /**
      * Sprite constructor
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {String} config.animation animation key
      * @param {Object} config.animations animation map
      * @param {Integer} [config.index] animation index
-     * @param {Image} image image object
+     * @param {Image} config.image image object
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var animations = {<br>
+     *   idle: [{<br>
+     *     x: 2,<br>
+     *     y: 2,<br>
+     *     width: 70,<br>
+     *     height: 119<br>
+     *   }, {<br>
+     *     x: 71,<br>
+     *     y: 2,<br>
+     *     width: 74,<br>
+     *     height: 119<br>
+     *   }, {<br>
+     *     x: 146,<br>
+     *     y: 2,<br>
+     *     width: 81,<br>
+     *     height: 119<br>
+     *   }, {<br>
+     *     x: 226,<br>
+     *     y: 2,<br>
+     *     width: 76,<br>
+     *     height: 119<br>
+     *   }],<br>
+     *   punch: [{<br>
+     *     x: 2,<br>
+     *     y: 138,<br>
+     *     width: 74,<br>
+     *     height: 122<br>
+     *   }, {<br>
+     *     x: 76,<br>
+     *     y: 138,<br>
+     *     width: 84,<br>
+     *     height: 122<br>
+     *   }, {<br>
+     *     x: 346,<br>
+     *     y: 138,<br>
+     *     width: 120,<br>
+     *     height: 122<br>
+     *   }]<br>
+     * };<br><br>
+     *
+     * var imageObj = new Image();<br>
+     * imageObj.onload = function() {<br>
+     *   var sprite = new Kinetic.Sprite({<br>
+     *     x: 200,<br>
+     *     y: 100,<br>
+     *     image: imageObj,<br>
+     *     animation: 'idle',<br>
+     *     animations: animations,<br>
+     *     frameRate: 7,<br>
+     *     index: 0<br>    
+     *   });<br>
+     * };<br>
+     * imageObj.src = '/path/to/image.jpg'
      */
     Kinetic.Sprite = function(config) {
         this._initSprite(config);
@@ -21,7 +76,7 @@
             
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'Sprite';
+            this.className = 'Sprite';
             this._setDrawFuncs();
 
             this.anim = new Kinetic.Animation();
@@ -55,8 +110,8 @@
         },
         /**
          * start sprite animation
-         * @name start
-         * @methodOf Kinetic.Sprite.prototype
+         * @method
+         * @memberof Kinetic.Sprite.prototype
          */
         start: function() {
             var that = this;
@@ -68,7 +123,7 @@
              *  below.  The anim object only needs the layer reference for
              *  redraw
              */
-            this.anim.node = layer;
+            this.anim.setLayers(layer);
 
             this.interval = setInterval(function() {
                 var index = that.getIndex();
@@ -84,8 +139,8 @@
         },
         /**
          * stop sprite animation
-         * @name stop
-         * @methodOf Kinetic.Sprite.prototype
+         * @method
+         * @memberof Kinetic.Sprite.prototype
          */
         stop: function() {
             this.anim.stop();
@@ -93,8 +148,8 @@
         },
         /**
          * set after frame event handler
-         * @name afterFrame
-         * @methodOf Kinetic.Sprite.prototype
+         * @method
+         * @memberof Kinetic.Sprite.prototype
          * @param {Integer} index frame index
          * @param {Function} func function to be executed after frame has been drawn
          */
@@ -117,64 +172,93 @@
             }
         }
     };
-    Kinetic.Global.extend(Kinetic.Sprite, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Sprite, Kinetic.Shape);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'animation');
-    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'animations');
-    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'image');
-    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'index', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'frameRate', 17);
 
     /**
      * set animation key
      * @name setAnimation
-     * @methodOf Kinetic.Sprite.prototype
+     * @method
+     * @memberof Kinetic.Sprite.prototype
      * @param {String} anim animation key
      */
 
+     /**
+     * get animation key
+     * @name getAnimation
+     * @method
+     * @memberof Kinetic.Sprite.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'animations');
+
     /**
-     * set animations object
+     * set animations map
      * @name setAnimations
-     * @methodOf Kinetic.Sprite.prototype
+     * @method
+     * @memberof Kinetic.Sprite.prototype
      * @param {Object} animations
      */
+
+     /**
+     * get animations map
+     * @name getAnimations
+     * @method
+     * @memberof Kinetic.Sprite.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'image');
 
     /**
      * set image 
      * @name setImage
-     * @methodOf Kinetic.Sprite.prototype
+     * @method
+     * @memberof Kinetic.Sprite.prototype
      * @param {Image} image 
      */
+
+     /**
+     * get image
+     * @name getImage
+     * @method
+     * @memberof Kinetic.Sprite.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'index', 0);
 
     /**
      * set animation frame index
      * @name setIndex
-     * @methodOf Kinetic.Sprite.prototype
+     * @method
+     * @memberof Kinetic.Sprite.prototype
      * @param {Integer} index frame index
      */
 
-    /**
-     * get animation key
-     * @name getAnimation
-     * @methodOf Kinetic.Sprite.prototype
-     */
-
-    /**
-     * get animations object
-     * @name getAnimations
-     * @methodOf Kinetic.Sprite.prototype
-     */
-
-    /**
-     * get image
-     * @name getImage
-     * @methodOf Kinetic.Sprite.prototype
-     */
-
-    /**
+     /**
      * get animation frame index
      * @name getIndex
-     * @methodOf Kinetic.Sprite.prototype
+     * @method
+     * @memberof Kinetic.Sprite.prototype
      */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Sprite, 'frameRate', 17);
+
+    /**
+     * set frame rate in frames / second.  Default is 17 frames per second.  Increase this number to make the sprite
+     *  animation run faster, and decrease the number to make the sprite animation run slower
+     * @name setFrameRate
+     * @method
+     * @memberof Kinetic.Sprite.prototype
+     * @param {Integer} frameRate
+     */
+
+     /**
+     * get frame rate
+     * @name getFrameRate
+     * @method
+     * @memberof Kinetic.Sprite.prototype
+     */
+
 })();

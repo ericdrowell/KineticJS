@@ -1,8 +1,9 @@
 (function() {
     /**
-     * Blob constructor.&nbsp; Blobs are defined by an array of points and
+     * Blob constructor.  Blobs are defined by an array of points and
      *  a tension
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Spline
      * @param {Object} config
      * @param {Array} config.points can be a flattened array of points, an array of point arrays, or an array of point objects.
@@ -10,6 +11,14 @@
      * @param {Number} [config.tension] default value is 1.  Higher values will result in a more curvy line.  A value of 0 will result in no interpolation.
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var blob = new Kinetic.Blob({<br>
+     *   points: [73, 140, 340, 23, 500, 109, 300, 170],<br>
+     *   tension: 0.8,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black'<br>
+     *   strokeWidth: 5<br>
+     * });
      */
     Kinetic.Blob = function(config) {
         this._initBlob(config);
@@ -19,7 +28,7 @@
         _initBlob: function(config) {
             // call super constructor
             Kinetic.Spline.call(this, config);
-            this.shapeType = 'Blob';
+            this.className = 'Blob';
         },
         drawFunc: function(canvas) {
             var points = this.getPoints(), length = points.length, context = canvas.getContext(), tension = this.getTension();
@@ -62,5 +71,5 @@
         }
     };
 
-    Kinetic.Global.extend(Kinetic.Blob, Kinetic.Spline);
+    Kinetic.Util.extend(Kinetic.Blob, Kinetic.Spline);
 })();

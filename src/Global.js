@@ -26,20 +26,131 @@
  * THE SOFTWARE.
  */
 /** 
- * @namespace 
+ * @namespace Kinetic
  */
 var Kinetic = {}; 
 (function() {
     Kinetic.version = '{{version}}';
     
     /** 
-     * @namespace 
+     * @namespace Filters
+     * @memberof Kinetic
      */
     Kinetic.Filters = {};
-    Kinetic.DD = {};
-    
+
+    /**
+     * Node constructor. Nodes are entities that can be transformed, layered,
+     * and have bound events. The stage, layers, groups, and shapes all extend Node.
+     * @constructor
+     * @memberof Kinetic
+     * @abstract
+     * @param {Object} config
+     * {{NodeParams}}
+     */
+    Kinetic.Node = function(config) {
+        this._nodeInit(config);
+    };
+
+    /**
+     * Shape constructor.  Shapes are primitive objects such as rectangles,
+     *  circles, text, lines, etc.
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Node
+     * @param {Object} config
+     * {{ShapeParams}}
+     * {{NodeParams}}
+     * @example
+     * var customShape = new Kinetic.Shape({<br>
+     *   x: 5,<br>
+     *   y: 10,<br>
+     *   fill: 'red',<br>
+     *   // a Kinetic.Canvas renderer is passed into the drawFunc function<br>
+     *   drawFunc: function(canvas) {<br>
+     *     var context = canvas.getContext();<br>
+     *     context.beginPath();<br>
+     *     context.moveTo(200, 50);<br>
+     *     context.lineTo(420, 80);<br>
+     *     context.quadraticCurveTo(300, 100, 260, 170);<br>
+     *     context.closePath();<br>
+     *     canvas.fillStroke(this);<br>
+     *   }<br>   
+     *});
+     */
+    Kinetic.Shape = function(config) {
+        this._initShape(config);
+    }; 
+
+    /**
+     * Container constructor.&nbsp; Containers are used to contain nodes or other containers
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Node
+     * @abstract
+     * @param {Object} config
+     * {{NodeParams}}
+     * {{ContainerParams}}
+     */
+    Kinetic.Container = function(config) {
+        this._containerInit(config);
+    };
+
+    /**
+     * Stage constructor.  A stage is used to contain multiple layers
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Container
+     * @param {Object} config
+     * @param {String|DomElement} config.container Container id or DOM element
+     * {{NodeParams}}
+     * {{ContainerParams}}
+     * @example
+     * var stage = new Kinetic.Stage({<br>
+     *   width: 500,<br>
+     *   height: 800,<br>
+     *   container: 'containerId'<br>
+     * });
+     */
+    Kinetic.Stage = function(config) {
+        this._initStage(config);
+    };
+
+    /**
+     * Layer constructor.  Layers are tied to their own canvas element and are used
+     * to contain groups or shapes
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Container
+     * @param {Object} config
+     * @param {Boolean} [config.clearBeforeDraw] set this property to false if you don't want
+     * to clear the canvas before each layer draw.  The default value is true.
+     * {{NodeParams}}
+     * {{ContainerParams}}
+     * @example
+     * var layer = new Kinetic.Layer();
+     */
+    Kinetic.Layer = function(config) {
+        this._initLayer(config);
+    };
+
+    /**
+     * Group constructor.  Groups are used to contain shapes or other groups.
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Container
+     * @param {Object} config
+     * {{NodeParams}}
+     * {{ContainerParams}}
+     * @example
+     * var group = new Kinetic.Group();
+     */
+    Kinetic.Group = function(config) {
+        this._initGroup(config);
+    }; 
+
     /** 
-     * @namespace 
+     * @namespace Global
+     * @memberof Kinetic
      */
     Kinetic.Global = {
         stages: [],
@@ -48,10 +159,11 @@ var Kinetic = {};
         names: {},
         //shapes hash.  rgb keys and shape values
         shapes: {},
+
         /**
-         * @method isDragging returns whether or not drag and drop
-         *  is currently active
-         * @methodOf Kinetic.Global
+         * returns whether or not drag and drop is currently active
+         * @method
+         * @memberof Kinetic.Global
          */
         isDragging: function() {
             var dd = Kinetic.DD;  
@@ -67,9 +179,10 @@ var Kinetic = {};
             }
         },
         /**
-        * @method isDragReady returns whether or not a drag and drop operation is ready, but may
+        * returns whether or not a drag and drop operation is ready, but may
         *  not necessarily have started
-        * @methodOf Kinetic.Global
+        * @method
+        * @memberof Kinetic.Global
         */
         isDragReady: function() {
             var dd = Kinetic.DD;  
@@ -82,22 +195,6 @@ var Kinetic = {};
             // if DD is included with the build
             else {
                 return !!dd.node;
-            }
-        },
-        warn: function(str) {
-            /*
-             * IE9 on Windows7 64bit will throw a JS error
-             * if we don't use window.console in the conditional
-             */
-            if(window.console && console.warn) {
-                console.warn('Kinetic warning: ' + str);
-            }
-        },
-        extend: function(c1, c2) {
-            for(var key in c2.prototype) {
-                if(!( key in c1.prototype)) {
-                    c1.prototype[key] = c2.prototype[key];
-                }
             }
         },
         _addId: function(node, id) {

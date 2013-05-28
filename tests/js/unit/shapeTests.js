@@ -27,6 +27,81 @@ Test.Modules.SHAPE = {
         testDataUrl(layer.toDataURL(), 'scaled rect with disabled stroke scale', 'probem with stroke scale disabling');
     },
 
+    'shape color components': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var rect = new Kinetic.Rect({
+            x: 200,
+            y: 90,
+            width: 100,
+            height: 50,
+            fill: 'green',
+            stroke: 'red'
+
+        });
+
+        layer.add(rect);
+        stage.add(layer);
+
+        // test component getters
+        test(rect.getFillRGB().r === 0, 'rect fill RGB.r should be 0');
+        test(rect.getFillRGB().g === 128, 'rect fill RGB.g should be 128');
+        test(rect.getFillRGB().b === 0, 'rect fill RGB.b should be 0');
+
+        test(rect.getFillR() === 0, 'rect fill r should be 0');
+        test(rect.getFillG() === 128, 'rect fill g should be 128');
+        test(rect.getFillB() === 0, 'rect fill b should be 0');
+
+        test(rect.getStrokeR() === 255, 'rect stroke r should be 255');
+        test(rect.getStrokeG() === 0, 'rect stroke g should be 0');
+        test(rect.getStrokeB() === 0, 'rect stroke b should be 0');
+
+        rect.setFill('#008000');
+        rect.setStroke('#ff0000');
+
+        test(rect.getFillR() === 0, 'rect fill r should be 0');
+        test(rect.getFillG() === 128, 'rect fill g should be 128');
+        test(rect.getFillB() === 0, 'rect fill b should be 0');
+
+        test(rect.getStrokeR() === 255, 'rect stroke r should be 255');
+        test(rect.getStrokeG() === 0, 'rect stroke g should be 0');
+        test(rect.getStrokeB() === 0, 'rect stroke b should be 0');
+
+        rect.setFill('rgb(0,128,0)');
+        rect.setStroke('rgb(255, 0, 0)');
+
+        test(rect.getFillR() === 0, 'rect fill r should be 0');
+        test(rect.getFillG() === 128, 'rect fill g should be 128');
+        test(rect.getFillB() === 0, 'rect fill b should be 0');
+
+        test(rect.getStrokeR() === 255, 'rect stroke r should be 255');
+        test(rect.getStrokeG() === 0, 'rect stroke g should be 0');
+        test(rect.getStrokeB() === 0, 'rect stroke b should be 0');
+
+        // test setters
+        rect.setFillRGB({
+            r: 100,
+            b: 200
+        });
+
+        test(rect.getFillR() === 100, 'rect fill r should be 100');
+        test(rect.getFillG() === 128, 'rect fill g should be 128');
+        test(rect.getFillB() === 200, 'rect fill b should be 200');
+
+        rect.setFillR(130);
+        test(rect.getFillR() === 130, 'rect fill r should be 130');
+
+        rect.setFillG(140);
+        test(rect.getFillG() === 140, 'rect fill g should be 140');
+
+        rect.setFillB(150);
+        test(rect.getFillB() === 150, 'rect fill b should be 150');
+    },
+
     'test intersects()': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -291,13 +366,10 @@ Test.Modules.SHAPE = {
             fill: 'red'
         });
 
-        var ellipse = new Kinetic.Ellipse({
+        var ellipse = new Kinetic.Circle({
             x: stage.getWidth() / 2,
             y: stage.getHeight() / 2,
-            radius: {
-                x: 100,
-                y: 50
-            },
+            radius: 50,
             fill: 'yellow'
         });
 
@@ -306,8 +378,6 @@ Test.Modules.SHAPE = {
         stage.add(layer);
 
         // circle tests
-        test(circle.attrs.width === undefined, 'circle.attrs.width should be undefined');
-        test(circle.attrs.height === undefined, 'circle.attrs.height should be undefined');
         test(circle.getWidth() === 100, 'circle width should be 100');
         test(circle.getHeight() === 100, 'circle height should be 100');
         test(circle.getSize().width === 100, 'circle width should be 100');
@@ -316,32 +386,12 @@ Test.Modules.SHAPE = {
 
         circle.setWidth(200);
 
-        test(circle.attrs.width === 200, 'circle.attrs.width should be 200');
-        test(circle.attrs.height === undefined, 'circle.attrs.height should be undefined');
         test(circle.getWidth() === 200, 'circle width should be 200');
         test(circle.getHeight() === 200, 'circle height should be 200');
         test(circle.getSize().width === 200, 'circle width should be 200');
         test(circle.getSize().height === 200, 'circle height should be 200');
         test(circle.getRadius() === 100, 'circle radius should be 100');
 
-        // ellipse tests
-        test(ellipse.attrs.width === undefined, 'ellipse.attrs.width should be undefined');
-        test(ellipse.attrs.height === undefined, 'ellipse.attrs.height should be undefined');
-        test(ellipse.getWidth() === 200, 'ellipse width should be 200');
-        test(ellipse.getHeight() === 100, 'ellipse height should be 100');
-        test(ellipse.getSize().width === 200, 'ellipse width should be 200');
-        test(ellipse.getSize().height === 100, 'ellipse height should be 100');
-        test(ellipse.getRadius().x === 100, 'ellipse radius x should be 100');
-
-        ellipse.setWidth(400);
-
-        test(ellipse.attrs.width === 400, 'ellipse.attrs.width should be 400');
-        test(ellipse.attrs.height === undefined, 'ellipse.attrs.height should be undefined');
-        test(ellipse.getWidth() === 400, 'ellipse width should be 400');
-        test(ellipse.getHeight() === 100, 'ellipse height should be 100');
-        test(ellipse.getSize().width === 400, 'ellipse width should be 400');
-        test(ellipse.getSize().height === 100, 'ellipse height should be 100');
-        test(ellipse.getRadius().x === 200, 'ellipse radius x should be 200');
 
     },
     'set image fill to color then image then linear gradient then back to image': function(containerId) {

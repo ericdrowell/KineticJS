@@ -31,11 +31,11 @@
     
                 if(!dd.isDragging) {
                     dd.isDragging = true;
-                    node._handleEvent('dragstart', evt);
+                    node.fire('dragstart', evt, true);
                 }
                 
                 // execute ondragmove if defined
-                node._handleEvent('dragmove', evt);
+                node.fire('dragmove', evt, true);
             }
         },
         _endDragBefore: function(evt) {
@@ -68,7 +68,7 @@
                 dragEndNode = evt.dragEndNode;
                   
             if (evt && dragEndNode) {
-              dragEndNode._handleEvent('dragend', evt); 
+              dragEndNode.fire('dragend', evt, true); 
             }
         }
     };
@@ -77,8 +77,8 @@
     
     /**
      * initiate drag and drop
-     * @name startDrag
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
     Kinetic.Node.prototype.startDrag = function() {
         var dd = Kinetic.DD, 
@@ -87,8 +87,7 @@
             layer = this.getLayer(), 
             pos = stage.getPointerPosition(),
             m = this.getTransform().getTranslation(), 
-            ap = this.getAbsolutePosition(), 
-            animNode = layer || this;
+            ap = this.getAbsolutePosition();
                 
         if(pos) {
             if (dd.node) {
@@ -98,15 +97,15 @@
             dd.node = this;
             dd.offset.x = pos.x - ap.x;
             dd.offset.y = pos.y - ap.y;
-            dd.anim.node = animNode;
+            dd.anim.setLayers(layer || this.getLayers());
             dd.anim.start();
         }
     };
     
     /**
      * stop drag and drop
-     * @name stopDrag
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
     Kinetic.Node.prototype.stopDrag = function() {
         var dd = Kinetic.DD,
@@ -117,12 +116,12 @@
             
     /**
      * set draggable
-     * @name setDraggable
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      * @param {String} draggable
      */
     Kinetic.Node.prototype.setDraggable = function(draggable) {
-        this.setAttr('draggable', draggable);
+        this._setAttr('draggable', draggable);
         this._dragChange();
     };
 
@@ -142,8 +141,8 @@
 
     /**
      * determine if node is currently in drag and drop mode
-     * @name isDragging
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
     Kinetic.Node.prototype.isDragging = function() {
         var dd = Kinetic.DD;
@@ -187,50 +186,47 @@
     };
 
     Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragBoundFunc');
-    Kinetic.Node.addGetterSetter(Kinetic.Node, 'dragOnTop', true);
-    
-    Kinetic.Node.addGetter(Kinetic.Node, 'draggable', false);
 
     /**
      * set drag bound function.  This is used to override the default
      *  drag and drop position
      * @name setDragBoundFunc
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      * @param {Function} dragBoundFunc
-     */
-
-    /**
-     * set flag which enables or disables automatically moving the draggable node to a
-     *  temporary top layer to improve performance.  The default is true
-     * @name setDragOnTop
-     * @methodOf Kinetic.Node.prototype
-     * @param {Boolean} dragOnTop
      */
 
     /**
      * get dragBoundFunc
      * @name getDragBoundFunc
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
 
-    /**
-     * get flag which enables or disables automatically moving the draggable node to a
-     *  temporary top layer to improve performance.
-     * @name getDragOnTop
-     * @methodOf Kinetic.Node.prototype
-     */
+    Kinetic.Node.addGetter(Kinetic.Node, 'draggable', false);
     
      /**
      * get draggable
      * @name getDraggable
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
 
     /**
-     * get draggable.  Alias of getDraggable()
+     * alias of getDraggable()
      * @name isDraggable
-     * @methodOf Kinetic.Node.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
+
+
+    /**
+     * alias of getDraggable
+     * @name isDraggable
+     * @method
+     * @memberof Kinetic.Node.prototype
+     */
+     
     Kinetic.Node.prototype.isDraggable = Kinetic.Node.prototype.getDraggable;
 
     var html = document.getElementsByTagName('html')[0];

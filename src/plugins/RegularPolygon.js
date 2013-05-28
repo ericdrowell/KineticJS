@@ -2,12 +2,23 @@
     /**
      * RegularPolygon constructor.&nbsp; Examples include triangles, squares, pentagons, hexagons, etc.
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Number} config.sides
      * @param {Number} config.radius
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var hexagon = new Kinetic.RegularPolygon({<br>
+     *   x: 100,<br>
+     *   y: 200,<br>
+     *   sides: 6,<br>
+     *   radius: 70,<br>
+     *   fill: 'red',<br>
+     *   stroke: 'black',<br>
+     *   strokeWidth: 4<br>
+     * });
      */
     Kinetic.RegularPolygon = function(config) {
         this._initRegularPolygon(config);
@@ -19,7 +30,7 @@
 
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.shapeType = 'RegularPolygon';
+            this.className = 'RegularPolygon';
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
@@ -36,35 +47,40 @@
             canvas.fillStroke(this);
         }
     };
-    Kinetic.Global.extend(Kinetic.RegularPolygon, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.RegularPolygon, Kinetic.Shape);
 
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.RegularPolygon, 'radius', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.RegularPolygon, 'sides', 0);
 
     /**
      * set radius
      * @name setRadius
-     * @methodOf Kinetic.RegularPolygon.prototype
+     * @method
+     * @memberof Kinetic.RegularPolygon.prototype
      * @param {Number} radius
      */
+
+     /**
+     * get radius
+     * @name getRadius
+     * @method
+     * @memberof Kinetic.RegularPolygon.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.RegularPolygon, 'sides', 0);
 
     /**
      * set number of sides
      * @name setSides
-     * @methodOf Kinetic.RegularPolygon.prototype
+     * @method
+     * @memberof Kinetic.RegularPolygon.prototype
      * @param {int} sides
-     */
-    
-    /**
-     * get radius
-     * @name getRadius
-     * @methodOf Kinetic.RegularPolygon.prototype
      */
 
     /**
      * get number of sides
      * @name getSides
-     * @methodOf Kinetic.RegularPolygon.prototype
+     * @method
+     * @memberof Kinetic.RegularPolygon.prototype
      */
 })();

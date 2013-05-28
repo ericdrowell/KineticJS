@@ -2,7 +2,7 @@
  the Gauss filter
  master repo: https://github.com/pavelpower/kineticjsGaussFilter/
 */
-(function(Kinetic) {
+(function() {
     /*
 
      StackBlur - a fast almost Gaussian Blur For Canvas
@@ -110,7 +110,6 @@
             stackOut = null,
             mul_sum = mul_table[radius],
             shg_sum = shg_table[radius];
-
 
         for ( i = 1; i < div; i++ ) {
             stack = stack.next = new BlurStack();
@@ -323,25 +322,20 @@
         }
     }
 
-    Kinetic = Kinetic || {};
-    Kinetic.Filters = Kinetic.Filters || {};
-
     /**
      * Blur Filter
      * @function
-     * @memberOf Kinetic.Filters
+     * @memberof Kinetic.Filters
      * @param {Object} imageData
-     * @param {Object} config
-     * @param {Integer} config.radius
      */
-    Kinetic.Filters.Blur = function(imageData, config) {
-        var radius = config.radius;
+    Kinetic.Filters.Blur = function(imageData) {
+        var radius = this.getFilterRadius() | 0;
 
-        radius |= 0;
-
-        filterGaussBlurRGBA(imageData, radius);
+        if (radius > 0) {
+            filterGaussBlurRGBA(imageData, radius);
+        }
     };
 
-    window['Kinetic'] = Kinetic;
+    Kinetic.Node.addFilterGetterSetter(Kinetic.Image, 'filterRadius', 0);
 
-})(Kinetic);
+})();

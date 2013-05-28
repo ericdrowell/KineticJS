@@ -3,6 +3,7 @@
      * Spline constructor.&nbsp; Splines are defined by an array of points and
      *  a tension
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Line
      * @param {Object} config
      * @param {Array} config.points can be a flattened array of points, an array of point arrays, or an array of point objects.
@@ -10,6 +11,14 @@
      * @param {Number} [config.tension] default value is 1.  Higher values will result in a more curvy line.  A value of 0 will result in no interpolation.
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var spline = new Kinetic.Spline({<br>
+     *   x: 100,<br>
+     *   y: 50,<br>
+     *   points: [73, 70, 340, 23, 450, 60, 500, 20],<br>
+     *   stroke: 'red',<br>
+     *   tension: 1<br>
+     * });
      */
     Kinetic.Spline = function(config) {
         this._initSpline(config);
@@ -43,7 +52,7 @@
             this.createAttrs();
             // call super constructor
             Kinetic.Line.call(this, config);
-            this.shapeType = 'Spline';
+            this.className = 'Spline';
         },
         drawFunc: function(canvas) {
             var points = this.getPoints(), length = points.length, context = canvas.getContext(), tension = this.getTension();
@@ -79,12 +88,12 @@
         },
         /**
          * set tension
-         * @name setTension
-         * @methodOf Kinetic.Spline.prototype
+         * @method
+         * @memberof Kinetic.Spline.prototype
          * @param {Number} tension
          */
         setTension: function(tension) {
-            this.setAttr('tension', tension);
+            this._setAttr('tension', tension);
             this._setAllPoints();
         },
         _setAllPoints: function() {
@@ -100,7 +109,7 @@
             this.allPoints = allPoints;
         }
     };
-    Kinetic.Global.extend(Kinetic.Spline, Kinetic.Line);
+    Kinetic.Util.extend(Kinetic.Spline, Kinetic.Line);
 
     // add getters setters
     Kinetic.Node.addGetter(Kinetic.Spline, 'tension', 1);
@@ -108,6 +117,7 @@
     /**
      * get tension
      * @name getTension
-     * @methodOf Kinetic.Spline.prototype
+     * @method
+     * @memberof Kinetic.Spline.prototype
      */
 })();

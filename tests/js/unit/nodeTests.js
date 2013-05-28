@@ -1,4 +1,70 @@
 Test.Modules.NODE = {
+    'getType and getClassName': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        stage.add(layer.add(group.add(circle)));
+
+        console.log(stage.getType());
+
+        test(stage.getType() === 'Stage', 'stage type should be Stage');
+        test(layer.getType() === 'Layer', 'layer type should be Layer');
+        test(group.getType() === 'Group', 'group type should be Group');
+        test(circle.getType() === 'Shape', 'circle type should be Shape');
+
+        test(stage.getClassName() === 'Stage', 'stage class name should be Stage');
+        test(layer.getClassName() === 'Layer', 'layer class name should be Layer');
+        test(group.getClassName() === 'Group', 'group class name should be Group');
+        test(circle.getClassName() === 'Circle', 'circle class name should be Circle');
+
+        
+    },
+    'setAttr': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        stage.add(layer.add(circle));
+
+        circle.setAttr('fill', 'red');
+        layer.draw();
+
+        test(circle.getFill() === 'red', 'circle should now be red');
+
+        circle.setAttr('position', 5, 6);
+
+        test(circle.getX() === 5, 'circle x should be 5');
+        test(circle.getY() === 6, 'circle y should be 6');
+
+        circle.setAttr('foobar', 12);
+
+        test(circle.getAttr('foobar') === 12, 'custom foobar attr should be 12');
+        
+    },
     'set shape and layer opacity to 0.5': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -234,10 +300,7 @@ Test.Modules.NODE = {
 
         rect.setOffset(1, 2);
 
-        rect.setShadowOffset([3, 4]);
-
         test(offsetChange, 'offsetChange should have been triggered with setOffset()');
-        test(!shadowOffsetChange, 'offsetChange should not have been triggered with setShadow()');
     },
     'simple clone': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -261,6 +324,9 @@ Test.Modules.NODE = {
 
         layer.add(clone);
         stage.add(layer);
+
+        test(rect.getStroke() === 'red', 'rect should have red stroke');
+        test(clone.getStroke() === 'green', 'cloned rect should have green stroke');
     },
     'complex clone': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -454,10 +520,10 @@ Test.Modules.NODE = {
             shadowOffset: [10, 10],
         });
 
-        var circle = new Kinetic.Ellipse({
+        var circle = new Kinetic.Circle({
             x: stage.getWidth() / 2,
             y: stage.getHeight() / 2,
-            radius: [70, 35],
+            radius: 35,
             fill: 'green',
             stroke: 'black',
             strokeWidth: 4
@@ -599,6 +665,41 @@ Test.Modules.NODE = {
 
         layer.add(rect);
         stage.add(layer);
+    },
+    'skew': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var rect = new Kinetic.Rect({
+            x: 200,
+            y: 100,
+            width: 100,
+            height: 50,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            skewX: 1
+        });
+
+
+        layer.add(rect);
+        stage.add(layer);
+
+        test(rect.getSkewX() === 1, 'rect skewX should be 1');
+        test(rect.getSkewY() === 0, 'rect skewY should be 0');
+
+        /*
+        rect.transitionTo({
+            duration: 4,
+            skewY: -2,
+            easing: 'ease-in-out' 
+
+
+        })
+        */
     },
     'init with position, scale, rotation, then change scale': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -783,7 +884,7 @@ Test.Modules.NODE = {
             height: 300,
             callback: function(imageObj) {
                 //document.body.appendChild(imageObj)
-                test(Kinetic.Type._isElement(imageObj), 'shape toImage() should be an image object');
+                test(Kinetic.Util._isElement(imageObj), 'shape toImage() should be an image object');
 
                 var cachedShape = new Kinetic.Image({
                     image: imageObj,
@@ -1064,7 +1165,7 @@ Test.Modules.NODE = {
             height: 50,
             stroke: 'blue',
             offset: {
-                x: 20,
+                x: 40,
                 y: 20
             }
         });
@@ -1072,12 +1173,18 @@ Test.Modules.NODE = {
         layer.add(rect);
         stage.add(layer);
 
-        test(rect.getOffset().x === 20, 'center offset x should be 20');
+        test(rect.getOffsetX() === 40, 'center offset x should be 20');
+        test(rect.getOffsetY() === 20, 'center offset y should be 20');
+
+        test(rect.getOffset().x === 40, 'center offset x should be 20');
         test(rect.getOffset().y === 20, 'center offset y should be 20');
 
-        rect.setOffset(40, 40);
+        rect.setOffset(80, 40);
 
-        test(rect.getOffset().x === 40, 'center offset x should be 40');
+        test(rect.getOffsetX() === 80, 'center offset x should be 40');
+        test(rect.getOffsetY() === 40, 'center offset y should be 40');
+
+        test(rect.getOffset().x === 80, 'center offset x should be 40');
         test(rect.getOffset().y === 40, 'center offset y should be 40');
 
     },
@@ -1656,14 +1763,14 @@ Test.Modules.NODE = {
             clicks.push('layer');
         });
         // fire event with bubbling
-        circle.fire('click');
+        circle.fire('click', null, true);
         
         //console.log(clicks);
 
         test(clicks.toString() == 'circle,layer', 'problem with fire 1');
 
-        // synthetic event
-        circle.fire('click', null, true);
+        // no bubble
+        circle.fire('click');
 
         test(clicks.toString() == 'circle,layer,circle', 'problem with fire 2');
 
@@ -1789,7 +1896,7 @@ Test.Modules.NODE = {
             clicks.push('layer');
         });
 
-        circle.fire('click');
+        circle.fire('click', null, true);
 
         test(clicks[0] === 'circle', 'circle event should be fired first');
         test(clicks[1] === 'layer', 'layer event should be fired second');
@@ -2568,7 +2675,7 @@ Test.Modules.NODE = {
         test(Kinetic.Global.shapes[circleColorKey] === undefined, 'circle color key should not be in shapes hash');
         test(Kinetic.Global.shapes[rectColorKey] === undefined, 'rect color key should not be in shapes hash');
     },
-    'destroy node mid transition': function(containerId) {
+    '!destroy node mid transition': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,
@@ -2717,41 +2824,6 @@ Test.Modules.NODE = {
         group.hide();
         layer.draw();
 
-        test(layer.toDataURL() === dataUrls['cleared'], 'group is still visible');
-    },
-    'test getNodeType()': function(containerId) {
-        var stage = new Kinetic.Stage({
-            container: containerId,
-            width: 578,
-            height: 200
-        });
-        var layer = new Kinetic.Layer();
-        var group = new Kinetic.Group();
-
-        var rect = new Kinetic.Rect({
-            x: 200,
-            y: 100,
-            width: 100,
-            height: 50,
-            fill: 'red',
-            stroke: 'black',
-            strokeWidth: 4,
-            draggable: true,
-            rotationDeg: 60,
-            scale: {
-                x: 2,
-                y: 1
-            }
-        });
-
-        group.add(rect);
-        layer.add(group);
-        stage.add(layer);
-       
-        test(stage.getNodeType() === 'Stage', 'node type should be Stage');
-        test(layer.getNodeType() === 'Layer', 'node type should be Layer');
-        test(group.getNodeType() === 'Group', 'node type should be Group');
-        test(rect.getNodeType() === 'Shape', 'node type should be Shape');
-
+        testDataUrl(layer.toDataURL(), 'cleared', 'group is still visible');
     }
 };

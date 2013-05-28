@@ -1,46 +1,34 @@
 (function() {
-    /**
-     * Layer constructor.  Layers are tied to their own canvas element and are used
-     * to contain groups or shapes
-     * @constructor
-     * @augments Kinetic.Container
-     * @param {Object} config
-     * @param {Boolean} [config.clearBeforeDraw] set this property to false if you don't want
-     * to clear the canvas before each layer draw.  The default value is true.
-     * {{NodeParams}}
-     * {{ContainerParams}}
-     */
-    Kinetic.Layer = function(config) {
-        this._initLayer(config);
-    };
+    // constants
+    var HASH = '#';
 
-    Kinetic.Layer.prototype = {
+    Kinetic.Util.addMethods(Kinetic.Layer, {
         _initLayer: function(config) {
             this.nodeType = 'Layer';
             this.createAttrs();
-            // call super constructor
-            Kinetic.Container.call(this, config);
-
             this.canvas = new Kinetic.SceneCanvas();
             this.canvas.getElement().style.position = 'absolute';
             this.hitCanvas = new Kinetic.HitCanvas();
+            // call super constructor
+            Kinetic.Container.call(this, config);
         },
         /**
-         * get intersection object that contains shape and pixel data
-         * @name getIntersection
-         * @methodOf Kinetic.Stage.prototype
+         * get visible intersection object that contains shape and pixel data. This is the preferred
+         * method for determining if a point intersects a shape or not
+         * @method
+         * @memberof Kinetic.Layer.prototype
          * @param {Object} pos point object
          */
         getIntersection: function() {
-            var pos = Kinetic.Type._getXY(Array.prototype.slice.call(arguments)),
+            var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments)),
                 p, colorKey, shape;
 
             if(this.isVisible() && this.isListening()) {
                 p = this.hitCanvas.context.getImageData(pos.x | 0, pos.y | 0, 1, 1).data;
                 // this indicates that a hit pixel may have been found
                 if(p[3] === 255) {
-                    colorKey = Kinetic.Type._rgbToHex(p[0], p[1], p[2]);
-                    shape = Kinetic.Global.shapes[colorKey];
+                    colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
+                    shape = Kinetic.Global.shapes[HASH + colorKey];
                     return {
                         shape: shape,
                         pixel: p
@@ -76,32 +64,32 @@
         },
         /**
          * get layer canvas
-         * @name getCanvas
-         * @methodOf Kinetic.Layer.prototype
+         * @method
+         * @memberof Kinetic.Node.prototype
          */
         getCanvas: function() {
             return this.canvas;     
         },
         /**
          * get layer hit canvas
-         * @name getHitCanvas
-         * @methodOf Kinetic.Layer.prototype
+         * @method
+         * @memberof Kinetic.Node.prototype
          */
         getHitCanvas: function() {
             return this.hitCanvas;
         },
         /**
          * get layer canvas context
-         * @name getContext
-         * @methodOf Kinetic.Layer.prototype
+         * @method
+         * @memberof Kinetic.Node.prototype
          */
         getContext: function() {
             return this.getCanvas().getContext(); 
         },
         /**
          * clear canvas tied to the layer
-         * @name clear
-         * @methodOf Kinetic.Layer.prototype
+         * @method
+         * @memberof Kinetic.Node.prototype
          */
         clear: function() {
             this.getCanvas().clear();
@@ -178,19 +166,16 @@
         getLayer: function() {
             return this;
         },
-        /**
-         * remove layer from stage
-         */
         remove: function() {
             var stage = this.getStage(), canvas = this.getCanvas(), element = canvas.element;
             Kinetic.Node.prototype.remove.call(this);
 
-            if(stage && canvas && Kinetic.Type._isInDocument(element)) {
+            if(stage && canvas && Kinetic.Util._isInDocument(element)) {
                 stage.content.removeChild(element);
             }
         }
-    };
-    Kinetic.Global.extend(Kinetic.Layer, Kinetic.Container);
+    });
+    Kinetic.Util.extend(Kinetic.Layer, Kinetic.Container);
 
     // add getters and setters
     Kinetic.Node.addGetterSetter(Kinetic.Layer, 'clearBeforeDraw', true);
@@ -199,7 +184,8 @@
      * set flag which determines if the layer is cleared or not
      *  before drawing
      * @name setClearBeforeDraw
-     * @methodOf Kinetic.Layer.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      * @param {Boolean} clearBeforeDraw
      */
 
@@ -207,6 +193,7 @@
      * get flag which determines if the layer is cleared or not
      *  before drawing
      * @name getClearBeforeDraw
-     * @methodOf Kinetic.Layer.prototype
+     * @method
+     * @memberof Kinetic.Node.prototype
      */
 })();

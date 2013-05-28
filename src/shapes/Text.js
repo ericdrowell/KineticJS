@@ -30,6 +30,7 @@
     /**
      * Text constructor
      * @constructor
+     * @memberof Kinetic
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {String} [config.fontFamily] default is Calibri
@@ -44,6 +45,15 @@
      * @param {String} [config.wrap] can be word, char, or none. Default is word
      * {{ShapeParams}}
      * {{NodeParams}}
+     * @example
+     * var text = new Kinetic.Text({<br>
+     *   x: stage.getWidth() / 2,<br>
+     *   y: 15,<br>
+     *   text: 'Simple Text',<br>
+     *   fontSize: 30,<br>
+     *   fontFamily: 'Calibri',<br>
+     *   fill: 'green'<br>
+     * });
      */
     Kinetic.Text = function(config) {
         this._initText(config);
@@ -68,10 +78,9 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
 
-            this.shapeType = TEXT;
             this._fillFunc = _fillFunc;
             this._strokeFunc = _strokeFunc;
-            this.shapeType = TEXT_UPPER;
+            this.className = TEXT_UPPER;
             this._setDrawFuncs();
 
             // update text data for certain attr changes
@@ -134,42 +143,42 @@
         },
         /**
          * set text
-         * @name setText
-         * @methodOf Kinetic.Text.prototype
+         * @method
+         * @memberof Kinetic.Text.prototype
          * @param {String} text
          */
         setText: function(text) {
-            var str = Kinetic.Type._isString(text) ? text : text.toString();
-            this.setAttr(TEXT, str);
+            var str = Kinetic.Util._isString(text) ? text : text.toString();
+            this._setAttr(TEXT, str);
         },
         /**
          * get width
-         * @name getWidth
-         * @methodOf Kinetic.Text.prototype
+         * @method
+         * @memberof Kinetic.Text.prototype
          */
         getWidth: function() {
             return this.attrs.width === AUTO ? this.getTextWidth() + this.getPadding() * 2 : this.attrs.width;
         },
         /**
          * get height
-         * @name getHeight
-         * @methodOf Kinetic.Text.prototype
+         * @method
+         * @memberof Kinetic.Text.prototype
          */
         getHeight: function() {
             return this.attrs.height === AUTO ? (this.getTextHeight() * this.textArr.length * this.getLineHeight()) + this.getPadding() * 2 : this.attrs.height;
         },
         /**
          * get text width
-         * @name getTextWidth
-         * @methodOf Kinetic.Text.prototype
+         * @method
+         * @memberof Kinetic.Text.prototype
          */
         getTextWidth: function() {
             return this.textWidth;
         },
         /**
          * get text height
-         * @name getTextHeight
-         * @methodOf Kinetic.Text.prototype
+         * @method
+         * @memberof Kinetic.Text.prototype
          */
         getTextHeight: function() {
             return this.textHeight;
@@ -198,10 +207,6 @@
         _getTextWidth: function (text) {
             return dummyContext.measureText(text).width;
         },
-        /**
-         * set text data.  wrap logic and width and height setting occurs
-         * here
-         */
          _setTextData: function () {
              var lines = this.getText().split('\n'),
                  fontSize = +this.getFontSize(),
@@ -309,103 +314,154 @@
              this.textWidth = textWidth;
          }
     };
-    Kinetic.Global.extend(Kinetic.Text, Kinetic.Shape);
+    Kinetic.Util.extend(Kinetic.Text, Kinetic.Shape);
  
     // add getters setters
     Kinetic.Node.addGetterSetter(Kinetic.Text, 'fontFamily', CALIBRI);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'fontSize', 12);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'fontStyle', NORMAL);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'padding', 0);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'align', LEFT);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'lineHeight', 1);
-    Kinetic.Node.addGetterSetter(Kinetic.Text, 'wrap', WORD);
-
-    Kinetic.Node.addGetter(Kinetic.Text, TEXT, EMPTY_STRING);
-    
-    Kinetic.Node.addSetter(Kinetic.Text, 'width');
-    Kinetic.Node.addSetter(Kinetic.Text, 'height');
 
     /**
      * set font family
      * @name setFontFamily
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {String} fontFamily
      */
+
+     /**
+     * get font family
+     * @name getFontFamily
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'fontSize', 12);
 
     /**
      * set font size in pixels
      * @name setFontSize
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {int} fontSize
      */
+
+     /**
+     * get font size
+     * @name getFontSize
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'fontStyle', NORMAL);
 
     /**
      * set font style.  Can be 'normal', 'italic', or 'bold'.  'normal' is the default.
      * @name setFontStyle
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {String} fontStyle
      */
+
+     /**
+     * get font style
+     * @name getFontStyle
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'padding', 0);
 
     /**
      * set padding
      * @name setPadding
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {int} padding
      */
+
+     /**
+     * get padding
+     * @name getPadding
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'align', LEFT);
 
     /**
      * set horizontal align of text
      * @name setAlign
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {String} align align can be 'left', 'center', or 'right'
      */
+
+     /**
+     * get horizontal align
+     * @name getAlign
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'lineHeight', 1);
 
     /**
      * set line height
      * @name setLineHeight
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      * @param {Number} lineHeight default is 1
      */
 
-    /**
-     * get font family
-     * @name getFontFamily
-     * @methodOf Kinetic.Text.prototype
-     */
-
-    /**
-     * get font size
-     * @name getFontSize
-     * @methodOf Kinetic.Text.prototype
-     */
-
-    /**
-     * get font style
-     * @name getFontStyle
-     * @methodOf Kinetic.Text.prototype
-     */
-
-    /**
-     * get padding
-     * @name getPadding
-     * @methodOf Kinetic.Text.prototype
-     */
-
-    /**
-     * get horizontal align
-     * @name getAlign
-     * @methodOf Kinetic.Text.prototype
-     */
-
-    /**
+     /**
      * get line height
      * @name getLineHeight
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
      */
+
+    Kinetic.Node.addGetterSetter(Kinetic.Text, 'wrap', WORD);
+
+    /**
+     * set wrap
+     * @name setWrap
+     * @method
+     * @memberof Kinetic.Text.prototype
+     * @param {String} wrap can be word, char, or none. Default is word
+     */
+
+     /**
+     * get wrap
+     * @name getWrap
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+
+    Kinetic.Node.addGetter(Kinetic.Text, TEXT, EMPTY_STRING);
 
     /**
      * get text
      * @name getText
-     * @methodOf Kinetic.Text.prototype
+     * @method
+     * @memberof Kinetic.Text.prototype
+     */
+    
+    Kinetic.Node.addSetter(Kinetic.Text, 'width');
+
+    /**
+     * set width
+     * @name setWidth
+     * @method
+     * @memberof Kinetic.Text.prototype
+     * @param {Number|String} width default is auto
+     */
+
+    Kinetic.Node.addSetter(Kinetic.Text, 'height'); 
+
+    /**
+     * set height
+     * @name setHeight
+     * @method
+     * @memberof Kinetic.Text.prototype
+     * @param {Number|String} height default is auto
      */
 })();
