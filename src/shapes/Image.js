@@ -138,10 +138,12 @@
                 imageData = context.getImageData(0, 0, filterCanvas.getWidth(), filterCanvas.getHeight());
                 filter.call(this, imageData);
                 context.putImageData(imageData, 0, 0);
+                return true;
             }
             catch(e) {
                 this.clearFilter();
                 Kinetic.Util.warn('Unable to apply filter. ' + e.message);
+                return false;
             }
         },
         /**
