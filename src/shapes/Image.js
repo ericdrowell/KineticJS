@@ -52,7 +52,6 @@
             // if a filter is set, and the filter needs to be updated, reapply
             if (this.getFilter() && this._applyFilter) {
                 this.applyFilter();
-                this._applyFilter = false;
             }
 
             // NOTE: this.filterCanvas may be set by the above code block
@@ -113,6 +112,8 @@
             }
         },
         applyFilter: function() {
+            this._applyFilter = false;
+
             var image = this.getImage(),
                 that = this,
                 width = this.getWidth(),
