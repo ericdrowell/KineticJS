@@ -137,6 +137,26 @@ module.exports = function (grunt) {
       },
       beforeconcat: ['src/**/*.js'],
       afterconcat: ['dist/kinetic-v<%= pkg.version %>.js']
+    },
+    jsbeautifier: {
+      files: ["src/**/*.js"],
+      options: {
+        indent_size: 4,
+        indent_char: " ",
+        indent_level: 0,
+        indent_with_tabs: false,
+        preserve_newlines: true,
+        max_preserve_newlines: 2,
+        jslint_happy: true,
+        brace_style: "collapse",
+        keep_array_indentation: false,
+        keep_function_indentation: false,
+        space_before_conditional: true,
+        eval_code: false,
+        indent_case: false,
+        wrap_line_length: 80,
+        unescape_strings: false
+      }
     }
   };
 
@@ -156,10 +176,12 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-jsbeautifier');
 
   // Tasks
   grunt.registerTask('dev', ['clean', 'concat:source', 'replace:dev']);
   grunt.registerTask('full', ['clean', 'concat:source', 'replace:dev', 'uglify', 'replace:prod']);
   grunt.registerTask('test', ['concat:test']);
+  grunt.registerTask('beautify', ['clean', 'concat:source', 'replace:dev', 'jsbeautifier']);
   grunt.registerTask('hint', ['clean', 'concat:source', 'replace:dev', 'jshint']);
 };

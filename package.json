@@ -9,7 +9,8 @@
     "grunt-contrib-concat": "~0.3.0",
     "grunt-replace": "~0.4.4",
     "grunt-contrib-clean": "~0.4.1",
-    "grunt-cli": "~0.1.9"
+    "grunt-cli": "~0.1.9",
+    "grunt-jsbeautifier": "~0.1.8"
   },
   "readmeFilename": "README.md",
   "main": "Gruntfile.js",
