@@ -73,9 +73,6 @@ module.exports = function (grunt) {
   var config = {
     pkg: grunt.file.readJSON('package.json'),
     concat: {
-      options: {
-        separator: ';'
-      },
       source: {
         src: sourceFiles,
         dest: 'dist/kinetic-v<%= pkg.version %>.js'
@@ -135,11 +132,11 @@ module.exports = function (grunt) {
       options: {
         jshintrc: '.jshintrc'
       },
-      beforeconcat: ['src/**/*.js'],
+      beforeconcat: ['src/**/*.js', 'tests/**/*.js'],
       afterconcat: ['dist/kinetic-v<%= pkg.version %>.js']
     },
     jsbeautifier: {
-      files: ["src/**/*.js"],
+      files: ['src/**/*.js', 'tests/**/*.js'],
       options: {
         indent_size: 4,
         indent_char: " ",
@@ -183,5 +180,5 @@ module.exports = function (grunt) {
   grunt.registerTask('full', ['clean', 'concat:source', 'replace:dev', 'uglify', 'replace:prod']);
   grunt.registerTask('test', ['concat:test']);
   grunt.registerTask('beautify', ['clean', 'concat:source', 'replace:dev', 'jsbeautifier']);
-  grunt.registerTask('hint', ['clean', 'concat:source', 'replace:dev', 'jshint']);
+  grunt.registerTask('hint', ['clean', 'jshint:beforeconcat', 'concat:source', 'jshint:afterconcat', 'replace:dev']);
 };
