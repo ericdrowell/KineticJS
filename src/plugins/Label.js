@@ -200,7 +200,7 @@
                 cornerRadius = this.getCornerRadius();
                 
             context.beginPath();
-            context.moveTo(0,0);
+            context.moveTo(cornerRadius, 0);
             
             if (pointerDirection === UP) {
                 context.lineTo((width - pointerWidth)/2, 0);
@@ -208,7 +208,8 @@
                 context.lineTo((width + pointerWidth)/2, 0);
             }
             
-            context.lineTo(width, 0);
+            context.lineTo(width - cornerRadius, 0);
+			context.arcTo(width, 0, width, cornerRadius, cornerRadius);
            
             if (pointerDirection === RIGHT) {
                 context.lineTo(width, (height - pointerHeight)/2);
@@ -216,7 +217,8 @@
                 context.lineTo(width, (height + pointerHeight)/2);
             }
             
-            context.lineTo(width, height);
+            context.lineTo(width, height - cornerRadius);
+			context.arcTo(width, height, width - cornerRadius, height, cornerRadius);
     
             if (pointerDirection === DOWN) {
                 context.lineTo((width + pointerWidth)/2, height);
@@ -224,7 +226,8 @@
                 context.lineTo((width - pointerWidth)/2, height); 
             }
             
-            context.lineTo(0, height);
+            context.lineTo(cornerRadius, height);
+			context.arcTo(0, height, 0, height - cornerRadius, cornerRadius);
             
             if (pointerDirection === LEFT) {
                 context.lineTo(0, (height + pointerHeight)/2);
@@ -232,6 +235,8 @@
                 context.lineTo(0, (height - pointerHeight)/2);
             } 
             
+			context.lineTo(0, cornerRadius);
+			context.arcTo(0, 0, cornerRadius, 0, cornerRadius);
             context.closePath();
             canvas.fillStroke(this);
         }
