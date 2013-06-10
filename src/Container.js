@@ -13,14 +13,43 @@
             return this.children;
         },
         /**
+         * determine if node has children
+         * @method
+         * @memberof Kinetic.Container.prototype
+         */
+        hasChildren: function() {
+            return this.getChildren().length > 0;
+        },
+        /**
          * remove all children
          * @method
          * @memberof Kinetic.Container.prototype
          */
         removeChildren: function() {
-            while(this.children.length > 0) {
-                this.children[0].remove();
+            var children = this.children,
+                child;
+
+            while(children.length > 0) {
+                var child = children[0];
+                if (child.hasChildren()) {
+                    child.removeChildren();
+                }
+                child.remove();
             }
+
+            return this;
+        },
+        /**
+         * destroy all children
+         * @method
+         * @memberof Kinetic.Container.prototype
+         */
+        destroyChildren: function() {
+            var children = this.children;
+            while(children.length > 0) {
+                children[0].destroy();
+            }
+            return this;
         },
         /**
          * add node to container
@@ -39,6 +68,14 @@
 
             // chainable
             return this;
+        },
+        destroy: function() {
+            // destroy children
+            if (this.hasChildren()) {
+                this.destroyChildren();
+            }
+            // then destroy self
+            Kinetic.Node.prototype.destroy.call(this);
         },
         /**
          * return a {@link Kinetic.Collection} of nodes that match the selector.  Use '#' for id selections
@@ -214,6 +251,8 @@
                     canvas.getContext().restore();
                 }
             }
+
+            return this;
         },
         drawHit: function() {
             var clip = !!this.getClipFunc() && this.nodeType !== 'Stage',
@@ -238,6 +277,8 @@
                     hitCanvas.getContext().restore();
                 }
             }
+
+            return this;
         }
     });
 

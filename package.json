@@ -1,0 +1,21 @@
+{
+  "name": "KineticJS",
+  "version": "0.0.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.5.4",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-replace": "~0.4.4",
+    "grunt-contrib-clean": "~0.4.1"
+  },
+  "readmeFilename": "README.md",
+  "main": "Gruntfile.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ericdrowell/KineticJS.git"
+  },
+  "author": "Eric Rowell",
+  "license": "MIT"
+}

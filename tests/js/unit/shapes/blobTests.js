@@ -53,14 +53,13 @@ Test.Modules.BLOB = {
         layer.add(blob1);
         layer.add(blob2);
         stage.add(layer);
-        
-        //console.log(layer.toDataURL());
-        testDataUrl(layer.toDataURL(), 'blobs', 'problem with blobs');
-        
+
         test(blob1.getTension() === 0.8, 'blob1 tension should be 0.8');
         test(blob2.getTension() === 1.2, 'blob2 tension should be 1.2');
         
         test(blob1.getClassName() === 'Blob', 'getClassName should be Blob');
+
+        //console.log(blob1.getPoints())
         
 
     }

@@ -128,7 +128,7 @@
         off: function(typesStr) {
             var types = typesStr.split(SPACE),
                 len = types.length,
-                n, type, event, parts, baseEvent;
+                n, type, t, event, parts, baseEvent;
                 
             for(n = 0; n < len; n++) {
                 type = types[n];
@@ -143,8 +143,8 @@
                         }
                     }
                     else {
-                        for(var type in this.eventListeners) {
-                            this._off(type, parts[1]);
+                        for(t in this.eventListeners) {
+                            this._off(t, parts[1]);
                         }
                     }
                 }
@@ -167,8 +167,10 @@
             if(parent && parent.children) {
                 parent.children.splice(this.index, 1);
                 parent._setChildrenIndices();
+                delete this.parent;
             }
-            delete this.parent;
+            
+            return this;
         },
         /**
          * remove and destroy self
@@ -178,22 +180,12 @@
          * node.destroy();
          */
         destroy: function() {
-            var parent = this.getParent(), 
-                stage = this.getStage(), 
-                dd = Kinetic.DD, 
-                go = Kinetic.Global;
-
-            // destroy children
-            while(this.children && this.children.length > 0) {
-                this.children[0].destroy();
-            }
+            var go = Kinetic.Global;
 
             // remove from ids and names hashes
             go._removeId(this.getId());
             go._removeName(this.getName(), this._id);
 
-            // TODO: stop transitions
- 
             this.remove();
         },
         /**
@@ -233,10 +225,11 @@
             if(Kinetic.Util._isFunction(func)) {
                 func.apply(this, args);
             }
-            // otherwise get directly
+            // otherwise set directly
             else {
                 this.attrs[attr] = args[0];
             }
+            return this;
         },
         /**
          * get attrs object literal
@@ -250,6 +243,7 @@
             if(this.attrs === undefined) {
                 this.attrs = {};
             }
+            return this;
         },
         
         /**
@@ -284,6 +278,7 @@
                     }
                 }
             }
+            return this;
         },
         /**
          * determine if node is visible or not.  Node is visible only
@@ -334,6 +329,7 @@
          */
         show: function() {
             this.setVisible(true);
+            return this;
         },
         /**
          * hide node.  Hidden nodes are no longer detectable
@@ -342,6 +338,7 @@
          */
         hide: function() {
             this.setVisible(false);
+            return this;
         },
         /**
          * get zIndex relative to the node's siblings who share the same parent
@@ -432,6 +429,7 @@
             var pos = Kinetic.Util._getXY([].slice.call(arguments));
             this.setX(pos.x);
             this.setY(pos.y);
+            return this;
         },
         /**
          * get node position relative to parent
@@ -486,6 +484,7 @@
 
             this.setPosition(pos.x, pos.y);
             this._setTransform(trans);
+            return this;
         },
         /**
          * move node by an amount relative to its current position
@@ -516,6 +515,7 @@
             }
 
             this.setPosition(x, y);
+            return this;
         },
         _eachAncestorReverse: function(func, includeSelf) {
             var family = [], 
@@ -544,6 +544,7 @@
          */
         rotate: function(theta) {
             this.setRotation(this.getRotation() + theta);
+            return this;
         },
         /**
          * rotate node by an amount in degrees relative to its current rotation
@@ -553,6 +554,7 @@
          */
         rotateDeg: function(deg) {
             this.setRotation(this.getRotation() + Kinetic.Util._degToRad(deg));
+            return this;
         },
         /**
          * move node to the top of its siblings
@@ -580,6 +582,7 @@
                 this.parent._setChildrenIndices();
                 return true;
             }
+            return false;
         },
         /**
          * move node down
@@ -594,6 +597,7 @@
                 this.parent._setChildrenIndices();
                 return true;
             }
+            return false;
         },
         /**
          * move node to the bottom of its siblings
@@ -608,6 +612,7 @@
                 this.parent._setChildrenIndices();
                 return true;
             }
+            return false;
         },
         /**
          * set zIndex relative to siblings
@@ -620,6 +625,7 @@
             this.parent.children.splice(index, 1);
             this.parent.children.splice(zIndex, 0, this);
             this.parent._setChildrenIndices();
+            return this;
         },
         /**
          * get absolute opacity
@@ -645,6 +651,7 @@
         moveTo: function(newContainer) {
             Kinetic.Node.prototype.remove.call(this);
             newContainer.add(this);
+            return this;
         },
         /**
          * convert Node into an object for serialization.  Returns an object.
@@ -739,6 +746,7 @@
             else {
                 this._fire(eventType, evt || {});
             }
+            return this;
         },
         /**
          * get absolute transform of the node which takes into
@@ -868,8 +876,9 @@
          *  is very high quality
          */
         toDataURL: function(config) {
-            var config = config || {},
-                mimeType = config.mimeType || null, 
+            config = config || {};
+
+            var mimeType = config.mimeType || null, 
                 quality = config.quality || null,
                 stage = this.getStage(),
                 x = config.x || 0, 
@@ -933,6 +942,7 @@
             var size = Kinetic.Util._getSize(Array.prototype.slice.call(arguments));
             this.setWidth(size.width);
             this.setHeight(size.height);
+            return this;
         },
         /**
          * get size
@@ -1056,6 +1066,7 @@
             go._removeId(oldId);
             go._addId(this, id);
             this._setAttr(ID, id);
+            return this;
         },
         /**
          * set name
@@ -1071,6 +1082,7 @@
             go._removeName(oldName, this._id);
             go._addName(this, name);
             this._setAttr(NAME, name);
+            return this;
         },
         _setAttr: function(key, val) {
             var oldVal;
@@ -1136,13 +1148,23 @@
             this.drawScene();
             this.drawHit();
             this._fire(DRAW, evt);
+            return this;
         },
         shouldDrawHit: function() { 
             return this.isVisible() && this.isListening() && !Kinetic.Global.isDragging(); 
+        },
+        isDraggable: function() {
+            return false;
         }
     });
 
-    // add getter and setter methods
+    // setter functions
+    Kinetic.Node.setPoints = function(val) {
+        var points = Kinetic.Util._getPoints(val);
+        this._setAttr('points', points);
+    };
+
+    // getter setter adders
     Kinetic.Node.addGetterSetter = function(constructor, attr, def, isTransform) {
         this.addGetter(constructor, attr, def);
         this.addSetter(constructor, attr, isTransform);
@@ -1156,6 +1178,10 @@
         this.addGetter(constructor, attr + UPPER_Y, def);
         this.addSetter(constructor, attr + UPPER_X, isTransform);
         this.addSetter(constructor, attr + UPPER_Y, isTransform);
+    };
+    Kinetic.Node.addPointsGetterSetter = function(constructor, attr) {
+        this.addPointsGetter(constructor, attr);
+        this.addPointsSetter(constructor, attr);  
     };
     Kinetic.Node.addRotationGetterSetter = function(constructor, attr, def, isTransform) {
         this.addRotationGetter(constructor, attr, def);
@@ -1177,12 +1203,75 @@
         this.addColorComponentSetter(constructor, attr, G);
         this.addColorComponentSetter(constructor, attr, B);
     };
+
+    // getter adders
     Kinetic.Node.addColorRGBGetter = function(constructor, attr) {
         var method = GET + Kinetic.Util._capitalize(attr) + RGB;
         constructor.prototype[method] = function() {
             return Kinetic.Util.getRGB(this.attrs[attr]);
         };
     };
+
+    Kinetic.Node.addColorComponentGetter = function(constructor, attr, c) {
+        var prefix = GET + Kinetic.Util._capitalize(attr),
+            method = prefix + Kinetic.Util._capitalize(c);
+        constructor.prototype[method] = function() {
+            return this[prefix + RGB]()[c];
+        };
+    };
+    Kinetic.Node.addPointsGetter = function(constructor, attr) {
+        var that = this,
+            method = GET + Kinetic.Util._capitalize(attr);
+           
+        constructor.prototype[method] = function(arg) {
+            var val = this.attrs[attr];
+            return val === undefined ? [] : val;  
+        };
+    };
+    Kinetic.Node.addGetter = function(constructor, attr, def) {
+        var that = this,
+            method = GET + Kinetic.Util._capitalize(attr);
+           
+        constructor.prototype[method] = function(arg) {
+            var val = this.attrs[attr];
+            return val === undefined ? def : val;  
+        };
+    };
+    Kinetic.Node.addPointGetter = function(constructor, attr) {
+        var that = this,
+            baseMethod = GET + Kinetic.Util._capitalize(attr);
+            
+        constructor.prototype[baseMethod] = function(arg) {
+            var that = this;
+            return {
+                x: that[baseMethod + UPPER_X](),
+                y: that[baseMethod + UPPER_Y]()
+            };  
+        };
+    };
+    Kinetic.Node.addRotationGetter = function(constructor, attr, def) {
+        var that = this,
+            method = GET + Kinetic.Util._capitalize(attr);
+            
+        // radians
+        constructor.prototype[method] = function() {
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return val;
+        };
+        // degrees
+        constructor.prototype[method + DEG] = function() {
+            var val = this.attrs[attr];
+            if (val === undefined) {
+                val = def; 
+            }
+            return Kinetic.Util._radToDeg(val);
+        };
+    };
+
+    // setter adders
     Kinetic.Node.addColorRGBSetter = function(constructor, attr) {
         var method = SET + Kinetic.Util._capitalize(attr) + RGB;
 
@@ -1194,13 +1283,7 @@
             this._setAttr(attr, HASH + Kinetic.Util._rgbToHex(r, g, b));
         };
     };
-    Kinetic.Node.addColorComponentGetter = function(constructor, attr, c) {
-        var prefix = GET + Kinetic.Util._capitalize(attr),
-            method = prefix + Kinetic.Util._capitalize(c);
-        constructor.prototype[method] = function() {
-            return this[prefix + RGB]()[c];
-        };
-    };
+
     Kinetic.Node.addColorComponentSetter = function(constructor, attr, c) {
         var prefix = SET + Kinetic.Util._capitalize(attr),
             method = prefix + Kinetic.Util._capitalize(c);
@@ -1209,6 +1292,10 @@
             obj[c] = val;
             this[prefix + RGB](obj);
         };
+    };
+    Kinetic.Node.addPointsSetter = function(constructor, attr) {
+        var method = SET + Kinetic.Util._capitalize(attr);
+        constructor.prototype[method] = Kinetic.Node.setPoints;
     };
     Kinetic.Node.addSetter = function(constructor, attr, isTransform) {
         var that = this,
@@ -1265,56 +1352,11 @@
             }
         };
     };
-    Kinetic.Node.addGetter = function(constructor, attr, def) {
-        var that = this,
-            method = GET + Kinetic.Util._capitalize(attr);
-           
-        constructor.prototype[method] = function(arg) {
-            var val = this.attrs[attr];
-            if (val === undefined) {
-                val = def; 
-            }
 
-            return val;    
-        };
-    };
-    Kinetic.Node.addPointGetter = function(constructor, attr) {
-        var that = this,
-            baseMethod = GET + Kinetic.Util._capitalize(attr);
-            
-        constructor.prototype[baseMethod] = function(arg) {
-            var that = this;
-            return {
-                x: that[baseMethod + UPPER_X](),
-                y: that[baseMethod + UPPER_Y]()
-            };  
-        };
-    };
-    Kinetic.Node.addRotationGetter = function(constructor, attr, def) {
-        var that = this,
-            method = GET + Kinetic.Util._capitalize(attr);
-            
-        // radians
-        constructor.prototype[method] = function() {
-            var val = this.attrs[attr];
-            if (val === undefined) {
-                val = def; 
-            }
-            return val;
-        };
-        // degrees
-        constructor.prototype[method + DEG] = function() {
-            var val = this.attrs[attr];
-            if (val === undefined) {
-                val = def; 
-            }
-            return Kinetic.Util._radToDeg(val);
-        };
-    };
     /**
      * create node with JSON string.  De-serializtion does not generate custom
      *  shape drawing functions, images, or event handlers (this would make the
-     * 	serialized object huge).  If your app uses custom shapes, images, and
+     *  serialized object huge).  If your app uses custom shapes, images, and
      *  event handlers (it probably does), then you need to select the appropriate
      *  shapes after loading the stage and set these properties via on(), setDrawFunc(),
      *  and setImage() methods
@@ -1692,5 +1734,21 @@
      */
     Kinetic.Node.prototype.isVisible = Kinetic.Node.prototype.getVisible;
     
-    Kinetic.Collection.mapMethods(['on', 'off', 'draw']);
+    Kinetic.Collection.mapMethods([
+        'on', 
+        'off', 
+        'remove', 
+        'destroy', 
+        'show', 
+        'hide', 
+        'move', 
+        'rotate', 
+        'moveToTop', 
+        'moveUp', 
+        'moveDown', 
+        'moveToBottom',  
+        'moveTo', 
+        'fire', 
+        'draw'
+    ]);
 })();

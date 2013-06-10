@@ -317,6 +317,7 @@ Test.Modules.CONTAINER = {
             height: 200
         });
         var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
         var circle1 = new Kinetic.Circle({
             x: 100,
             y: stage.getHeight() / 2,
@@ -335,16 +336,68 @@ Test.Modules.CONTAINER = {
             strokeWidth: 4
         });
 
-        layer.add(circle1);
-        layer.add(circle2);
+        group.add(circle1);
+        group.add(circle2);
+        layer.add(group);
         stage.add(layer);
 
-        test(layer.children.length === 2, 'layer should have 2 children');
+        test(layer.children.length === 1, 'layer should have 1 children');
+        test(group.children.length === 2, 'group should have 2 children');
 
         layer.removeChildren();
         layer.draw();
 
         test(layer.children.length === 0, 'layer should have 0 children');
+        test(group.children.length === 0, 'group should have 0 children');
+    },
+    'destroy all children from layer': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+        var layer = new Kinetic.Layer({
+            name: 'layerName',
+            id: 'layerId'
+        });
+        var group = new Kinetic.Group();
+        var circle1 = new Kinetic.Circle({
+            x: 100,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'circleName',
+            id: 'circleId'
+        });
+
+        var circle2 = new Kinetic.Circle({
+            x: 300,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        group.add(circle1);
+        group.add(circle2);
+        layer.add(group);
+        stage.add(layer);
+
+        test(layer.children.length === 1, 'layer should have 1 children');
+        test(group.children.length === 2, 'group should have 2 children');
+        test(Kinetic.Global.names.circleName.length > 0, 'circleName should be in names hash');
+        test(Kinetic.Global.ids.circleId.getId() === 'circleId', 'layerId should be in ids hash');
+
+        layer.destroyChildren();
+        layer.draw();
+
+        test(layer.children.length === 0, 'layer should have 0 children');
+        test(group.children.length === 0, 'group should have 0 children');
+        test(Kinetic.Global.names.circleName === undefined, 'circleName should not be in names hash');
+        test(Kinetic.Global.ids.circleId === undefined, 'layerId should not be in ids hash');
     },
     'add group': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -604,15 +657,6 @@ Test.Modules.CONTAINER = {
         test(group.get('Group').length === 0, 'group should have 0 groups');
         test(group.get('Rect').length === 1, 'group should have 1 rects');
         test(group.get('Circle').length === 1, 'gropu should have 1 circles');
-
-		//console.log(dataUrls['node shape type selector']);
-
-        stage.toDataURL({
-            callback: function(dataUrl) {
-            	//console.log(dataUrl)
-                testDataUrl(dataUrl,'node shape type selector', 'problem with node and shape type selector render.');
-            }
-        });
     },
     'test get() selector by adding shape, then group, then layer': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -864,13 +908,6 @@ Test.Modules.CONTAINER = {
 
         test(greenLayer.getZIndex() === 0, 'green layer should have z index of 0');
         test(blueLayer.getZIndex() === 1, 'blue layer should have z index of 1');
-
-        stage.toDataURL({
-            callback: function(dataUrl) {
-                //console.log(dataUrl)
-                testDataUrl(dataUrl, 'blue on top of green', 'layer setZIndex is not working');
-            }
-        });
     },
     'move blue layer on top of green layer with moveToTop': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -907,11 +944,6 @@ Test.Modules.CONTAINER = {
 
         blueLayer.moveToTop();
 
-        stage.toDataURL({
-            callback: function(dataUrl) {
-                testDataUrl(dataUrl, 'blue on top of green', 'layer moveToTop is not working');
-            }
-        });
     },
     'move green layer below blue layer with moveToBottom': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -948,11 +980,6 @@ Test.Modules.CONTAINER = {
 
         greenLayer.moveToBottom();
 
-        stage.toDataURL({
-            callback: function(dataUrl) {
-                testDataUrl(dataUrl, 'blue on top of green', 'layer moveToBottom is not working');
-            }
-        });
     },
     'move green layer below blue layer with moveDown': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -988,11 +1015,6 @@ Test.Modules.CONTAINER = {
         stage.add(greenLayer);
         greenLayer.moveDown();
 
-        stage.toDataURL({
-            callback: function(dataUrl) {
-                testDataUrl(dataUrl, 'blue on top of green', 'layer moveDown is not working');
-            }
-        });
     },
     'move blue layer above green layer with moveUp': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1028,11 +1050,6 @@ Test.Modules.CONTAINER = {
         stage.add(greenLayer);
         blueLayer.moveUp();
 
-        stage.toDataURL({
-            callback: function(dataUrl) {
-                testDataUrl(dataUrl, 'blue on top of green', 'layer moveUp is not working');
-            }
-        });
     },
     'move blue circle on top of green circle with moveToTop': function(containerId) {
         var stage = new Kinetic.Stage({
@@ -1133,6 +1150,7 @@ Test.Modules.CONTAINER = {
 
         layer.add(bluecircle);
         stage.add(layer);
+
 
         test(layer.getZIndex() === 0, 'layer should have zindex of 0');
 

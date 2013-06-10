@@ -69,17 +69,8 @@ Test.Modules.SPLINE = {
         layer.add(line3);
         stage.add(layer);
         
-        /*
-         line.transitionTo({
-         spline: 3,
-         duration: 3
-         });
-         */
-        
-        //console.log(layer.toDataURL());
-        testDataUrl(layer.toDataURL(), 'curvy lines', 'problem with curvy lines');
-        
         test(line1.getClassName() === 'Spline', 'getClassName should be Spline');
+
 
     },
     'create from points represented as a flat array': function(containerId) {

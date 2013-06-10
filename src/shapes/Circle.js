@@ -1,4 +1,8 @@
 (function() {
+    // the 0.0001 offset fixes a bug in Chrome 27
+    var PIx2 = (Math.PI * 2) - 0.0001,
+        CIRCLE = 'Circle';
+
     /**
      * Circle constructor
      * @constructor
@@ -6,8 +10,8 @@
      * @augments Kinetic.Shape
      * @param {Object} config
      * @param {Number} config.radius
-     * {{ShapeParams}}
-     * {{NodeParams}}
+     * @@shapeParams
+     * @@nodeParams
      * @example
      * // create simple circle
      * var circle = new Kinetic.Circle({<br>
@@ -36,13 +40,14 @@
             this.createAttrs();
             // call super constructor
             Kinetic.Shape.call(this, config);
-            this.className = 'Circle';
+            this.className = CIRCLE;
             this._setDrawFuncs();
         },
         drawFunc: function(canvas) {
-        	  var context = canvas.getContext();
+            var context = canvas.getContext();
+
             context.beginPath();
-            context.arc(0, 0, this.getRadius(), 0, Math.PI * 2, true);
+            context.arc(0, 0, this.getRadius(), 0, PIx2, false);
             context.closePath();
             canvas.fillStroke(this);
         },

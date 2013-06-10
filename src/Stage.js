@@ -5,7 +5,6 @@
         PX = 'px',
         MOUSEOUT = 'mouseout',
         MOUSELEAVE = 'mouseleave',
-        MOUSEOUT = 'mouseout',
         MOUSEOVER = 'mouseover',
         MOUSEENTER = 'mouseenter',
         MOUSEMOVE = 'mousemove',
@@ -13,8 +12,8 @@
         MOUSEUP = 'mouseup',
         CLICK = 'click',
         DBL_CLICK = 'dblclick',
-        TOUCHSTART = 'touchstart'
-        TOUCHEND = 'touchend'
+        TOUCHSTART = 'touchstart',
+        TOUCHEND = 'touchend',
         TAP = 'tap',
         DBL_TAP = 'dbltap',
         TOUCHMOVE = 'touchmove',
@@ -23,7 +22,9 @@
         INLINE_BLOCK = 'inline-block',
         KINETICJS_CONTENT = 'kineticjs-content',
         SPACE = ' ',
+        UNDERSCORE = '_',
         CONTAINER = 'container',
+        EMPTY_STRING = '',
         EVENTS = [MOUSEDOWN, MOUSEMOVE, MOUSEUP, MOUSEOUT, TOUCHSTART, TOUCHMOVE, TOUCHEND],
         
     // cached variables
@@ -31,7 +32,8 @@
 
     function addEvent(ctx, eventName) {
       ctx.content.addEventListener(eventName, function(evt) {
-        ctx['_' + eventName](evt);
+        evt.preventDefault();
+        ctx[UNDERSCORE + eventName](evt);
       }, false);
     }
 
@@ -58,6 +60,7 @@
                 container = document.getElementById(container);
             }
             this._setAttr(CONTAINER, container);
+            return this;
         },
         draw: function() {
             // clear children layers
@@ -74,6 +77,7 @@
             }
           
             Kinetic.Node.prototype.draw.call(this);
+            return this;
         },
         /**
          * draw layer scene graphs
@@ -98,6 +102,7 @@
         setHeight: function(height) {
             Kinetic.Node.prototype.setHeight.call(this, height);
             this._resizeDOM();
+            return this;
         },
         /**
          * set width
@@ -108,6 +113,7 @@
         setWidth: function(width) {
             Kinetic.Node.prototype.setWidth.call(this, width);
             this._resizeDOM();
+            return this;
         },
         /**
          * clear all layers
@@ -122,15 +128,16 @@
             for(n = 0; n < len; n++) {
                 layers[n].clear();
             }
+            return this;
         },
         /**
          * remove stage
          * @method
          * @memberof Kinetic.Stage.prototype
          */
-        remove: function() {
+        destroy: function() {
             var content = this.content;
-            Kinetic.Node.prototype.remove.call(this);
+            Kinetic.Container.prototype.destroy.call(this);
 
             if(content && Kinetic.Util._isInDocument(content)) {
                 this.getContainer().removeChild(content);
@@ -189,8 +196,9 @@
          *  is very high quality
          */
         toDataURL: function(config) {
-            var config = config || {},
-                mimeType = config.mimeType || null, 
+            config = config || {};
+
+            var mimeType = config.mimeType || null, 
                 quality = config.quality || null, 
                 x = config.x || 0, 
                 y = config.y || 0, 
@@ -397,9 +405,9 @@
         },
         _mousedown: function(evt) {
             this._setPointerPosition(evt);
-        	var go = Kinetic.Global,
-        	    obj = this.getIntersection(this.getPointerPosition()), 
-        	    shape;
+            var go = Kinetic.Global,
+                obj = this.getIntersection(this.getPointerPosition()), 
+                shape;
 
             if(obj && obj.shape) {
                 shape = obj.shape;
@@ -446,13 +454,11 @@
             this.clickStart = false;
         },
         _touchstart: function(evt) {
-          this._setPointerPosition(evt);
-        	var go = Kinetic.Global,
-        	    obj = this.getIntersection(this.getPointerPosition()), 
-        	    shape;
+            this._setPointerPosition(evt);
+            var go = Kinetic.Global,
+                obj = this.getIntersection(this.getPointerPosition()),  
+                shape;
             
-            evt.preventDefault();
-
             if(obj && obj.shape) {
                 shape = obj.shape;
                 this.tapStart = true;
@@ -504,8 +510,6 @@
                 obj = this.getIntersection(this.getPointerPosition()),
                 shape;
             
-            evt.preventDefault();
-            
             if(obj && obj.shape) {
                 shape = obj.shape;
                 shape._fireAndBubble(TOUCHMOVE, evt);
@@ -550,12 +554,17 @@
             };
         },
         _buildDOM: function() {
+            var container = this.getContainer();
+            
+            // clear content inside container
+            container.innerHTML = EMPTY_STRING;
+
             // content
             this.content = document.createElement(DIV);
             this.content.style.position = RELATIVE;
             this.content.style.display = INLINE_BLOCK;
             this.content.className = KINETICJS_CONTENT;
-            this.attrs.container.appendChild(this.content);
+            container.appendChild(this.content);
 
             this.bufferCanvas = new Kinetic.SceneCanvas();
             this.hitCanvas = new Kinetic.HitCanvas();
