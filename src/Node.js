@@ -262,7 +262,7 @@
             
             if(config) {
                 for(key in config) {
-                    if (key === CHILDREN) {
+                    if (key === CHILDREN || config[key] instanceof Kinetic.Node) {
                    
                     }
                     else {
