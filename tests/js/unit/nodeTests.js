@@ -923,11 +923,14 @@ Test.Modules.NODE = {
         stage.add(layer);
 
         /*
-         * add custom attr that points to self.  The setAttrs method should
+         * add custom attr that points to circle reference.  The setAttrs method should
          * not inifinitely recurse causing a stack overflow
          */
         circle.setAttrs({
-            self: circle
+            layer: layer
+        });
+        layer.setAttrs({
+            cirlce: circle
         });
 
         /*
