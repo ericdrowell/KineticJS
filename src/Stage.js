@@ -32,7 +32,9 @@
 
     function addEvent(ctx, eventName) {
       ctx.content.addEventListener(eventName, function(evt) {
-        evt.preventDefault();
+        if (eventName.indexOf('touch') == -1) {
+          evt.preventDefault();
+        }
         ctx[UNDERSCORE + eventName](evt);
       }, false);
     }
@@ -461,6 +463,9 @@
             
             if(obj && obj.shape) {
                 shape = obj.shape;
+                if (shape.isListening()) {
+                    evt.preventDefault();
+                }
                 this.tapStart = true;
                 this.tapStartShape = shape;
                 shape._fireAndBubble(TOUCHSTART, evt);
@@ -480,6 +485,9 @@
 
             if(obj && obj.shape) {
                 shape = obj.shape;
+                if (shape.isListening()) {
+                    evt.preventDefault();
+                }
                 shape._fireAndBubble(TOUCHEND, evt);
 
                 // detect if tap or double tap occurred
@@ -512,6 +520,9 @@
             
             if(obj && obj.shape) {
                 shape = obj.shape;
+                if (shape.isListening()) {
+                    evt.preventDefault();
+                }
                 shape._fireAndBubble(TOUCHMOVE, evt);
             }
 
