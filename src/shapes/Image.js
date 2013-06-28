@@ -34,11 +34,13 @@
     Kinetic.Image.prototype = {
         _initImage: function(config) {
             var that = this;
-            
+
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = IMAGE;
             this._setDrawFuncs();
+
+            this.distortion = config.distortion;
         },
         drawFunc: function(canvas) {
             var width = this.getWidth(), 
@@ -111,6 +113,118 @@
                 context.closePath();
                 canvas.fillStroke(this);
             }
+        },
+        _drawDistorted: function(context) {
+          var currentPoints = this.distortion();
+
+          // make a copy of the points so we don't modify the originals
+
+          var points = [];
+
+          for(var i = 0; i < currentPoints.length; i++) {
+              points[i] = {
+                  x: currentPoints[i].x,
+                  y: currentPoints[i].y
+              }
+          }
+
+          // assign u,v vertex coordinates to polygon points
+
+          points[0].x += 3;
+          points[0].y -= 3;
+          points[0].u = 0;
+          points[0].v = 0;
+          points[1].x -= 3;
+          points[1].y -= 3;
+          points[1].u = this.getImage().width;
+          points[1].v = 0;
+          points[2].x -= 3;
+          points[2].y += 3;
+          points[2].u = this.getImage().width;
+          points[2].v = this.getImage().height;
+          points[3].x += 3;
+          points[3].y += 3;
+          points[3].u = 0;
+          points[3].v = this.getImage().height;
+
+          // find the intersection of the bimedians
+
+          var x1 = (points[1].x + points[0].x) / 2;
+          var y1 = (points[1].y + points[0].y) / 2;
+          var x2 = (points[2].x + points[1].x) / 2;
+          var y2 = (points[2].y + points[1].y) / 2;
+          var x3 = (points[3].x + points[2].x) / 2;
+          var y3 = (points[3].y + points[2].y) / 2;
+          var x4 = (points[0].x + points[3].x) / 2;
+          var y4 = (points[0].y + points[3].y) / 2;
+
+          var m1 = (y3 - y1) / (x3 - x1);
+
+          if(m1 === Infinity) m1 = 1000000;
+          else if(m1 === -Infinity) m1 = -1000000;
+
+          var m2 = (y4 - y2) / (x4 - x2);
+
+          if(m2 === Infinity) m2 = 1000000;
+          else if(m2 === -Infinity) m2 = -1000000;
+
+          var b1 = y1 - m1 * x1;
+          var b2 = y2 - m2 * x2;
+
+          var intersection = {
+              x: (b1 - b2) / (m2 - m1),
+              y: (b1 * m2 - m1 * b2) / (m2 - m1),
+              u: this.getImage().width / 2,
+              v: this.getImage().height / 2
+          };
+
+          // split polygon into triangles
+
+          var triangles = [
+              [points[0], points[1], intersection],
+              [points[1], points[2], intersection],
+              [points[2], points[3], intersection],
+              [points[3], points[0], intersection]
+          ];
+
+          for(var i = 0; i < triangles.length; i++) {
+              context.save();
+
+              context.translate(- this.getPosition().x, - this.getPosition().y);
+
+              var triangle = triangles[i];
+
+              var x1 = triangle[0].x, x2 = triangle[1].x, x3 = triangle[2].x;
+              var y1 = triangle[0].y, y2 = triangle[1].y, y3 = triangle[2].y;
+              var u1 = triangle[0].u, u2 = triangle[1].u, u3 = triangle[2].u;
+              var v1 = this.getImage().height - triangle[0].v,
+                  v2 = this.getImage().height - triangle[1].v,
+                  v3 = this.getImage().height - triangle[2].v;
+
+              // clip canvas to only render the current triangular section instead of the whole image
+
+              context.beginPath();
+              context.moveTo(x1, y1);
+              context.lineTo(x2, y2);
+              context.lineTo(x3, y3);
+              context.clip();
+
+              // calculate the transformation to pass to context.transform()
+
+              var det = u1 * v2 + v1 * u3 + u2 * v3 - v2 * u3 - v1 * u2 - u1 * v3;
+              var det_a = x1 * v2 + v1 * x3 + x2 * v3 - v2 * x3 - v1 * x2 - x1 * v3;
+              var det_b = u1 * x2 + x1 * u3 + u2 * x3 - x2 * u3 - x1 * u2 - u1 * x3;
+              var det_c = u1 * v2 * x3 + v1 * x2 * u3 + x1 * u2 * v3 - x1 * v2 * u3 - v1 * u2 * x3 - u1 * x2 * v3;
+              var det_d = y1 * v2 + v1 * y3 + y2 * v3 - v2 * y3 - v1 * y2 - y1 * v3;
+              var det_e = u1 * y2 + y1 * u3 + u2 * y3 - y2 * u3 - y1 * u2 - u1 * y3;
+              var det_f = u1 * v2 * y3 + v1 * y2 * u3 + y1 * u2 * v3 - y1 * v2 * u3 - v1 * u2 * y3 - u1 * y2 * v3;
+
+              context.transform(det_a/det, det_d/det, det_b/det, det_e/det, det_c/det, det_f/det);
+
+              context.drawImage(this.getImage(), 0, 0);
+
+              context.restore();
+          }
         },
         applyFilter: function() {
             var image = this.getImage(),
@@ -234,6 +348,11 @@
             return this.attrs.height || (image ? image.height : 0);
         },
         _drawImage: function(context, a) {
+            if(this.distortion) {
+              this._drawDistorted(context);
+              return;
+            }
+
             if(a.length === 5) {
                 context.drawImage(a[0], a[1], a[2], a[3], a[4]);
             }
