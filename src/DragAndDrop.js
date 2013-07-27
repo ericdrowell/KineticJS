@@ -27,12 +27,12 @@
                     newNodePos = dbf.call(node, newNodePos, evt);
                 }
 
-                node.setAbsolutePosition(newNodePos);
-
                 if(!dd.isDragging) {
                     dd.isDragging = true;
                     node.fire('dragstart', evt, true);
                 }
+
+                node.setAbsolutePosition(newNodePos);
 
                 // execute ondragmove if defined
                 node.fire('dragmove', evt, true);
