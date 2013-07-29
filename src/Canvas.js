@@ -228,13 +228,14 @@
             }, true);
         },
         _clip: function(container) {
-            var context = this.getContext();
+            var context = this.getContext(),
+                pixelRatio = this.pixelRatio;
             context.save();
             this._applyAncestorTransforms(container);
             context.beginPath();
             container.getClipFunc()(this);
             context.clip();
-            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
         }
     };
 
