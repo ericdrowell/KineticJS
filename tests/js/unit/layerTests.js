@@ -257,7 +257,7 @@ Test.Modules.LAYER = {
             
         }
     },
-   'test shape intersection for anti aliased shapes (start = 50.5)': function(containerId) {
+   'test shape intersection for anti-aliased shapes (start = 50.5)': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
             width: 578,

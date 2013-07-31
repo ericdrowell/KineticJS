@@ -19,8 +19,7 @@
         /**
          * get visible intersection object that contains shape and pixel data. This is the preferred
          * method for determining if a point intersects a shape or not.  
-         * Returns null if no shape is found.
-         * Returns shape and pixel colors if a shape is found
+         * Returns null if no shape is found.  Returns shape and pixel colors if a shape is found.
          * @method
          * @memberof Kinetic.Layer.prototype
          * @param {Object} pos point object
@@ -35,18 +34,15 @@
                     return result;
                 //If we get this far the pixel was not empty but did not match an existing shape
                 //most likely because the edge of the shape was anti aliased to a different color
-                //So we check the surrounding pixels for matching shapes
+                //So we check the surrounding pixels for pixel with a matching shape
                 var offsets = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];                                
-                //offsets = []; // Uncomment to stop checking near by pixels
                 for(var i = 0; i < offsets.length;i++)
                 {
                     var offset = offsets[i];
                     var nearResult = this._getIntersectionAtPoint(pos.x + offset.x, pos.y + offset.y);
                     if(nearResult !== null && nearResult.shape)
                         return nearResult;
-                    if(nearResult && nearResult.antialiasedPixel)
-                        console.log("Alpha " + nearResult.antialiasedPixel[3]);
-                }
+                 }
                 return null;
             }
             return null;
