@@ -134,6 +134,7 @@ Test.Modules.LAYER = {
         //console.log(layer.toDataURL());
 
     },
+    
     'save layer as png (click on Circle to open new window)': function(containerId) {
         var stage = new Kinetic.Stage({
             container: containerId,
@@ -211,7 +212,97 @@ Test.Modules.LAYER = {
 
         layer.add(circle);
         stage.add(layer);
-    }
+    },
+   'test shape intersection for rectangles on pixel boundries': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+
+        var start = 50;
+        var side = 5;
+        var layer = new Kinetic.Layer();
+
+        var green = new Kinetic.Rect({
+            x: start,
+            y: start - side,
+            width:2 * side,
+            height:3 * side,
+            fill: 'green'
+        });
+        var red = new Kinetic.Rect({
+            x: start + side,
+            y: start,
+            width:side,
+            height:side,
+            fill: 'red'
+        });
+        layer.add(green);     
+        layer.add(red);
+        stage.add(layer);
+        
+        for(var i = start - side; i < start + (3 * side);i++)
+        {
+                var result = layer.getIntersection({x:i, y:start + side/2});
+                var shape = result == null ? null : result.shape;
+                if(i < start)
+                    test(shape == null,'getIntersection before first shape at ' + i  + ' ' +  shape + ' is not null');
+                if(i >= start && i < start + side)
+                    test(shape == green,'getIntersection in first shape at ' + i  + ' ' + shape + ' is not ' + green);
+                if(i >= start + side && i < start + (2 * side))
+                    test(shape == red,'getIntersection in second shape at ' + i  + ' ' + shape + ' is not ' + red);
+                if(i >=  start + ( 2 * side ))
+                    test(shape == null,'getIntersection past second shape at ' + i + ' ' +  shape + ' is not null');
+            
+        }
+    },
+   'test shape intersection for anti aliased shapes (start = 50.5)': function(containerId) {
+        var stage = new Kinetic.Stage({
+            container: containerId,
+            width: 578,
+            height: 200
+        });
+
+        var start = 50.5;
+        var side = 5;
+        var layer = new Kinetic.Layer();
+
+        var green = new Kinetic.Rect({
+            x: start,
+            y: start - side,
+            width:2 * side,
+            height:3 * side,
+            fill: 'green'
+        });
+        var red = new Kinetic.Rect({
+            x: start + side,
+            y: start,
+            width:side,
+            height:side,
+            fill: 'red'
+        });
+        layer.add(green);     
+        layer.add(red);
+        stage.add(layer);
+        
+        for(var i = start - side; i < start + (3 * side);i++)
+        {
+                var result = layer.getIntersection({x:i, y:start + side/2});
+                var shape = result == null ? null : result.shape;
+                if(i < start)
+                    test(shape == null,'getIntersection before shape at ' + i  + ' ' +  shape + ' is not null');
+                if(i >= start && i < start + side)
+                    test(shape == green,'getIntersection in first shape at ' + i  + ' ' + shape + ' is not ' + green);
+                if(i >= start + side && i < start + (2 * side))
+                    test(shape == red,'getIntersection in second shape at ' + i  + ' ' + shape + ' is not ' + red);
+                if(i ==  start + ( 2 * side ))
+                    test(shape == red,'getIntersection in first shape at ' + i  + ' ' + shape + ' is not ' + red);
+                if(i >=  start + ( 2 * side ) + 1)
+                    test(shape == null,'getIntersection past second shape at ' + i + ' ' +  shape + ' is not null');
+            
+        }
+    }      
 };
 
 
