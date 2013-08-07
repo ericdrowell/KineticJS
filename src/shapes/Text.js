@@ -125,7 +125,8 @@
                 }
 
                 this.partialText = text;
-                canvas.fillStroke(this);
+                canvas.stroke(this);
+                canvas.fill(this);
                 context.restore();
                 context.translate(0, lineHeightPx);
             }
