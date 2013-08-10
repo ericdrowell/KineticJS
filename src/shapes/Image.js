@@ -69,7 +69,7 @@
 
             if(image) {
                 // if cropping
-                if(crop) {
+                if(crop && this.filterCanvas === undefined) {
                     cropX = crop.x || 0;
                     cropY = crop.y || 0;
                     cropWidth = crop.width || 0;
@@ -117,7 +117,9 @@
                 width = this.getWidth(),
                 height = this.getHeight(),
                 filter = this.getFilter(),
-                filterCanvas, context, imageData;
+                filterCanvas, context, imageData,
+		        crop = this.getCrop(), params,
+		        cropX, cropY, cropWidth, cropHeight;
 
             if (this.filterCanvas){
                 filterCanvas = this.filterCanvas;
@@ -132,7 +134,18 @@
             context = filterCanvas.getContext();
 
             try {
-                this._drawImage(context, [image, 0, 0, width, height]);
+	            if(crop) {
+		            cropX = crop.x || 0;
+		            cropY = crop.y || 0;
+		            cropWidth = crop.width || 0;
+		            cropHeight = crop.height || 0;
+		            params = [image, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height];
+	            }
+	            // no cropping
+	            else {
+		            params = [image, 0, 0, width, height];
+	            }
+	            this._drawImage(context, params);
                 imageData = context.getImageData(0, 0, filterCanvas.getWidth(), filterCanvas.getHeight());
                 filter.call(this, imageData);
                 context.putImageData(imageData, 0, 0);
