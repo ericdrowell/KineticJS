@@ -207,6 +207,29 @@
             delete Kinetic.Global.shapes[this.colorKey];
             return this;
         },
+        /**
+         * Enable and set override Transform matrix
+         * @method
+         * @memberof Kinetic.Shape.prototype
+         */
+         setOverrideTransform: function(m) {
+         	if(m instanceof Kinetic.Transform) {
+				this._overrideTransform = true;
+				this.setAttr('OverrideTransform',m);
+				return true;
+         	}
+         	else
+         		return false;
+         },
+        /**
+         * clear override Transform matrix
+         * @method
+         * @memberof Kinetic.Shape.prototype
+         */
+         clearOverrideTransform: function(m) {
+         	this._overrideTransform = false;
+         	this.setAttr('OverrideTransform',[]);
+         },
         drawScene: function(canvas) {
             canvas = canvas || this.getLayer().getCanvas();
 
@@ -217,7 +240,12 @@
                 context.save();
                 canvas._applyOpacity(this);
                 canvas._applyLineJoin(this);
-                canvas._applyAncestorTransforms(this);
+				if(this._overrideTransform) {
+					var m2 = this.getAttr('OverrideTransform').getMatrix();
+					canvas.context.setTransform(m2[0], m2[1], m2[2], m2[3], m2[4], m2[5]);
+				}
+                else
+                	canvas._applyAncestorTransforms(this);
                 drawFunc.call(this, canvas);
                 context.restore();
             }
