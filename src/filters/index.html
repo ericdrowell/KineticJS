@@ -1,0 +1,334 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      div { border: 1px solid #000; }
+    </style>
+  </head>
+  <body>
+    <div id='container'></div>
+	
+    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.6.0.min.js"></script>
+	<script src="FilterWrapper.js"></script>
+	<script src="Blur.js"></script>
+	<script src="ColorStretch.js"></script>
+	<script src="Grayscale.js"></script>
+	<script src="Threshold.js"></script>
+	<script src="Levels.js"></script>
+	<script src="Noise.js"></script>
+	<script src="Pixelate.js"></script>
+	<script src="Flip.js"></script>
+	<script src="Mirror.js"></script>
+	<script src="Invert.js"></script>
+	<script src="ColorPack.js"></script>
+	<script src="Polar.js"></script>
+    <script defer="defer">
+
+/*
+ To list the unique options:
+ grep -sho 'opt.* ||' * | sort -u
+*/
+
+    Hmmm = function(src,dst,opt) {
+        var xSize = src.width,
+            ySize = src.height,
+            srcPixels = src.data,
+            dstPixels = dst.data,
+            nPixels = srcPixels.length,
+            x,y,i;
+	for( x=0; x<xSize; x+=1 ){
+		for( y=0; y<ySize; y+=1 ){
+			i = (xSize*y + x)*4;
+	                dstPixels[i+0] = Math.abs(srcPixels[i+0]*Math.cos( (x*y) / opt.phase )); // 60 ~ 180/Math.PI
+	                dstPixels[i+1] = Math.abs(srcPixels[i+1]*Math.cos( (x*y) / opt.phase )); // 60 ~ 180/Math.PI
+	                dstPixels[i+2] = Math.abs(srcPixels[i+2]*Math.cos( (x*y) / opt.phase )); // 60 ~ 180/Math.PI
+	                dstPixels[i+3] = srcPixels[i+3];//*Math.cos( x+y / 180 ); // 60 ~ 180/Math.PI
+		}
+        }	
+    };
+
+var createExample = (function () {
+  var sn = 0;
+  var createExample = function (title, filterFunc) {
+    sn += 1;
+	
+    var html = '<div>';
+    html += '<h2>' + title + '</h2>';
+    html += '<div id="id' + sn + '"></div>';
+    html += '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    document.getElementById('container').appendChild(div);
+	
+    var stage = new Kinetic.Stage({
+      container: 'id' + sn,
+      width: 320,
+      height: 240
+    });
+    var shapesLayer = new Kinetic.Layer();
+	
+    // The important line!
+    shapesLayer.on('draw', filterFunc);
+	
+    var triangle = new Kinetic.RegularPolygon({
+      x: stage.getWidth() / 4,
+      y: stage.getHeight() / 2,
+      sides: 3,
+      radius: 80,
+      fillRadialGradientStartPoint: 0,
+      fillRadialGradientStartRadius: 0,
+      fillRadialGradientEndPoint: 0,
+      fillRadialGradientEndRadius: 70,
+      fillRadialGradientColorStops: [0, '#881111', 0.5, '#888811', 1, '#000088'],
+      stroke: 'black',
+      strokeWidth: 4,
+      draggable: true
+    });
+
+    var circle = new Kinetic.Circle({
+      x: 3* stage.getWidth() / 4,
+      y: stage.getHeight() / 2,
+      radius: 70,
+      fill: '#880000',
+      stroke: 'black',
+      strokeWidth: 4,
+      draggable: true,
+      id:'myCircle'
+    });
+
+    for( var i=0; i<10; i+=1 ){
+      for( var j=0; j<10; j+=1 ){
+        var rect = new Kinetic.Rect({
+          x: i/10*stage.getWidth(),
+          y: j/10*stage.getHeight(),
+          width: stage.getWidth()/10,
+          height: stage.getHeight()/10,
+          fill: (i+j)%2===0?'#FF0000':'#FFFF00',
+          stroke: 'black',
+          strokeWidth: 4,
+          draggable: true
+        });
+        shapesLayer.add(rect);
+      }
+    }
+
+    shapesLayer.add(circle);
+    shapesLayer.add(triangle);
+
+    stage.add(shapesLayer);
+  };
+  return createExample;
+})();
+
+createExample('Original',function(){});
+
+createExample('Kinetic 4.6 Style Filter Grayscale',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  Kinetic.Filters.Grayscale(imageData);
+  this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('Polar Coordinates',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ToPolar(imageData,scratchData,{x:this.getWidth()/2,y:this.getHeight()/2});
+  this.getContext().putImageData(scratchData,0,0);
+});
+var theta = 0;
+createExample('Phase Shift',function(){
+  theta = theta+1 || 0;
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ToPolar(imageData,scratchData,{polarCenterX:this.getWidth()/2,polarCenterY:this.getHeight()/2});
+  Kinetic.Filters.FromPolar(scratchData,imageData,{polarRotation:theta});
+  this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('Radial Blur',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ToPolar(imageData,scratchData,{polarCenterX:this.getWidth()/2,polarCenterY:this.getHeight()/2});
+  Kinetic.Filters.BlurX(scratchData,imageData,{blurWidth:13});
+  Kinetic.Filters.FromPolar(imageData,scratchData,{});
+  //Kinetic.Filters.FromPolar(scratchData,imageData,{});
+  this.getContext().putImageData(scratchData,0,0);
+  //this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('Zoom Blur',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ToPolar(imageData,scratchData,{polarCenterX:this.getWidth()/2,polarCenterY:this.getHeight()/2});
+  Kinetic.Filters.BlurY(scratchData,imageData,{blurHeight:33});
+  Kinetic.Filters.FromPolar(imageData,scratchData,{});
+  //Kinetic.Filters.FromPolar(scratchData,imageData,{});
+  this.getContext().putImageData(scratchData,0,0);
+  //this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('BlurX + BlurY',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.BlurX(imageData,scratchData,{blurWidth:13});
+  //this.getContext().putImageData(scratchData,0,0);
+  Kinetic.Filters.BlurY(scratchData,imageData,{blurHeight:23});
+  this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('ColorStretch',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ColorStretch(imageData,scratchData,{});
+  this.getContext().putImageData(scratchData,0,0);
+});
+createExample('Pixelate + ColorStretch',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.Pixelate(imageData,scratchData,{pixelWidth:8,pixelHeight:16});
+  Kinetic.Filters.ColorStretch(scratchData,imageData,{});
+  this.getContext().putImageData(imageData,0,0);
+});
+createExample('Noise',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.Noise(imageData,scratchData,{noiseAmount:96});
+  this.getContext().putImageData(scratchData,0,0);
+});
+createExample('Grayscale',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.Grayscale(imageData,scratchData,{});
+  this.getContext().putImageData(scratchData,0,0);
+});
+createExample('Threshold',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.Threshold(imageData,scratchData,{thresholdLevel:64});
+  this.getContext().putImageData(scratchData,0,0);
+});
+createExample('Levels',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.Levels(imageData,scratchData,{quantizationLevels:4});
+  this.getContext().putImageData(scratchData,0,0);
+});
+createExample('FlipX + FlipY',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.FlipX(imageData,scratchData,{});
+  Kinetic.Filters.FlipY(scratchData,imageData,{});
+  this.getContext().putImageData(imageData,0,0);
+
+  // repeat for hit canvas
+  var hit = this.getHitCanvas();
+  //console.info(hit);
+  imageData = hit.getContext().getImageData(0,0,hit.getWidth(),hit.getHeight());
+  //imageData = hit.context.getImageData(0,0,hit.getWidth(),hit.getHeight());
+  Kinetic.Filters.FlipX(imageData,scratchData,{});
+  Kinetic.Filters.FlipY(scratchData,imageData,{});
+  hit.getContext().putImageData(imageData,0,0);
+
+  imageData = null;
+  scratchData = null;
+});
+createExample('MirrorX + MirrorY',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.MirrorX(imageData,scratchData,{});
+  Kinetic.Filters.MirrorY(scratchData,imageData,{});
+  this.getContext().putImageData(imageData,0,0);
+  //this.getContext().putImageData(scratchData,0,0);
+});
+
+createExample('Inside Out',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.ToPolar(imageData,scratchData,{polarCenterX:this.getWidth()/2,polarCenterY:this.getHeight()/2});
+  Kinetic.Filters.FlipY(scratchData,imageData,{});
+  Kinetic.Filters.FromPolar(imageData,scratchData,{});
+  //Kinetic.Filters.FromPolar(scratchData,imageData,{});
+  this.getContext().putImageData(scratchData,0,0);
+  //this.getContext().putImageData(imageData,0,0);
+});
+
+createExample('MirrorX + MirrorY + Pixelate + Color Stretch + Invert',function(){
+  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
+  var scratchData = this.getContext().createImageData(imageData); // only size copied
+  Kinetic.Filters.MirrorX(imageData,scratchData,{});
+  Kinetic.Filters.MirrorY(scratchData,imageData,{});
+  Kinetic.Filters.Pixelate(imageData,scratchData,{pixelWidth:8,pixelHeight:8});
+  Kinetic.Filters.ColorStretch(scratchData,imageData,{});
+  Kinetic.Filters.Invert(imageData,scratchData,{});
+  //Noise(imageData,scratchData,{amount: 32});
+  //this.getContext().putImageData(imageData,0,0);
+  this.getContext().putImageData(scratchData,0,0);
+});
+
+createExample('Checkerboard Greyscale/Pixelate with Reflective floor',function(){
+  var src, dst, i,j, w=10, h=10;
+  var ctx = this.getContext();
+  var ctxWidth = this.getCanvas().width;
+  var ctxHeight = this.getCanvas().height;
+  var xSize = Math.floor(ctxWidth/w);
+  var ySize = Math.floor(ctxHeight/h);
+  for( i=0; i<w; i+=1 ){
+    for( j=0; j<h; j+=1 ){
+      src = ctx.getImageData(i*xSize,j*ySize,xSize,ySize);
+      dst = ctx.createImageData(src);
+      if( (i+j) % 2 === 0 ){ 
+        Kinetic.Filters.Grayscale(src,dst,{});
+      }else{
+        Kinetic.Filters.Pixelate(src,dst,{pixelWidth:4,pixelHeight:4});
+      }
+      //Kinetic.Filters.FlipX(src,dst,{});
+      //Kinetic.Filters.ColorStretch(src,dst,{});
+      ctx.putImageData(dst,i*xSize,j*ySize);
+      //ctx.strokeRect(i*xSize,j*ySize,xSize,ySize);
+    }
+  }
+  // Let's add a mirrored 'floor'
+  src = ctx.getImageData(0,ctxHeight*0.5,ctxWidth,ctxHeight*0.5);
+  dst = ctx.createImageData(src);
+  Kinetic.Filters.MirrorY(src,dst,{});
+  ctx.putImageData(dst,0,ctxHeight*0.5);
+});
+
+createExample('Rainbow Hue Shifting',function(){
+  var src, dst, i, w=40;
+  var ctx = this.getContext();
+  var ctxWidth = this.getCanvas().width;
+  var ctxHeight = this.getCanvas().height;
+  var xSize = Math.floor(ctxWidth/w);
+  var ySize = Math.floor(ctxHeight);
+  for( i=0; i<w; i+=1 ){
+      src = ctx.getImageData(i*xSize,0,xSize,ySize);
+      dst = ctx.createImageData(src);
+      Kinetic.Filters.HSV(src,dst,{hue:i*360/w,saturation:5});
+      ctx.putImageData(dst,i*xSize,0);
+      //ctx.strokeRect(i*xSize,0,xSize,ySize);
+  }
+});
+
+createExample('Saturation Shifting',function(){
+  var src, dst, i, w=40;
+  var ctx = this.getContext();
+  var ctxWidth = this.getCanvas().width;
+  var ctxHeight = this.getCanvas().height;
+  var xSize = Math.floor(ctxWidth/w);
+  var ySize = Math.floor(ctxHeight);
+  for( i=0; i<w; i+=1 ){
+      src = ctx.getImageData(i*xSize,0,xSize,ySize);
+      dst = ctx.createImageData(src);
+      Kinetic.Filters.HSV(src,dst,{saturation:2*(0.001+i)/w,});
+      ctx.putImageData(dst,i*xSize,0);
+      //ctx.strokeRect(i*xSize,0,xSize,ySize);
+  }
+});
+
+    </script>
+  </body>
+</html>
