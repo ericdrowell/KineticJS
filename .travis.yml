@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "0.11"
+branches:
+  only:
+    - master
+before_script:
+  - npm install
+script: 
+  - grunt dev
+  - mocha-phantomjs test/runner.html
