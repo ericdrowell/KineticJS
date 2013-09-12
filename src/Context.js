@@ -186,12 +186,24 @@
             var clipX = container.getClipX() || 0,
                 clipY = container.getClipY() || 0,
                 clipWidth = container.getClipWidth(),
-                clipHeight = container.getClipHeight();
+                clipHeight = container.getClipHeight(),
+                clippingPoints = container.getClippingPoints(),
+                self = this;
 
             this.save();
             this._applyAncestorTransforms(container);
             this.beginPath();
-            this.rect(clipX, clipY, clipWidth, clipHeight);
+            
+            if (clippingPoints.length === 0){
+                this.rect(clipX, clipY, clipWidth, clipHeight);
+                
+            } else {
+                this.moveTo(clippingPoints[0][0], clippingPoints[0][1]);
+                
+                for (var i = 1, length = clippingPoints.length; i < length; i++)
+                    this.lineTo(clippingPoints[i][0], clippingPoints[i][1])
+            }
+            
             this.clip();
             this.reset();
             container._drawChildren(this.getCanvas());

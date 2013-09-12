@@ -25,6 +25,45 @@ suite('Container', function() {
     });
 
     // ======================================================
+    test('clipping a star (clippingPoints)', function() {
+        var stage = addStage();
+        stage.setAttrs({
+            width: 200,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var background = new Kinetic.Rect({
+            x: 0,
+            y: 0,
+            width: stage.getWidth(),
+            height: stage.getHeight(),
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            draggable: true
+        });
+        
+        layer.setClippingPoints([
+            [100, 0],
+            [132, 58],
+            [196, 73],
+            [153, 120],
+            [158, 186],
+            [100, 159],
+            [40, 186],
+            [46, 121],
+            [0, 72],
+            [65, 60]
+        ]);
+            
+        stage.add(layer);
+        layer.add(group);
+        group.add(background);
+        layer.draw();
+    });
+
+    // ======================================================
     test('adder validation', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();

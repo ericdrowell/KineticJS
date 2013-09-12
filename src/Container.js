@@ -242,7 +242,7 @@
         },
         drawScene: function(canvas) {
             var layer = this.getLayer(),
-                clip = this.getClipWidth() && this.getClipHeight(),
+                clip = this.getClipWidth() && this.getClipHeight() || this.getClippingPoints().length > 0,
                 children, n, len;
 
             if (!canvas && layer) {
@@ -269,7 +269,7 @@
             }
         },
         drawHit: function() {
-            var hasClip = this.getClipWidth() && this.getClipHeight() && this.nodeType !== 'Stage',
+            var hasClip = this.nodeType !== 'Stage' && (this.getClipWidth() && this.getClipHeight() || this.getClippingPoints().length > 0),
                 n = 0,
                 len = 0,
                 children = [],
@@ -299,6 +299,26 @@
     Kinetic.Util.extend(Kinetic.Container, Kinetic.Node);
 
     // add getters setters
+    Kinetic.Factory.addGetterSetter(Kinetic.Container, 'clippingPoints', []);
+
+    /**
+     * set clipping points
+     * @method
+     * @name setClippingPoints
+     * @memberof Kinetic.Container.prototype
+     * @param {Array}
+     * @example
+     * // set a clip area that isn't a rect
+     * image.setClip([<br>
+     *   [x1, y1],<br>
+     *   [x2, y2],<br>
+     *   [x3, y3],<br>
+     *   [xn, yn],<br>
+     * );<br><br>
+     *
+     */
+    
+    
     Kinetic.Factory.addBoxGetterSetter(Kinetic.Container, 'clip');
 
     /**
@@ -352,6 +372,14 @@
      * @param {Number} height
      */
 
+    /**
+     * get clipping points
+     * @name getClippingPoints
+     * @method
+     * @memberof Kinetic.Container.prototype
+     * @return {Array}
+     */    
+    
     /**
      * get clip
      * @name getClip
