@@ -3,8 +3,7 @@
   /**
    * Pixelate Filter. Averages groups of pixels and redraws
    *  them as larger "pixels".
-   *  Performs w*h pixel reads and w*h pixel writes (but uses a lot 
-   *  of memory).
+   *  Performs w*h pixel reads and w*h pixel writes.
    * @function
    * @author ippo615
    * @memberof Kinetic.Filters
@@ -28,10 +27,6 @@
       dstPixels = dst.data,
       x, y, i;
     var pixelsPerBin = xBinSize * yBinSize,
-      reds = [],
-      greens = [],
-      blues = [],
-      alphas = [],
       red, green, blue, alpha,
       nBinsX = Math.ceil(xSize / xBinSize),
       nBinsY = Math.ceil(ySize / yBinSize),
@@ -39,16 +34,9 @@
       xBin, yBin, pixelsInBin;
 
     for (xBin = 0; xBin < nBinsX; xBin += 1) {
-      
-      // Add a new 'row'
-      reds.push([]);
-      greens.push([]);
-      blues.push([]);
-      alphas.push([]);
-      
       for (yBin = 0; yBin < nBinsY; yBin += 1) {
       
-        // Initialize all bins to 0
+        // Initialize the color accumlators to 0
         red = 0;
         green = 0;
         blue = 0;
@@ -75,44 +63,27 @@
           }
         }
 
-        // Make sure the pixels are between 0-255
-        reds[xBin].push(red / pixelsInBin);
-        greens[xBin].push(green / pixelsInBin);
-        blues[xBin].push(blue / pixelsInBin);
-        alphas[xBin].push(alpha / pixelsInBin);
-      }
-    }
-    
+        // Make sure the channels are between 0-255
+        red = red / pixelsInBin;
+        green = green / pixelsInBin;
+        blue = blue / pixelsInBin;
+        alphas = alpha / pixelsInBin;
 
-    // For each bin
-    for (xBin = 0; xBin < nBinsX; xBin += 1) {
-      for (yBin = 0; yBin < nBinsY; yBin += 1) {
-        xBinStart = xBin * xBinSize;
-        xBinEnd = xBinStart + xBinSize;
-        yBinStart = yBin * yBinSize;
-        yBinEnd = yBinStart + yBinSize;
-
-        // Draw all of the pixels at the bin's average value
+        // Draw this bin
         for (x = xBinStart; x < xBinEnd; x += 1) {
           if( x >= xSize ){ continue; }
           for (y = yBinStart; y < yBinEnd; y += 1) {
-            if( y >= xSize ){ continue; }
+            if( y >= ySize ){ continue; }
             i = (xSize * y + x) * 4;
-            dstPixels[i + 0] = reds[xBin][yBin];
-            dstPixels[i + 1] = greens[xBin][yBin];
-            dstPixels[i + 2] = blues[xBin][yBin];
-            dstPixels[i + 3] = alphas[xBin][yBin];
+            dstPixels[i + 0] = red;
+            dstPixels[i + 1] = green;
+            dstPixels[i + 2] = blue;
+            dstPixels[i + 3] = alpha;
           }
         }
       }
     }
-
-    // I probably don't need to set these to null, but I want to make sure
-    // the garabage collector removes them
-    reds = null;
-    greens = null;
-    blues = null;
-    alphas = null;
+    
   };
   
   Kinetic.Filters.Pixelate = Kinetic.Util._FilterWrapSingleBuffer(Pixelate);

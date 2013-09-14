@@ -1,5 +1,5 @@
 (function () {
-  Kinetic.Util._FilterWrapDoubleBuffer = function(filter){
+  Kinetic.Util._FilterWrapDoubleBuffer = function(filter,defaultOpt){
     return function(src,dst,opt) {
       // If no dst imageData is provided: make an imitation
       // blank one, the same size as the src image data
@@ -14,11 +14,11 @@
           l = srcData.length, i;
         for( i=0; i<l; i+=1 ){
           data.push(0);
-          dst.data = data;
         }
+        dst.data = data;
       }
 
-      filter(src,dst,opt);
+      filter.call(this, src, dst, opt || defaultOpt);
 
       // Copy the dst to the src if this was called the old way
       if( isOnlySrc ){
@@ -30,11 +30,21 @@
     };
   };
 
-  Kinetic.Util._FilterWrapSingleBuffer = function(filter){
+  Kinetic.Util._FilterWrapSingleBuffer = function(filter,defaultOpt){
     return function(src,dst,opt) {
       // If no dst imageData is provided: use the src imageData
-      filter(src,dst||src,opt);
+      filter.call(this, src, dst||src, opt || defaultOpt);
     };
+  };
+
+  Kinetic.Util._FilterReplaceBuffer = function(src,dst){
+    var i, l = src.length;
+    for( i=0; i<l;  ){
+      dst[i] = src[i]; i++;
+      dst[i] = src[i]; i++;
+      dst[i] = src[i]; i++;
+      dst[i] = src[i]; i++;
+    }
   };
 
 })();

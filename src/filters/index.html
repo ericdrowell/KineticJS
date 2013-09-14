@@ -12,7 +12,10 @@
   <body>
     <div id='container'></div>
 	
-    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.6.0.min.js"></script>
+    <!--<script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.6.0.min.js"></script>
+	<script src="../../dist/kinetic-dev.js"></script>-->
+	<script src="../../dist/kinetic-v4.7.0.min.js"></script>
+    <!--
 	<script src="FilterWrapper.js"></script>
 	<script src="Blur.js"></script>
 	<script src="ColorStretch.js"></script>
@@ -25,7 +28,7 @@
 	<script src="Mirror.js"></script>
 	<script src="Invert.js"></script>
 	<script src="ColorPack.js"></script>
-	<script src="Polar.js"></script>
+	<script src="Polar.js"></script>-->
     <script defer="defer">
 
 /*
@@ -126,20 +129,15 @@ var createExample = (function () {
 
 createExample('Original',function(){});
 
-createExample('Kinetic 4.6 Style Filter Grayscale',function(){
-  var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
-  Kinetic.Filters.Grayscale(imageData);
-  this.getContext().putImageData(imageData,0,0);
-});
-
 createExample('Polar Coordinates',function(){
   var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
   var scratchData = this.getContext().createImageData(imageData); // only size copied
   Kinetic.Filters.ToPolar(imageData,scratchData,{x:this.getWidth()/2,y:this.getHeight()/2});
   this.getContext().putImageData(scratchData,0,0);
 });
+
 var theta = 0;
-createExample('Phase Shift',function(){
+createExample('Phase Shift (rotation)',function(){
   theta = theta+1 || 0;
   var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
   var scratchData = this.getContext().createImageData(imageData); // only size copied
@@ -170,12 +168,14 @@ createExample('Zoom Blur',function(){
   //this.getContext().putImageData(imageData,0,0);
 });
 
+var BLURAMOUNT = -1;
 createExample('BlurX + BlurY',function(){
+  BLURAMOUNT += 1;
   var imageData = this.getContext().getImageData(0,0,this.getCanvas().width,this.getCanvas().height);
   var scratchData = this.getContext().createImageData(imageData); // only size copied
-  Kinetic.Filters.BlurX(imageData,scratchData,{blurWidth:13});
+  Kinetic.Filters.BlurX(imageData,scratchData,{blurWidth:BLURAMOUNT});
   //this.getContext().putImageData(scratchData,0,0);
-  Kinetic.Filters.BlurY(scratchData,imageData,{blurHeight:23});
+  Kinetic.Filters.BlurY(scratchData,imageData,{blurHeight:BLURAMOUNT});
   this.getContext().putImageData(imageData,0,0);
 });
 
@@ -323,11 +323,92 @@ createExample('Saturation Shifting',function(){
   for( i=0; i<w; i+=1 ){
       src = ctx.getImageData(i*xSize,0,xSize,ySize);
       dst = ctx.createImageData(src);
-      Kinetic.Filters.HSV(src,dst,{saturation:2*(0.001+i)/w,});
+      Kinetic.Filters.HSV(src,dst,{saturation:2*(0.001+i)/w});
       ctx.putImageData(dst,i*xSize,0);
       //ctx.strokeRect(i*xSize,0,xSize,ySize);
   }
 });
+
+var createOldExample = (function () {
+  var sn = 0;
+  var createOldExample = function (title, filterFunc) {
+    sn += 1;
+    var html = '<div>';
+    html += '<h2> Kinetic 4.6 Image Filter: ' + title + '</h2>';
+    html += '<div id="id-old' + sn + '"></div>';
+    html += '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    document.getElementById('container').appendChild(div);
+
+    var imageObj = new Image();
+    imageObj.onload = (function(sn){ return function() {
+        var stage = new Kinetic.Stage({
+          container: 'id-old' + sn,
+          width: 320,
+          height: 240
+        });
+        var layer = new Kinetic.Layer({
+            throttle: 999
+        });
+        var darth = new Kinetic.Image({
+            x: 10,
+            y: 10,
+            image: imageObj,
+            draggable: true
+        });
+
+        layer.add(darth);
+        stage.add(layer);
+
+        // The important line!
+        darth.setFilter(filterFunc);
+
+        darth.setFilterBrightness(100);
+        darth.setFilterRadius(20);
+        darth.setFilterColorizeColor([0,255,128]);
+        darth.setFilterHueShiftDeg(358);
+        darth.setFilterAmount(100);
+
+        layer.draw();
+
+        var tween = new Kinetic.Tween({
+          node: darth, 
+          duration: 5.0,
+          filterHueShiftDeg: 0,
+          filterBrightness: 0,
+          filterRadius: 0,
+          filterAmount: 0,
+          easing: Kinetic.Easings.EaseInOut
+        });
+        
+        darth.on('mouseover', function() {
+          tween.play();
+        });
+      
+        darth.on('mouseout', function() {
+          tween.reverse();
+        });
+        
+
+    };})(sn);
+    imageObj.src = '../../test/assets/lion.png';
+
+  };
+  return createOldExample;
+})();
+
+createOldExample('Grayscale',Kinetic.Filters.Grayscale);
+createOldExample('Invert',Kinetic.Filters.Invert);
+createOldExample('Blur',Kinetic.Filters.Blur);
+createOldExample('Brighten',Kinetic.Filters.Brighten);
+createOldExample('Colorize',Kinetic.Filters.Colorize);
+createOldExample('HueShift',Kinetic.Filters.ShiftHue);
+createOldExample('UnsharpMask',Kinetic.Filters.UnsharpMask);
+createOldExample('SoftBlur',Kinetic.Filters.SoftBlur);
+createOldExample('Edge',Kinetic.Filters.Edge);
+createOldExample('Emboss',Kinetic.Filters.Emboss);
+
 
     </script>
   </body>

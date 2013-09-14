@@ -49,7 +49,10 @@
       for( radius=0; radius<rSize; radius+=1 ){
         x = xMid+rMax*radius/rSize*cos;
         y = yMid+rMax*radius/rSize*sin;
-        if( 0 <= x && x < xSize && 0 <= y && y < ySize ){
+        if( x <= 1 ){ x = 1; }
+        if( x >= xSize-0.5 ){ x = xSize-1; }
+        if( y <= 1 ){ y = 1; }
+        if( y >= ySize-0.5 ){ y = ySize-1; }
 
         // Interpolate x and y by going +-0.5 around the pixel's central point
         // this gives us the 4 nearest pixels to our 1x1 non-aligned pixel.
@@ -99,7 +102,7 @@
         dstPixels[i+1] = g;
         dstPixels[i+2] = b;
         dstPixels[i+3] = a;
-        }
+
       }
     }
   };
