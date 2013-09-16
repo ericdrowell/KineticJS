@@ -188,6 +188,7 @@
                 clipWidth = container.getClipWidth(),
                 clipHeight = container.getClipHeight(),
                 clippingPoints = container.getClippingPoints(),
+                borders = container.getClippingBorders(),
                 self = this;
 
             this.save();
@@ -202,6 +203,13 @@
                 
                 for (var i = 1, length = clippingPoints.length; i < length; i++)
                     this.lineTo(clippingPoints[i][0], clippingPoints[i][1])
+            }
+            
+            if (borders){
+                this.setAttr('lineWidth', borders.width);
+                this.setAttr('strokeStyle', borders.color);
+                
+                this.stroke();
             }
             
             this.clip();

@@ -299,6 +299,31 @@
     Kinetic.Util.extend(Kinetic.Container, Kinetic.Node);
 
     // add getters setters
+    Kinetic.Factory.addGetterSetter(Kinetic.Container, 'clippingBorders');
+
+    /**
+     * set clipping borders
+     * @method
+     * @name setClippingBorders
+     * @memberof Kinetic.Container.prototype
+     * @param {Object}
+     * @example
+     * image.setClippingBorders({<br>
+     *   color: '#000', // Can be either an hex value and a literal string containing color's name<br>
+     *   width: 10, // For while, the unit will be in pixels<br>
+     *   style: 'dashed', // Future implementation <br>
+     * });<br><br>
+     *
+     */
+
+    /**
+     * get clipping borders
+     * @name getClippingBorders
+     * @method
+     * @memberof Kinetic.Container.prototype
+     * @return {Object}
+     */    
+    
     Kinetic.Factory.addGetterSetter(Kinetic.Container, 'clippingPoints', []);
 
     /**
@@ -309,7 +334,7 @@
      * @param {Array}
      * @example
      * // set a clip area that isn't a rect
-     * image.setClip([<br>
+     * image.setClippingPoints([<br>
      *   [x1, y1],<br>
      *   [x2, y2],<br>
      *   [x3, y3],<br>
@@ -317,6 +342,14 @@
      * );<br><br>
      *
      */
+    
+    /**
+     * get clipping points
+     * @name getClippingPoints
+     * @method
+     * @memberof Kinetic.Container.prototype
+     * @return {Array}
+     */    
     
     
     Kinetic.Factory.addBoxGetterSetter(Kinetic.Container, 'clip');
@@ -371,14 +404,6 @@
      * @memberof Kinetic.Container.prototype
      * @param {Number} height
      */
-
-    /**
-     * get clipping points
-     * @name getClippingPoints
-     * @method
-     * @memberof Kinetic.Container.prototype
-     * @return {Array}
-     */    
     
     /**
      * get clip
