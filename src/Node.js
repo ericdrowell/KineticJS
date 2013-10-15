@@ -1004,17 +1004,25 @@
                 y = config.y || 0,
                 canvas = new Kinetic.SceneCanvas({
                     width: config.width || stage.getWidth(),
-                    height: config.height || stage.getHeight(),
-                    pixelRatio: 1
+                    height: config.height || stage.getHeight()
                 }),
-                context = canvas.getContext();
+                context = canvas.getContext(),
+                _context = context._context,
+                devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = _context.webkitBackingStorePixelRatio ||
+                    _context.mozBackingStorePixelRatio ||
+                    _context.msBackingStorePixelRatio ||
+                    _context.oBackingStorePixelRatio ||
+                    _context.backingStorePixelRatio || 1,
+                ratio = devicePixelRatio / backingStoreRatio;
 
+            canvas.setPixelRatio(ratio);
             context.save();
 
             if(x || y) {
                 context.translate(-1 * x, -1 * y);
             }
-
+            context.scale(ratio, ratio);
             this.drawScene(canvas);
             context.restore();
 

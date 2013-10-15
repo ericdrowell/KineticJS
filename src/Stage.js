@@ -214,12 +214,22 @@
                     pixelRatio: 1
                 }),
                 _context = canvas.getContext()._context,
+                devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = _context.webkitBackingStorePixelRatio ||
+                    _context.mozBackingStorePixelRatio ||
+                    _context.msBackingStorePixelRatio ||
+                    _context.oBackingStorePixelRatio ||
+                    _context.backingStorePixelRatio || 1,
+                ratio = devicePixelRatio / backingStoreRatio,
                 layers = this.children;
+
+            canvas.setPixelRatio(ratio);
 
             if(x || y) {
                 _context.translate(-1 * x, -1 * y);
             }
 
+            _context.scale(ratio, ratio);
             function drawLayer(n) {
                 var layer = layers[n],
                     layerUrl = layer.toDataURL(),
@@ -465,7 +475,7 @@
                 shape._fireAndBubble(MOUSEUP, evt);
 
                 // detect if click or double click occurred
-                if(Kinetic.listenClickTap && shape._id === this.clickStartShape._id) {
+                if(Kinetic.listenClickTap && this.clickStartShape && shape._id === this.clickStartShape._id) {
                     shape._fireAndBubble(CLICK, evt);
 
                     if(fireDblClick) {
