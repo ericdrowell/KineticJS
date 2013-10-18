@@ -25,6 +25,121 @@ suite('Container', function() {
     });
 
     // ======================================================
+    test('clipping a star (clippingPoints)', function() {
+        var stage = addStage();
+        stage.setAttrs({
+            width: 200,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var background = new Kinetic.Rect({
+            x: 0,
+            y: 0,
+            width: stage.getWidth(),
+            height: stage.getHeight(),
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            draggable: true
+        });
+        
+        layer.setClippingPoints([
+            [100, 0],
+            [132, 58],
+            [196, 73],
+            [153, 120],
+            [158, 186],
+            [100, 159],
+            [40, 186],
+            [46, 121],
+            [0, 72],
+            [65, 60]
+        ]);
+            
+        stage.add(layer);
+        layer.add(group);
+        group.add(background);
+        layer.draw();
+    });
+
+    // ======================================================
+    test('clipwith clippingBorders', function() {
+        var stage = addStage();
+        var layer = new Kinetic.Layer({
+            clip: [0, 0, stage.getWidth() / 2, 100]
+        });
+        layer.setClippingBorders({
+            color: '#0F0',
+            width: 1,
+            style: 'dashed'
+        });
+        
+        var group = new Kinetic.Group();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myCircle',
+            draggable: true
+        });
+
+        stage.add(layer);
+        layer.add(group);
+        group.add(circle);
+        layer.draw();
+    });
+
+    // ======================================================
+    test('clipping a star (clippingPoints) with clippingBorders', function() {
+        var stage = addStage();
+        stage.setAttrs({
+            width: 200,
+            height: 200
+        });
+        var layer = new Kinetic.Layer();
+        var group = new Kinetic.Group();
+        var background = new Kinetic.Rect({
+            x: 0,
+            y: 0,
+            width: stage.getWidth(),
+            height: stage.getHeight(),
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            draggable: true
+        });
+        
+        layer.setClippingPoints([
+            [100, 0],
+            [132, 58],
+            [196, 73],
+            [153, 120],
+            [158, 186],
+            [100, 159],
+            [40, 186],
+            [46, 121],
+            [0, 72],
+            [65, 60],
+            [100, 0]
+        ]);
+
+        layer.setClippingBorders({
+            color: '#00F',
+            width: 5,
+            style: 'normal'
+        });        
+            
+        stage.add(layer);
+        layer.add(group);
+        group.add(background);
+        layer.draw();
+    });    
+    
+    // ======================================================
     test('adder validation', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
