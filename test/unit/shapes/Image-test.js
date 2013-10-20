@@ -392,7 +392,7 @@ suite('Image', function(){
         scale: 1/3
     });
 
-    kineticContainer.appendChild(container);;
+    kineticContainer.appendChild(container);
 
     var layer = new Kinetic.Layer();
     
@@ -408,7 +408,7 @@ suite('Image', function(){
       });
       layer.add(diana);
       stage.add(layer);
-      var ctx = diana.getContext()
+      var ctx = diana.getContext();
       var data = ctx.getImageData(0, 2447/3, 1, 1).data;
       assert.notEqual(data[3], 0);
       done(); 
