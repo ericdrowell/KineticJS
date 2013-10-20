@@ -43,13 +43,41 @@
         _useBufferCanvas: function() {
             return (this.hasShadow() || this.getAbsoluteOpacity() !== 1) && this.hasStroke();
         },
+        /**
+         * Function used to fix a bug where large images get squashed in iOS 6 & 7
+         * Credit: https://github.com/stomita/ios-imagefile-megapixel
+         */
+        detectVerticalSquash: function(img) {
+            var iw = img.naturalWidth, ih = img.naturalHeight;
+            var canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = ih;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            var data = ctx.getImageData(0, 0, 1, ih).data;
+            var sy = 0;
+            var ey = ih;
+            var py = ih;
+            while (py > sy) {
+                var alpha = data[(py - 1) * 4 + 3];
+                if (alpha === 0) {
+                    ey = py;
+                } else {
+                    sy = py;
+                }
+                py = (ey + sy) >> 1;
+            }
+            var ratio = (py / ih);
+            return (ratio===0)?1:ratio;
+        },
         drawFunc: function(context) {
             var width = this.getWidth(), 
                 height = this.getHeight(), 
                 that = this, 
                 crop,
                 params, 
-                image;
+                image,
+                verticalSquashRatio;
 
             //TODO: this logic needs to hook int othe new caching system
 
@@ -69,15 +97,28 @@
                 image = this.getImage();
 
                 if (image) {
+                    
+                    // Get vertical squash ratio
+                    // 1) If this isn't webkit we don't need to worry
+                    // 2) getImageData with an SVG image raises a security exception (even if it is not cross origin), https://code.google.com/p/chromium/issues/detail?id=68568
+                    // 3) Confirm image isn't cross origin as that raise a security exception with getImageData
+                    if (Kinetic.UA.browser !== 'webkit' || 
+                    image.src.indexOf(".svg") !== -1 ||
+                    (image.src.indexOf("http") !== -1 && image.src.indexOf(location.hostname) == -1)) {
+                        verticalSquashRatio = 1;
+                    } else {
+                        verticalSquashRatio = this.detectVerticalSquash(image);
+                    }
+
                     crop = this.getCrop();
                     if (crop) {
                         crop.x = crop.x || 0;
                         crop.y = crop.y || 0;
                         crop.width = crop.width || image.width - crop.x;
                         crop.height = crop.height || image.height - crop.y;
-                        params = [image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height];
+                        params = [image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height/verticalSquashRatio];
                     } else {
-                        params = [image, 0, 0, width, height];
+                        params = [image, 0, 0, width, height/verticalSquashRatio];
                     }
                 }
             }
