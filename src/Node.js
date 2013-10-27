@@ -974,6 +974,14 @@
                 }
             }
 
+            //copy extensions methods
+            for (ext in this.__proto__) {
+                //if there is a method, that is not present in the node.prototype
+                if (typeof node.__proto__[ext] != 'function') {
+                    node.__proto__[ext] = this.__proto__[ext];
+                }
+            }
+
             // apply attr overrides
             node.setAttrs(obj);
             return node;
