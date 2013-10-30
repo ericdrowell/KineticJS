@@ -126,8 +126,7 @@
             this.interval = setInterval(function() {
                 var index = that.getIndex();
                 that._updateIndex();
-                if(that.afterFrameFunc && index === that.afterFrameIndex) {
-                    that.afterFrameFunc();
+                if(that.afterFrameFunc && index === that.afterFrameIndex && !that.afterFrameFunc()) {
                     delete that.afterFrameFunc;
                     delete that.afterFrameIndex;
                 }
