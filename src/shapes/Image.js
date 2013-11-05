@@ -39,6 +39,20 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = IMAGE;
+
+            // Get vertical squash ratio
+            var image = this.getImage(),
+                verticalSquashRatio;   
+            // 1) If this the browser is WebKit &&
+            // 2) This isn't an SVG image (https://code.google.com/p/chromium/issues/detail?id=68568) &&
+            // 3) This isn't cross origin image
+            if (image &&
+            Kinetic.UA.browser == 'webkit' && 
+            image.src.indexOf(".svg") == -1 &&
+            (image.src.indexOf("http") == -1 || image.src.indexOf(location.hostname) !== -1)) {
+                verticalSquashRatio = this.detectVerticalSquash(image);
+                if (verticalSquashRatio !== 1) this.setHeight(this.getHeight() / verticalSquashRatio);
+            }
         },
         _useBufferCanvas: function() {
             return (this.hasShadow() || this.getAbsoluteOpacity() !== 1) && this.hasStroke();
@@ -97,18 +111,6 @@
                 image = this.getImage();
 
                 if (image) {
-                    
-                    // Get vertical squash ratio
-                    // 1) If this isn't webkit we don't need to worry
-                    // 2) getImageData with an SVG image raises a security exception (even if it is not cross origin), https://code.google.com/p/chromium/issues/detail?id=68568
-                    // 3) Confirm image isn't cross origin as that raise a security exception with getImageData
-                    if (Kinetic.UA.browser !== 'webkit' || 
-                    image.src.indexOf(".svg") !== -1 ||
-                    (image.src.indexOf("http") !== -1 && image.src.indexOf(location.hostname) == -1)) {
-                        verticalSquashRatio = 1;
-                    } else {
-                        verticalSquashRatio = this.detectVerticalSquash(image);
-                    }
 
                     crop = this.getCrop();
                     if (crop) {
@@ -116,9 +118,9 @@
                         crop.y = crop.y || 0;
                         crop.width = crop.width || image.width - crop.x;
                         crop.height = crop.height || image.height - crop.y;
-                        params = [image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height/verticalSquashRatio];
+                        params = [image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height];
                     } else {
-                        params = [image, 0, 0, width, height/verticalSquashRatio];
+                        params = [image, 0, 0, width, height];
                     }
                 }
             }
