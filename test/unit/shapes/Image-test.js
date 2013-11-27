@@ -381,4 +381,43 @@ suite('Image', function(){
       };
       imageObj.src = 'assets/darth-vader.jpg';
   });
+  
+  // ======================================================
+  test('load large image in iOS 6 or iOS 7 (NOTE: Run tests in iOS 6 or 7 to check)', function(done) {
+    
+    var container = document.createElement('div');
+    
+    var stage = new Kinetic.Stage({
+        container: container,
+        width: 3264/3,
+        height: 2448/3,
+        scale: 1/3
+    });
+
+    kineticContainer.appendChild(container);
+
+    var layer = new Kinetic.Layer();
+    
+    var imageObj = new Image();
+    
+    imageObj.onload = function() {
+      var diana = new Kinetic.Image({
+        x: 0,
+        y: 0,
+        image: imageObj,
+        width: 3264,
+        height: 2448
+      });
+      layer.add(diana);
+      stage.add(layer);
+      var ctx = diana.getContext();
+      var data = ctx.getImageData(0, 2447/3, 1, 1).data;
+      assert.notEqual(data[3], 0);
+      done(); 
+    };
+    
+    imageObj.src = 'assets/diana.jpg';
+  
+  });
+
 });

@@ -36,16 +36,58 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = IMAGE;
+
+            // Get vertical squash ratio
+            var image = this.getImage(),
+                verticalSquashRatio;   
+            // 1) If this the browser is WebKit &&
+            // 2) This isn't an SVG image (https://code.google.com/p/chromium/issues/detail?id=68568) &&
+            // 3) This isn't cross origin image
+            if (image &&
+            Kinetic.UA.browser == 'webkit' && 
+            image.src.indexOf(".svg") == -1 &&
+            (image.src.indexOf("http") == -1 || image.src.indexOf(location.hostname) !== -1)) {
+                verticalSquashRatio = this.detectVerticalSquash(image);
+                if (verticalSquashRatio !== 1) this.setHeight(this.getHeight() / verticalSquashRatio);
+            }
         },
         _useBufferCanvas: function() {
             return (this.hasShadow() || this.getAbsoluteOpacity() !== 1) && this.hasStroke();
+        },
+        /**
+         * Function used to fix a bug where large images get squashed in iOS 6 & 7
+         * Credit: https://github.com/stomita/ios-imagefile-megapixel
+         */
+        detectVerticalSquash: function(img) {
+            var iw = img.naturalWidth, ih = img.naturalHeight;
+            var canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = ih;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            var data = ctx.getImageData(0, 0, 1, ih).data;
+            var sy = 0;
+            var ey = ih;
+            var py = ih;
+            while (py > sy) {
+                var alpha = data[(py - 1) * 4 + 3];
+                if (alpha === 0) {
+                    ey = py;
+                } else {
+                    sy = py;
+                }
+                py = (ey + sy) >> 1;
+            }
+            var ratio = (py / ih);
+            return (ratio===0)?1:ratio;
         },
         drawFunc: function(context) {
             var width = this.getWidth(), 
                 height = this.getHeight(), 
                 crop,
                 params, 
-                image;
+                image,
+                verticalSquashRatio;
 
             //TODO: this logic needs to hook int othe new caching system
 
@@ -65,6 +107,7 @@
                 image = this.getImage();
 
                 if (image) {
+
                     crop = this.getCrop();
                     if (crop) {
                         crop.x = crop.x || 0;
