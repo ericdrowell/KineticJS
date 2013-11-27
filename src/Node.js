@@ -979,6 +979,14 @@
                 }
             }
 
+            //copy extensions methods
+            for (var ext in Object.getPrototypeOf(this)) {
+                //if there is a method, that is not present in the node.prototype
+                if (typeof Object.getPrototypeOf(node)[ext] != 'function') {
+                    node[ext] = Object.getPrototypeOf(this)[ext];
+                }
+            }
+
             // apply attr overrides
             node.setAttrs(obj);
             return node;
