@@ -31,13 +31,6 @@
             var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments)),
                 p, colorKey, shape;
             if(this.isVisible() && this.isListening()) {
-// <<<<<<< HEAD
-//                 p = this.hitCanvas.context._context.getImageData(pos.x | 0, pos.y | 0, 1, 1).data;
-//                 // this indicates that a hit pixel may have been found
-//                 if(p[3] === 255) {
-//                     colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
-//                     shape = Kinetic.shapes[HASH + colorKey];
-// =======
                 var result = this._getIntersectionAtPoint(pos.x,pos.y);
                 if(result === null || result.shape)
                     return result;
@@ -66,11 +59,10 @@
             // this indicates that a hit pixel may have been found
             if(p[3] === 255) {
                 var colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
-                var shape = Kinetic.Global.shapes[HASH + colorKey];
+                var shape = Kinetic.shapes[HASH + colorKey];
                 //it is not impossible for antialiasing to produce an alpha 255 but in the wrong color
                 if(shape !== null)
                 {
-// >>>>>>> 8ad27b094c3a34872e2ae2a0b1eec421695b9366
                     return {
                         shape: shape,
                         pixel: p
