@@ -1,6 +1,6 @@
 suite('Line', function() {
     // ======================================================
-    test.only('add my line', function() {
+    test('add my line', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
 

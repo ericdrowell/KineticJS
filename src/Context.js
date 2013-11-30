@@ -450,10 +450,10 @@
                 this.rotate(fillPatternRotation);
             }
             if(fillPatternScale) {
-                this.scale(fillPatternScale.x, fillPatternScale.y);
+                this.scale(fillPatternScale[0], fillPatternScale[1]);
             }
             if(fillPatternOffset) {
-                this.translate(-1 * fillPatternOffset.x, -1 * fillPatternOffset.y);
+                this.translate(-1 * fillPatternOffset[0], -1 * fillPatternOffset[1]);
             }
 
             this.setAttr('fillStyle', this.createPattern(fillPatternImage, fillPatternRepeat || 'repeat'));
@@ -463,7 +463,7 @@
             var start = shape.getFillLinearGradientStartPoint(),
                 end = shape.getFillLinearGradientEndPoint(),
                 colorStops = shape.getFillLinearGradientColorStops(),
-                grd = this.createLinearGradient(start.x, start.y, end.x, end.y);
+                grd = this.createLinearGradient(start[0], start[1], end[0], end[1]);
 
             if (colorStops) {
                 // build color stops
@@ -480,7 +480,7 @@
             startRadius = shape.getFillRadialGradientStartRadius(),
             endRadius = shape.getFillRadialGradientEndRadius(),
             colorStops = shape.getFillRadialGradientColorStops(),
-            grd = this.createRadialGradient(start.x, start.y, startRadius, end.x, end.y, endRadius);
+            grd = this.createRadialGradient(start[0], start[1], startRadius, end[0], end[1], endRadius);
 
             // build color stops
             for(var n = 0; n < colorStops.length; n += 2) {
