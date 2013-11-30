@@ -1,6 +1,6 @@
 suite('Spline', function() {
     // ======================================================
-    test.only('add splines', function() {
+    test('add splines', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
 
@@ -14,29 +14,29 @@ suite('Spline', function() {
             tension: 1
         });
 
-        // var line2 = new Kinetic.Line({
-        //     points: [73,160,340,23,500,109],
-        //     stroke: 'red',
-        //     strokeWidth: 10,
-        //     lineCap: 'round',
-        //     lineJoin: 'round',
-        //     draggable: true,
-        //     tension: 1
-        // });
+        var line2 = new Kinetic.Line({
+            points: [73,160,340,23,500,109],
+            stroke: 'red',
+            strokeWidth: 10,
+            lineCap: 'round',
+            lineJoin: 'round',
+            draggable: true,
+            tension: 1
+        });
 
-        // var line3 = new Kinetic.Line({
-        //     points: [73,160,340,23],
-        //     stroke: 'green',
-        //     strokeWidth: 10,
-        //     lineCap: 'round',
-        //     lineJoin: 'round',
-        //     draggable: true,
-        //     tension: 1
-        // });
+        var line3 = new Kinetic.Line({
+            points: [73,160,340,23],
+            stroke: 'green',
+            strokeWidth: 10,
+            lineCap: 'round',
+            lineJoin: 'round',
+            draggable: true,
+            tension: 1
+        });
 
         layer.add(line1);
-        // layer.add(line2);
-        // layer.add(line3);
+        layer.add(line2);
+        layer.add(line3);
         stage.add(layer);
 
         assert.equal(line1.getClassName(), 'Line');
@@ -66,7 +66,7 @@ suite('Spline', function() {
         layer.add(spline);
         stage.add(layer);
 
-        assert.equal(spline.getTensionPoints().length, 12);
+        assert.equal(spline.getTensionPoints().length, 6);
 
         spline.setPoints([73,160,340,23,500,109]);
 
@@ -96,97 +96,14 @@ suite('Spline', function() {
         layer.add(spline);
         stage.add(layer);
 
+        assert.equal(spline.getPoints().length, 6);
+
+        spline.getPoints().push(300);
+        spline.getPoints().push(200);
+        spline.clearCache();
+
         assert.equal(spline.getPoints().length, 8);
 
-        spline.addPoint([300,200]);
-
-        assert.equal(spline.getPoints().length, 10);
-
         layer.draw();
-    });
-
-    // ======================================================
-    test('create from points represented as a flat array', function() {
-        var stage = addStage();
-        var layer = new Kinetic.Layer();
-
-        var line = new Kinetic.Line({
-            points: [
-                73, 160,
-                340, 23,
-                500, 109,
-                300, 109
-            ],
-            stroke: 'blue',
-            strokeWidth: 10,
-            lineCap: 'round',
-            lineJoin: 'round',
-            draggable: true,
-            tension: 1
-        });
-
-        layer.add(line);
-        stage.add(layer);
-
-        assert.equal(line.getPoints().length, 8);
-    });
-
-    // ======================================================
-    test('create from points represented as an array of objects', function() {
-        var stage = addStage();
-        var layer = new Kinetic.Layer();
-
-        var line = new Kinetic.Line({
-            points: [{
-                x: 73,
-                y: 160
-            }, {
-                x: 340,
-                y: 23
-            }, {
-                x: 500,
-                y: 109
-            }, {
-                x: 300,
-                y: 109
-            }],
-            stroke: 'blue',
-            strokeWidth: 10,
-            lineCap: 'round',
-            lineJoin: 'round',
-            draggable: true,
-            tension: 1
-        });
-
-        layer.add(line);
-        stage.add(layer);
-
-        assert.equal(line.getPoints().length, 4);
-    });
-
-    // ======================================================
-    test('create from points represented as an array of arrays', function() {
-        var stage = addStage();
-        var layer = new Kinetic.Layer();
-
-        var line = new Kinetic.Line({
-            points: [
-                [73, 160],
-                [340, 23],
-                [500, 109],
-                [300, 109]
-            ],
-            stroke: 'blue',
-            strokeWidth: 10,
-            lineCap: 'round',
-            lineJoin: 'round',
-            draggable: true,
-            tension: 1
-        });
-
-        layer.add(line);
-        stage.add(layer);
-
-        assert.equal(line.getPoints().length, 4);
     });
 });

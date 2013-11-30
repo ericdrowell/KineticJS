@@ -46,19 +46,17 @@
             context.moveTo(points[0], points[1]);
 
             // tension
-            if(tension !== 0 && length > 2) {
+            if(tension !== 0 && length > 4) {
                 tp = this.getTensionPoints();
                 len = tp.length;
-                n = closed ? 0 : 2;
-
-                console.log(tp)
+                n = closed ? 0 : 4;
 
                 if (!closed) {
                     context.quadraticCurveTo(tp[0], tp[1], tp[2], tp[3]);
                 }
 
-                while(n < len - 1) {
-                    context.bezierCurveTo(tp[n], tp[++n], tp[++n], tp[++n], tp[++n], tp[++n]);
+                while(n < len - 2) {
+                    context.bezierCurveTo(tp[n++], tp[n++], tp[n++], tp[n++], tp[n++], tp[n++]);
                 }
 
                 if (!closed) {
