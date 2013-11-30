@@ -83,7 +83,7 @@ suite('Spline', function() {
         var layer = new Kinetic.Layer();
 
         var spline = new Kinetic.Line({
-            points: [73,160,340,23,500,109],
+            points: [73,160,340,23,500,109,300,109],
             stroke: 'blue',
             strokeWidth: 10,
             lineCap: 'round',
@@ -96,13 +96,13 @@ suite('Spline', function() {
         layer.add(spline);
         stage.add(layer);
 
-        assert.equal(spline.getPoints().length, 6);
+        assert.equal(spline.getPoints().length, 8);
 
         spline.getPoints().push(300);
         spline.getPoints().push(200);
         spline.clearCache();
 
-        assert.equal(spline.getPoints().length, 8);
+        assert.equal(spline.getPoints().length, 10);
 
         layer.draw();
     });

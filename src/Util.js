@@ -564,7 +564,7 @@
                 allPoints = [],
                 n, cp;
 
-            for (n=2; n<len-3; n+=2) {
+            for (n=2; n<len-2; n+=2) {
                 cp = Kinetic.Util._getControlPoints(p[n-2], p[n-1], p[n], p[n+1], p[n+2], p[n+3], tension);
                 allPoints.push(cp[0]);
                 allPoints.push(cp[1]);
