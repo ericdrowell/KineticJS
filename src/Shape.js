@@ -934,7 +934,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillPatternOffset', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillPatternOffset', 0);
 
     /**
      * set fill pattern offset
@@ -995,7 +995,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillPatternScale', 1);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillPatternScale', 1);
 
     /**
      * set fill pattern scale
@@ -1056,7 +1056,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillLinearGradientStartPoint', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillLinearGradientStartPoint', 0);
 
     /**
      * set fill linear gradient start point
@@ -1117,7 +1117,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillLinearGradientEndPoint', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillLinearGradientEndPoint', 0);
 
     /**
      * set fill linear gradient end point
@@ -1178,7 +1178,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillRadialGradientStartPoint', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillRadialGradientStartPoint', 0);
 
     /**
      * set fill radial gradient start point
@@ -1239,7 +1239,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'fillRadialGradientEndPoint', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillRadialGradientEndPoint', 0);
 
     /**
      * set fill radial gradient end point
@@ -1300,7 +1300,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Shape, 'shadowOffset', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'shadowOffset', 0);
 
     /**
      * set shadow offset

@@ -1,19 +1,11 @@
 suite('Line', function() {
     // ======================================================
-    test('add line', function() {
+    test.only('add my line', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
 
-        var points = [{
-            x: 73,
-            y: 160
-        }, {
-            x: 340,
-            y: 23
-        }];
-
         var line = new Kinetic.Line({
-            points: points,
+            points: [73, 160, 340, 23],
             stroke: 'blue',
             strokeWidth: 20,
             lineCap: 'round',
@@ -26,24 +18,37 @@ suite('Line', function() {
         stage.add(layer);
 
         line.setPoints([1, 2, 3, 4]);
-        assert.equal(line.getPoints()[0].x, 1);
+        assert.equal(line.getPoints()[0], 1);
 
-        line.setPoints([{
-            x: 5,
-            y: 6
-        }, {
-            x: 7,
-            y: 8
-        }]);
-        assert.equal(line.getPoints()[0].x, 5);
+        line.setPoints([5, 6, 7, 8]);
+        assert.equal(line.getPoints()[0], 5);
 
         line.setPoints([73, 160, 340, 23, 340, 80]);
-        assert.equal(line.getPoints()[0].x, 73);
+        assert.equal(line.getPoints()[0], 73);
         
         assert.equal(line.getClassName(), 'Line');
 
         layer.draw();
         showHit(layer);
+    });
+
+    // ======================================================
+    test('add a line with corner radius', function() {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+
+        var line = new Kinetic.Line({
+            points: [73, 160, 340, 23, 340, 120],
+            stroke: 'blue',
+            strokeWidth: 5,
+            lineCap: 'round',
+            lineJoin: 'round',
+            draggable: true,
+            tension: 0
+        });
+
+        layer.add(line);
+        stage.add(layer);
     });
 
     // ======================================================
@@ -74,8 +79,8 @@ suite('Line', function() {
         layer.add(line).add(redLine);
         stage.add(layer);
 
-        assert.equal(line.getPoints()[0].x, 0);
-        assert.equal(redLine.getPoints()[0].x, 4);
+        assert.equal(line.getPoints()[0], 0);
+        assert.equal(redLine.getPoints()[0], 4);
         
     });
 
@@ -122,7 +127,7 @@ suite('Line', function() {
         line.setDashArray([10, 10]);
         assert.equal(line.getDashArray().length, 2);
 
-        assert.equal(line.getPoints().length, 4);
+        assert.equal(line.getPoints().length, 8);
 
     });
 
@@ -131,23 +136,15 @@ suite('Line', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
 
-        var points = [{
-            x: 73,
-            y: 160
-        }, {
-            x: 340,
-            y: 23
-        }];
-
         var line = new Kinetic.Line({
-            points: points,
+            points: [73,160,340,23],
             stroke: 'blue',
             strokeWidth: 20,
             lineCap: 'round',
             lineJoin: 'round',
             shadowColor: 'black',
             shadowBlur: 20,
-            shadowOffset: 10,
+            shadowOffset: [10, 10],
             shadowOpacity: 0.5,
             draggable: true
         });

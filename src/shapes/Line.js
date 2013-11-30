@@ -43,7 +43,7 @@
                 tp, len, n, point;
 
             context.beginPath();
-            context.moveTo(points[0].x, points[0].y);
+            context.moveTo(points[0], points[1]);
 
             // tension
             if(tension !== 0 && length > 2) {
@@ -51,23 +51,24 @@
                 len = tp.length;
                 n = closed ? 0 : 2;
 
+                console.log(tp)
+
                 if (!closed) {
-                    context.quadraticCurveTo(tp[0].x, tp[0].y, tp[1].x, tp[1].y);
+                    context.quadraticCurveTo(tp[0], tp[1], tp[2], tp[3]);
                 }
 
                 while(n < len - 1) {
-                    context.bezierCurveTo(tp[n].x, tp[n++].y, tp[n].x, tp[n++].y, tp[n].x, tp[n++].y);
+                    context.bezierCurveTo(tp[n], tp[++n], tp[++n], tp[++n], tp[++n], tp[++n]);
                 }
 
                 if (!closed) {
-                    context.quadraticCurveTo(tp[len - 1].x, tp[len - 1].y, points[length - 1].x, points[length - 1].y);
+                    context.quadraticCurveTo(tp[len-2], tp[len-1], points[length-2], points[length-1]);
                 }
             }
             // no tension
             else {
-                for(n = 1; n < length; n++) {
-                    point = points[n];
-                    context.lineTo(point.x, point.y);
+                for(n = 2; n < length; n+=2) {
+                    context.lineTo(points[n], points[n+1]);
                 }
             }
 

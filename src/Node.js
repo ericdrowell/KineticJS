@@ -492,39 +492,26 @@
          * set node position relative to parent
          * @method
          * @memberof Kinetic.Node.prototype
-         * @param {Number} x
-         * @param {Number} y
+         * @param {Array} pos
          * @example
-         * // set x and y<br>
-         * node.setPosition(5, 10);<br><br>
-         *
-         * // set x only<br>
-         * node.setPosition({<br>
-         *   x: 5<br>
-         * });<br><br>
-         *
-         * // set x and y using an array<br>
-         * node.setPosition([5, 10]);<br><br>
-         *
-         * // set both x and y to 5<br>
-         * node.setPosition(5);
+         * node.setPosition([5, 10]);
          */
-        setPosition: function() {
-            var pos = Kinetic.Util._getXY([].slice.call(arguments));
-            this.setX(pos.x);
-            this.setY(pos.y);
+        setPosition: function(pos) {
+            this.setX(pos[0]);
+            this.setY(pos[1]);
             return this;
         },
         /**
          * get node position relative to parent
          * @method
          * @memberof Kinetic.Node.prototype
+         * @returns {Array}
          */
         getPosition: function() {
-            return {
-                x: this.getX(),
-                y: this.getY()
-            };
+            return [
+                this.getX(),
+                this.getY()
+            ];
         },
         /**
          * get absolute position relative to the top left corner of the stage container div
@@ -547,12 +534,10 @@
          * set absolute position
          * @method
          * @memberof Kinetic.Node.prototype
-         * @param {Number} x
-         * @param {Number} y
+         * @param {Array} pos
          */
-        setAbsolutePosition: function() {
-            var pos = Kinetic.Util._getXY([].slice.call(arguments)),
-                trans = this._clearTransform(),
+        setAbsolutePosition: function(pos) {
+            var trans = this._clearTransform(),
                 it;
 
             // don't clear translation
@@ -566,12 +551,12 @@
 
             it.invert();
             it.translate(pos.x, pos.y);
-            pos = {
-                x: this.attrs.x + it.getTranslation().x,
-                y: this.attrs.y + it.getTranslation().y
-            };
+            pos = [
+                this.attrs.x + it.getTranslation().x, 
+                this.attrs.y + it.getTranslation().y
+            ];
 
-            this.setPosition(pos.x, pos.y);
+            this.setPosition([pos[0], pos[1]]);
             this._setTransform(trans);
             return this;
         },
@@ -1185,6 +1170,20 @@
                 this._fireChangeEvent(key, oldVal, val);
             }
         },
+        _setAttrIndex: function(key, index, val) {
+            var oldVal;
+            if(val !== undefined) {
+                oldVal = this.attrs[key];
+                this._fireBeforeChangeEvent(key, oldVal, val);
+
+                if (!oldVal) {
+                    this.attrs[key] = [];
+                }
+
+                this.attrs[key][index] = val;
+                this._fireChangeEvent(key, oldVal, val);
+            }
+        },
         _fireAndBubble: function(eventType, evt, compareShape) {
             var okayToRun = true;
 
@@ -1392,7 +1391,7 @@
      * @memberof Kinetic.Node.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Node, 'scale', 1);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Node, 'scale', 1);
 
     /**
      * set scale
@@ -1453,7 +1452,7 @@
      * @memberof Kinetic.Node.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Node, 'skew', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Node, 'skew', 0);
 
     /**
      * set skew
@@ -1515,7 +1514,7 @@
      * @memberof Kinetic.Node.prototype
      */
 
-    Kinetic.Factory.addPointGetterSetter(Kinetic.Node, 'offset', 0);
+    Kinetic.Factory.addXYGetterSetter(Kinetic.Node, 'offset', 0);
 
     /**
      * set offset.  A node's offset defines the position and rotation point

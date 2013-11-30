@@ -556,10 +556,7 @@
                 color = util.get(shape.getShadowColor(), 'black'),
                 blur = util.get(shape.getShadowBlur(), 5),
                 shadowOpacity = util.get(shape.getShadowOpacity(), 0),
-                offset = util.get(shape.getShadowOffset(), {
-                    x: 0,
-                    y: 0
-                });
+                offset = shape.getShadowOffset();
 
             if(shadowOpacity) {
                 this.setAttr('globalAlpha', shadowOpacity * absOpacity);
@@ -567,8 +564,8 @@
 
             this.setAttr('shadowColor', color);
             this.setAttr('shadowBlur', blur);
-            this.setAttr('shadowOffsetX', offset.x);
-            this.setAttr('shadowOffsetY', offset.y);
+            this.setAttr('shadowOffsetX', offset[0]);
+            this.setAttr('shadowOffsetY', offset[1]);
         
         }
     };

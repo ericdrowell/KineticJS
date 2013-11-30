@@ -254,17 +254,16 @@
          *  method for determining if a point intersects a shape or not
          * @method
          * @memberof Kinetic.Stage.prototype
-         * @param {Kinetic.Shape} shape
+         * @param {Array} point
          */
-        getIntersection: function() {
-            var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments)),
-                layers = this.getChildren(),
+        getIntersection: function(point) {
+            var layers = this.getChildren(),
                 len = layers.length,
                 end = len - 1,
                 n, shape;
 
             for(n = end; n >= 0; n--) {
-                shape = layers[n].getIntersection(pos);
+                shape = layers[n].getIntersection(point);
                 if (shape) {
                     return shape;
                 } 
@@ -590,10 +589,7 @@
             }
 
             if (x !== null && y !== null) {
-                this.pointerPos = {
-                    x: x,
-                    y: y
-                };
+                this.pointerPos = [x, y];
             }
         },
         _getContentPosition: function() {
