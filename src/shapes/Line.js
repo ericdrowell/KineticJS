@@ -92,25 +92,66 @@
             }
         },
         _getTensionPointsClosed: function() {
-            var points = this.getPoints(),
-                length = points.length,
+            var p = this.getPoints(),
+                len = p.length,
                 tension = this.getTension(),
                 util = Kinetic.Util,
-                firstControlPoints = util._getControlPoints(points[length - 1], points[0], points[1], tension),
-                lastControlPoints = util._getControlPoints(points[length - 2], points[length - 1], points[0], tension),
-                tensionPoints = Kinetic.Util._expandPoints(points, tension);
+                firstControlPoints = util._getControlPoints(
+                    p[len-2],
+                    p[len-1], 
+                    p[0], 
+                    p[1], 
+                    p[2], 
+                    p[3],
+                    tension
+                ),
+                lastControlPoints = util._getControlPoints(
+                    p[len-4], 
+                    p[len-3], 
+                    p[len-2], 
+                    p[len-1], 
+                    p[0], 
+                    p[1],
+                    tension
+                ),
+                middle = Kinetic.Util._expandPoints(p, tension),
+                tp = [
+                        firstControlPoints[2], 
+                        firstControlPoints[3]
+                    ]
+                    .concat(middle)
+                    .concat([
+                        lastControlPoints[0],
+                        lastControlPoints[1],
+                        p[len-2],
+                        p[len-1],
+                        lastControlPoints[2],
+                        lastControlPoints[3],
+                        firstControlPoints[0],
+                        firstControlPoints[1],
+                        p[0],
+                        p[1]
+                    ]);
 
-            // prepend control point
-            tensionPoints.unshift(firstControlPoints[1]);
 
-            // append cp, point, cp, cp, first point
-            tensionPoints.push(lastControlPoints[0]);
-            tensionPoints.push(points[length - 1]);
-            tensionPoints.push(lastControlPoints[1]);
-            tensionPoints.push(firstControlPoints[0]);
-            tensionPoints.push(points[0]);
 
-            return tensionPoints;
+            // // prepend control point
+            // tp.unshift(firstControlPoints[3]);
+            // tp.unshift(firstControlPoints[2]);
+
+            // // append cp, point, cp, cp, first point
+            // tp.push(lastControlPoints[0]);
+            // tp.push(lastControlPoints[1]);
+            // tp.push(p[len-2]);
+            // tp.push(p[len-1]);
+            // tp.push(lastControlPoints[2]);
+            // tp.push(lastControlPoints[3]);
+            // tp.push(firstControlPoints[0]);
+            // tp.push(firstControlPoints[1]);
+            // tp.push(p[0]);
+            // tp.push(p[1]);
+
+            return tp;
         }
     };
     Kinetic.Util.extend(Kinetic.Line, Kinetic.Shape);

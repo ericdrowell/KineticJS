@@ -1,7 +1,7 @@
 suite('Image', function(){
 
   // ======================================================
-  test('add image', function(done) {
+  test.only('add image', function(done) {
       var imageObj = new Image();
       imageObj.onload = function() {
           var stage = addStage();
@@ -31,8 +31,8 @@ suite('Image', function(){
           assert.equal(darth.getY(), 60);
           assert.equal(darth.getWidth(), 100);
           assert.equal(darth.getHeight(), 100);
-          assert.equal(darth.getOffset().x, 50);
-          assert.equal(darth.getOffset().y, 30);
+          assert.equal(darth.getOffset()[0], 50);
+          assert.equal(darth.getOffset()[1], 30);
           assert.equal(Kinetic.Util._isElement(darth.getImage()), true);
 
           var crop = null;
