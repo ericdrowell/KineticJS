@@ -489,31 +489,6 @@
             return level;
         },
         /**
-         * set node position relative to parent
-         * @method
-         * @memberof Kinetic.Node.prototype
-         * @param {Array} pos
-         * @example
-         * node.setPosition([5, 10]);
-         */
-        setPosition: function(pos) {
-            this.setX(pos[0]);
-            this.setY(pos[1]);
-            return this;
-        },
-        /**
-         * get node position relative to parent
-         * @method
-         * @memberof Kinetic.Node.prototype
-         * @returns {Array}
-         */
-        getPosition: function() {
-            return [
-                this.getX(),
-                this.getY()
-            ];
-        },
-        /**
          * get absolute position relative to the top left corner of the stage container div
          * @method
          * @memberof Kinetic.Node.prototype
@@ -1170,16 +1145,16 @@
                 this._fireChangeEvent(key, oldVal, val);
             }
         },
-        _setAttrIndex: function(key, index, val) {
+        _setComponentAttr: function(key, index, val) {
             var oldVal;
             if(val !== undefined) {
                 oldVal = this.attrs[key];
-                this._fireBeforeChangeEvent(key, oldVal, val);
 
                 if (!oldVal) {
                     this.attrs[key] = [];
                 }
-
+                
+                this._fireBeforeChangeEvent(key, oldVal, val);
                 this.attrs[key][index] = val;
                 this._fireChangeEvent(key, oldVal, val);
             }
@@ -1288,7 +1263,27 @@
     };
     // add getters setters
 
-    Kinetic.Factory.addGetterSetter(Kinetic.Node, 'x', 0);
+    Kinetic.Factory.add(Kinetic.Node, 'position', [0, 0]);
+    /**
+     * set node position relative to parent
+     * @method
+     * @memberof Kinetic.Node.prototype
+     * @param {Array} pos
+     * @example
+     * node.setPosition([5, 10]);
+     */
+
+    /**
+     * get node position relative to parent
+     * @method
+     * @memberof Kinetic.Node.prototype
+     * @returns {Array}
+     */
+
+    Kinetic.Factory.add(Kinetic.Node, 'position', 'x', 0, 0);
+    // aliases
+    Kinetic.Node.prototype.setX = Kinetic.Node.prototype.setPositionX;
+    Kinetic.Node.prototype.getX = Kinetic.Node.prototype.getPositionX;
 
     /**
      * set x position
@@ -1305,7 +1300,10 @@
      * @memberof Kinetic.Node.prototype
      */
 
-    Kinetic.Factory.addGetterSetter(Kinetic.Node, 'y', 0);
+    Kinetic.Factory.add(Kinetic.Node, 'position', 'y', 1, 0);
+    // aliases
+    Kinetic.Node.prototype.setY = Kinetic.Node.prototype.setPositionY;
+    Kinetic.Node.prototype.getY = Kinetic.Node.prototype.getPositionY;
 
     /**
      * set y position

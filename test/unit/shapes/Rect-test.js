@@ -28,6 +28,14 @@ suite('Rect', function(){
     var relaxedTrace = layer.getContext().getTrace(true);
     //console.log(relaxedTrace);
     assert.equal(relaxedTrace, 'clearRect();save();transform();beginPath();rect();closePath();fillStyle;fill();lineWidth;strokeStyle;stroke();restore();');
+  
+    // test positioning methods
+    rect.setPosition([1, 2]);
+    assert.equal(rect.getPosition()[0], 1);
+    assert.equal(rect.getPosition()[1], 2);
+    assert.equal(rect.getPositionX(), 1);
+    assert.equal(rect.getPositionY(), 2);
+
   });
 
   // ======================================================

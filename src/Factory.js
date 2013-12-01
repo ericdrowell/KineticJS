@@ -42,6 +42,73 @@
         Y = 'y';
 
     Kinetic.Factory = {
+        add: function() {
+            var constructor = arguments[0],
+                baseAttr = arguments[1],
+                def, component, index;
+
+            // base method
+            if (arguments.length === 3) {
+                def = arguments[2];
+                this._addGetter(constructor, baseAttr, def);
+                this._addSetter(constructor, baseAttr);
+            }
+            // component method
+            else if (arguments.length === 5) {
+                component = arguments[2];
+                index = arguments[3];
+                def = arguments[4];
+                this._addComponentGetter(constructor, baseAttr, component, index, def);
+                this._addComponentSetter(constructor, baseAttr, component, index);
+            }
+        },
+        _addGetter: function(constructor, baseAttr, def) {
+            var method = GET + Kinetic.Util._capitalize(baseAttr);
+
+            constructor.prototype[method] = function() {
+                var val = this.attrs[baseAttr];
+                return val === undefined ? def : val;
+            };
+        },
+        _addSetter: function(constructor, baseAttr) {
+            var method = SET + Kinetic.Util._capitalize(baseAttr);
+
+            constructor.prototype[method] = function(val) {
+                this._setAttr(baseAttr, val);   
+            };
+        },
+        _addComponentGetter: function(constructor, baseAttr, component, index, def) {
+            var method = GET + Kinetic.Util._capitalize(baseAttr) + Kinetic.Util._capitalize(component);
+
+            constructor.prototype[method] = function() {
+                var base = this.attrs[baseAttr],
+                    val = base && base[index];
+                return val === undefined ? def : val;
+            };
+        },
+        _addComponentSetter: function(constructor, baseAttr, component, index) {
+            var method = SET + Kinetic.Util._capitalize(baseAttr) + Kinetic.Util._capitalize(component);
+
+            constructor.prototype[method] = function(val) {
+                this._setComponentAttr(baseAttr, index, val);   
+            };
+        },
+
+
+
+
+
+        // ------------------------------- old methods to be deprecated -----------------------------------
+
+
+
+
+
+
+
+
+
+
         // getter setter adders
         addGetterSetter: function(constructor, attr, def) {
             this.addGetter(constructor, attr, def);
@@ -75,14 +142,6 @@
             constructor.prototype[setter] = function(val) {
                 this._setAttr(attr, val);  
             };
-
-            constructor.prototype[setter + UPPER_X] = function(val) {
-                this._setAttrIndex(attr, 0, val);  
-            };
-
-            constructor.prototype[setter + UPPER_Y] = function(val) {
-                this._setAttrIndex(attr, 1, val);  
-            }; 
         },
         addBoxGetterSetter: function(constructor, attr, def) {
             this.addGetter(constructor, attr, def);
