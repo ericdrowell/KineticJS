@@ -43,7 +43,7 @@
         drawFunc: function(context) {
             var width = this.getWidth(), 
                 height = this.getHeight(), 
-                crop,
+                crop, cropX, cropY, cropWidth, cropHeight,
                 params, 
                 image;
 
@@ -67,11 +67,11 @@
                 if (image) {
                     crop = this.getCrop();
                     if (crop) {
-                        crop.x = crop.x || 0;
-                        crop.y = crop.y || 0;
-                        crop.width = crop.width || image.width - crop.x;
-                        crop.height = crop.height || image.height - crop.y;
-                        params = [image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height];
+                        cropX = this.getCropX();
+                        cropY = this.getCropY();
+                        cropWidth = this.getCropWidth() || image.width - cropX;
+                        cropHeight = this.getCropHeight() || image.height - cropY;
+                        params = [image, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height];
                     } else {
                         params = [image, 0, 0, width, height];
                     }
@@ -253,7 +253,7 @@
     };
 
     // add getters setters
-    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'image');
+    Kinetic.Factory.add(Kinetic.Image, 'image');
 
     /**
      * set image
@@ -271,56 +271,15 @@
      * @returns {ImageObject}
      */
 
-    Kinetic.Factory.addBoxGetterSetter(Kinetic.Image, 'crop');
+    Kinetic.Factory.add(Kinetic.Image, 'crop');
     /**
      * set crop
      * @method
      * @name setCrop
      * @memberof Kinetic.Image.prototype
-     * @param {Object|Array}
+     * @param {Array} crop [x, y, width, height]
      * @example
-     * // set crop x, y, width and height with an array<br>
-     * image.setCrop([20, 20, 100, 100]);<br><br>
-     *
-     * // set crop x, y, width and height with an object<br>
-     * image.setCrop({<br>
-     *   x: 20,<br>
-     *   y: 20,<br>
-     *   width: 20,<br>
-     *   height: 20<br>
-     * });
-     */
-
-     /**
-     * set cropX
-     * @method
-     * @name setCropX
-     * @memberof Kinetic.Image.prototype
-     * @param {Number} x
-     */
-
-     /**
-     * set cropY
-     * @name setCropY
-     * @method
-     * @memberof Kinetic.Image.prototype
-     * @param {Number} y
-     */
-
-     /**
-     * set cropWidth
-     * @name setCropWidth
-     * @method
-     * @memberof Kinetic.Image.prototype
-     * @param {Number} width
-     */
-
-     /**
-     * set cropHeight
-     * @name setCropHeight
-     * @method
-     * @memberof Kinetic.Image.prototype
-     * @param {Number} height
+     * image.setCrop([20, 20, 100, 100]);
      */
 
     /**
@@ -328,7 +287,16 @@
      * @name getCrop
      * @method
      * @memberof Kinetic.Image.prototype
-     * @returns {Object}
+     * @returns {Array}
+     */
+
+     Kinetic.Factory.add(Kinetic.Image, 'crop', 'x', 0, 0);
+     /**
+     * set cropX
+     * @method
+     * @name setCropX
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} x
      */
 
     /**
@@ -339,6 +307,15 @@
      * @returns {Number}
      */
 
+     Kinetic.Factory.add(Kinetic.Image, 'crop', 'y', 1, 0);
+     /**
+     * set cropY
+     * @name setCropY
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} y
+     */
+
     /**
      * get crop y
      * @name getCropY
@@ -347,12 +324,30 @@
      * @returns {Number}
      */
 
+     Kinetic.Factory.add(Kinetic.Image, 'crop', 'width', 2);
+     /**
+     * set crop width
+     * @name setCropWidth
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} width
+     */
+
     /**
      * get crop width
      * @name getCropWidth
      * @method
      * @memberof Kinetic.Image.prototype
      * @returns {Number}
+     */
+
+     Kinetic.Factory.add(Kinetic.Image, 'crop', 'height', 3);
+     /**
+     * set crop height
+     * @name setCropHeight
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} height
      */
 
     /**

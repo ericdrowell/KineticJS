@@ -1,7 +1,7 @@
 suite('Image', function(){
 
   // ======================================================
-  test('add image', function(done) {
+  test.only('add image', function(done) {
       var imageObj = new Image();
       imageObj.onload = function() {
           var stage = addStage();
@@ -19,6 +19,7 @@ suite('Image', function(){
           });
 
           layer.add(darth);
+
           stage.add(layer);
 
           darth.setHeight(200);
@@ -37,72 +38,59 @@ suite('Image', function(){
 
           var crop = null;
           crop = darth.getCrop();
-          assert.equal(crop.x, 135);
-          assert.equal(crop.y, 7);
-          assert.equal(crop.width, 167);
-          assert.equal(crop.height, 134);
+          assert.equal(crop[0], 135);
+          assert.equal(crop[1], 7);
+          assert.equal(crop[2], 167);
+          assert.equal(crop[3], 134);
 
-          darth.setCrop(0, 1, 2, 3);
+          darth.setCrop([0, 1, 2, 3]);
           crop = darth.getCrop();
-          assert.equal(crop.x, 0);
-          assert.equal(crop.y, 1);
-          assert.equal(crop.width, 2);
-          assert.equal(crop.height, 3);
+          assert.equal(crop[0], 0);
+          assert.equal(crop[1], 1);
+          assert.equal(crop[2], 2);
+          assert.equal(crop[3], 3);
 
           darth.setCrop([4, 5, 6, 7]);
           crop = darth.getCrop();
-          assert.equal(crop.x, 4);
-          assert.equal(crop.y, 5);
-          assert.equal(crop.width, 6);
-          assert.equal(crop.height, 7);
+          assert.equal(crop[0], 4);
+          assert.equal(crop[1], 5);
+          assert.equal(crop[2], 6);
+          assert.equal(crop[3], 7);
 
-          darth.setCrop({
-              x: 8,
-              y: 9,
-              width: 10,
-              height: 11
-          });
+          darth.setCrop([8,9,10,11]);
           crop = darth.getCrop();
-          assert.equal(crop.x, 8);
-          assert.equal(crop.y, 9);
-          assert.equal(crop.width, 10);
-          assert.equal(crop.height, 11);
+          assert.equal(crop[0], 8);
+          assert.equal(crop[1], 9);
+          assert.equal(crop[2], 10);
+          assert.equal(crop[3], 11);
 
-          darth.setCrop({
-              x: 12
-          });
+          darth.setCropX(12);
           crop = darth.getCrop();
-          assert.equal(crop.x, 12);
-          assert.equal(crop.y, 9);
-          assert.equal(crop.width, 10);
-          assert.equal(crop.height, 11);
+          assert.equal(crop[0], 12);
+          assert.equal(crop[1], 9);
+          assert.equal(crop[2], 10);
+          assert.equal(crop[3], 11);
 
-          darth.setCrop({
-              y: 13
-          });
+          darth.setCropY(13);
           crop = darth.getCrop();
-          assert.equal(crop.x, 12);
-          assert.equal(crop.y, 13);
-          assert.equal(crop.width, 10);
-          assert.equal(crop.height, 11);
+          assert.equal(crop[0], 12);
+          assert.equal(crop[1], 13);
+          assert.equal(crop[2], 10);
+          assert.equal(crop[3], 11);
 
-          darth.setCrop({
-              width: 14
-          });
+          darth.setCropWidth(14);
           crop = darth.getCrop();
-          assert.equal(crop.x, 12);
-          assert.equal(crop.y, 13);
-          assert.equal(crop.width, 14);
-          assert.equal(crop.height, 11);
+          assert.equal(crop[0], 12);
+          assert.equal(crop[1], 13);
+          assert.equal(crop[2], 14);
+          assert.equal(crop[3], 11);
 
-          darth.setCrop({
-              height: 15
-          });
+          darth.setCropHeight(15);
           crop = darth.getCrop();
-          assert.equal(crop.x, 12);
-          assert.equal(crop.y, 13);
-          assert.equal(crop.width, 14);
-          assert.equal(crop.height, 15);
+          assert.equal(crop[0], 12);
+          assert.equal(crop[1], 13);
+          assert.equal(crop[2], 14);
+          assert.equal(crop[3], 15);
 
           darth.setAttrs({
               x: 200,
@@ -151,10 +139,10 @@ suite('Image', function(){
           stage.add(layer);
 
 
-          assert.equal(darth.getCrop().x, 186);
-          assert.equal(darth.getCrop().y, 211);
-          assert.equal(darth.getCrop().width, 106);
-          assert.equal(darth.getCrop().height, 74);
+          assert.equal(darth.getCrop()[0], 186);
+          assert.equal(darth.getCrop()[1], 211);
+          assert.equal(darth.getCrop()[2], 106);
+          assert.equal(darth.getCrop()[3], 74);
 
           assert.equal(darth.getCropX(), 186);
           assert.equal(darth.getCropY(), 211);
@@ -163,10 +151,10 @@ suite('Image', function(){
 
           darth.setCrop([1, 2, 3, 4]);
           
-          assert.equal(darth.getCrop().x, 1);
-          assert.equal(darth.getCrop().y, 2);
-          assert.equal(darth.getCrop().width, 3);
-          assert.equal(darth.getCrop().height, 4);
+          assert.equal(darth.getCrop()[0], 1);
+          assert.equal(darth.getCrop()[1], 2);
+          assert.equal(darth.getCrop()[2], 3);
+          assert.equal(darth.getCrop()[3], 4);
 
           assert.equal(darth.getCropX(), 1);
           assert.equal(darth.getCropY(), 2);
@@ -178,10 +166,10 @@ suite('Image', function(){
           darth.setCropWidth(7);
           darth.setCropHeight(8);
 
-          assert.equal(darth.getCrop().x, 5);
-          assert.equal(darth.getCrop().y, 6);
-          assert.equal(darth.getCrop().width, 7);
-          assert.equal(darth.getCrop().height, 8);
+          assert.equal(darth.getCrop()[0], 5);
+          assert.equal(darth.getCrop()[1], 6);
+          assert.equal(darth.getCrop()[2], 7);
+          assert.equal(darth.getCrop()[3], 8);
 
           assert.equal(darth.getCropX(), 5);
           assert.equal(darth.getCropY(), 6);
@@ -210,7 +198,7 @@ suite('Image', function(){
               draggable: true,
               shadowColor: 'black',
               shadowBlur: 10,
-              shadowOffset: 20,
+              shadowOffset: [20, 20],
               shadowOpacity: 0.2
           });
 
@@ -329,7 +317,7 @@ suite('Image', function(){
               shadowColor: 'black',
               shadowBlur: 10,
               shadowOpacity: 0.5,
-              shadowOffset: 20
+              shadowOffset: [20, 20]
           });
 
           layer.add(darth);
@@ -337,7 +325,7 @@ suite('Image', function(){
 
           var trace = layer.getContext().getTrace();
           //console.log(trace);
-          assert.equal(trace, 'clearRect(0,0,578,200);save();transform(1,0,0,1,150,30);save();globalAlpha=0.25;shadowColor=black;shadowBlur=10;shadowOffsetX=20;shadowOffsetY=20;beginPath();rect(0,0,100,100);closePath();drawImage([object HTMLImageElement],0,0,438,300,0,0,100,100);restore();globalAlpha=0.5;beginPath();rect(0,0,100,100);closePath();drawImage([object HTMLImageElement],0,0,438,300,0,0,100,100);restore();');
+          assert.equal(trace, 'clearRect(0,0,578,200);save();transform(1,0,0,1,150,30);save();globalAlpha=0.25;shadowColor=black;shadowBlur=10;shadowOffsetX=20;shadowOffsetY=20;beginPath();rect(0,0,100,100);closePath();drawImage([object HTMLImageElement],0,0,100,100);restore();globalAlpha=0.5;beginPath();rect(0,0,100,100);closePath();drawImage([object HTMLImageElement],0,0,100,100);restore();');
 
           done();
 
@@ -364,7 +352,7 @@ suite('Image', function(){
               shadowColor: 'black',
               shadowBlur: 10,
               shadowOpacity: 0.5,
-              shadowOffset: 20,
+              shadowOffset: [20, 20],
               stroke: 'red',
               strokeWidth: 20
           });

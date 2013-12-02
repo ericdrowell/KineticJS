@@ -45,16 +45,20 @@
         add: function() {
             var constructor = arguments[0],
                 baseAttr = arguments[1],
+                util = Kinetic.Util,
                 def, component, index;
 
             // base method
-            if (arguments.length === 3) {
+            if (arguments.length <= 3) {
                 def = arguments[2];
+                if (util._isArray(def)) {
+                    def = util.cloneArray(def);
+                }
                 this._addGetter(constructor, baseAttr, def);
                 this._addSetter(constructor, baseAttr);
             }
             // component method
-            else if (arguments.length === 5) {
+            else {
                 component = arguments[2];
                 index = arguments[3];
                 def = arguments[4];

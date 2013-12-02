@@ -505,6 +505,9 @@
             }
             return retObj;
         },
+        cloneArray: function(arr) {
+            return arr.slice(0);
+        },
         _degToRad: function(deg) {
             return deg * PI_OVER_DEG180;
         },

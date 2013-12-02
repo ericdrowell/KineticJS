@@ -1300,30 +1300,28 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'shadowOffset', 0);
+    Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', [0, 0]);
 
     /**
      * set shadow offset
      * @name setShadowOffset
      * @method
      * @memberof Kinetic.Shape.prototype
-     * @param {Number|Array|Object} offset
+     * @param {Array} offset [x, y]
      * @example
-     * // set x and y<br>
-     * shape.setShadowOffset(20, 40);<br><br>
-     *
-     * // set x only <br>
-     * shape.setShadowOffset({<br>
-     *   x: 20<br>
-     * });<br><br>
-     *
-     * // set x and y using an array<br>
+     * // set x and y
      * shape.setShadowOffset([20, 40]);<br><br>
-     *
-     * // set x and y to the same value<br>
-     * shape.setShadowOffset(5);
      */
 
+    /**
+     * get shadow offset
+     * @name getShadowOffset
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @returns {Array}
+     */
+
+     Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', 'x', 0, 0);
      /**
      * set shadow offset x
      * @name setShadowOffsetX
@@ -1333,6 +1331,15 @@
      */
 
      /**
+     * get shadow offset x
+     * @name getShadowOffsetX
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @returns {Number}
+     */
+
+     Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', 'y', 1, 0);
+     /**
      * set shadow offset y
      * @name setShadowOffsetY
      * @method
@@ -1340,25 +1347,12 @@
      * @param {Number} y
      */
 
-    /**
-     * get shadow offset
-     * @name getShadowOffset
-     * @method
-     * @memberof Kinetic.Shape.prototype
-     */
-
-     /**
-     * get shadow offset x
-     * @name getShadowOffsetX
-     * @method
-     * @memberof Kinetic.Shape.prototype
-     */
-
      /**
      * get shadow offset y
      * @name getShadowOffsetY
      * @method
      * @memberof Kinetic.Shape.prototype
+     * @returns {Number}
      */
 
     Kinetic.Factory.addRotationGetterSetter(Kinetic.Shape, 'fillPatternRotation', 0);
