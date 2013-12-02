@@ -24,8 +24,8 @@ suite('Circle', function(){
 
     var attrs = circle.getAttrs();
 
-    assert.equal(attrs.x, 100);
-    assert.equal(attrs.y, 100);
+    assert.equal(attrs.position[0], 100);
+    assert.equal(attrs.position[1], 100);
     assert.equal(attrs.radius, 70);
     assert.equal(attrs.fill, 'green');
     assert.equal(attrs.stroke, 'black');
@@ -42,7 +42,7 @@ suite('Circle', function(){
   });
 
   // ======================================================
-  test('add circle with pattern fill', function(done) {
+  test.only('add circle with pattern fill', function(done) {
       var imageObj = new Image();
       imageObj.onload = function() {
           var stage = addStage();

@@ -1263,7 +1263,7 @@
     };
     // add getters setters
 
-    Kinetic.Factory.add(Kinetic.Node, 'position', [0, 0]);
+    Kinetic.Factory.addGetterSetter(Kinetic.Node, 'position', [0, 0]);
     /**
      * set node position relative to parent
      * @method
@@ -1280,7 +1280,7 @@
      * @returns {Array}
      */
 
-    Kinetic.Factory.add(Kinetic.Node, 'position', 'x', 0, 0);
+    Kinetic.Factory.addGetterSetter(Kinetic.Node, 'position', 'x', 0, 0);
     // aliases
     Kinetic.Node.prototype.setX = Kinetic.Node.prototype.setPositionX;
     Kinetic.Node.prototype.getX = Kinetic.Node.prototype.getPositionX;
@@ -1300,7 +1300,7 @@
      * @memberof Kinetic.Node.prototype
      */
 
-    Kinetic.Factory.add(Kinetic.Node, 'position', 'y', 1, 0);
+    Kinetic.Factory.addGetterSetter(Kinetic.Node, 'position', 'y', 1, 0);
     // aliases
     Kinetic.Node.prototype.setY = Kinetic.Node.prototype.setPositionY;
     Kinetic.Node.prototype.getY = Kinetic.Node.prototype.getPositionY;

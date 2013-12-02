@@ -1,7 +1,7 @@
 suite('Image', function(){
 
   // ======================================================
-  test.only('add image', function(done) {
+  test('add image', function(done) {
       var imageObj = new Image();
       imageObj.onload = function() {
           var stage = addStage();

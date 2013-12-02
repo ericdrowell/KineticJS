@@ -23,52 +23,50 @@
             this.className = ELLIPSE;
         },
         drawFunc: function(context) {
-            var r = this.getRadius();
+            var r = this.getRadius(),
+                rx = r[0],
+                ry = r[1];
 
             context.beginPath();
             context.save();
-            if(r.x !== r.y) {
-                context.scale(1, r.y / r.x);
+            if(rx !== ry) {
+                context.scale(1, ry / rx);
             }
-            context.arc(0, 0, r.x, 0, PIx2, false);
+            context.arc(0, 0, rx, 0, PIx2, false);
             context.restore();
             context.closePath();
             context.fillStrokeShape(this);
         },
         // implements Shape.prototype.getWidth()
         getWidth: function() {
-            return this.getRadius().x * 2;
+            return this.getRadiusX() * 2;
         },
         // implements Shape.prototype.getHeight()
         getHeight: function() {
-            return this.getRadius().y * 2;
+            return this.getRadiusY() * 2;
         },
         // implements Shape.prototype.setWidth()
         setWidth: function(width) {
             Kinetic.Node.prototype.setWidth.call(this, width);
-            this.setRadius({
-                x: width / 2
-            });
+            this.setRadiusX(width / 2);
         },
         // implements Shape.prototype.setHeight()
         setHeight: function(height) {
             Kinetic.Node.prototype.setHeight.call(this, height);
-            this.setRadius({
-                y: height / 2
-            });
+            this.setRadiusY(height / 2);
         }
     };
     Kinetic.Util.extend(Kinetic.Ellipse, Kinetic.Shape);
 
     // add getters setters
-    Kinetic.Factory.addXYGetterSetter(Kinetic.Ellipse, 'radius', 0);
+    Kinetic.Factory.addGetterSetter(Kinetic.Ellipse, 'radius', [0, 0]);
 
     /**
      * set radius
      * @name setRadius
      * @method
      * @memberof Kinetic.Ellipse.prototype
-     * @param {Object|Array} radius
+     * @param {Array} radius [x, y]
      *  radius can be a number, in which the ellipse becomes a circle,
      *  it can be an object with an x and y component, or it
      *  can be an array in which the first element is the x component
@@ -82,6 +80,11 @@
      * @name getRadius
      * @method
      * @memberof Kinetic.Ellipse.prototype
-     * @returns {Object}
+     * @returns {Array}
      */
+
+     Kinetic.Factory.addGetterSetter(Kinetic.Ellipse, 'radius', 'x', 0, 0);
+
+
+     Kinetic.Factory.addGetterSetter(Kinetic.Ellipse, 'radius', 'y', 1, 0);
 })();

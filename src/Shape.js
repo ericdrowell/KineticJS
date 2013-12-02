@@ -611,23 +611,6 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternImage');
-
-    /**
-     * set fill pattern image
-     * @name setFillPatternImage
-     * @method
-     * @memberof Kinetic.Shape.prototype
-     * @param {Image} image object
-     */
-
-     /**
-     * get fill pattern image
-     * @name getFillPatternImage
-     * @method
-     * @memberof Kinetic.Shape.prototype
-     */
-
     Kinetic.Factory.addColorGetterSetter(Kinetic.Shape, 'fill');
 
     /**
@@ -711,7 +694,44 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternX');
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternImage');
+
+    /**
+     * set fill pattern image
+     * @name setFillPatternImage
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @param {Image} image object
+     */
+
+     /**
+     * get fill pattern image
+     * @name getFillPatternImage
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     */
+
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternPosition');
+    /**
+     * set fill pattern position
+     * @name setFillPatternPosition
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @param {Array} pos [x, y]
+     */
+
+     /**
+     * get fill pattern position
+     * @name getFillPatternPosition
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @returns {Array}
+     */
+
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternPosition', 'x', 0, 0);
+    Kinetic.Shape.prototype.setFillPatternX = Kinetic.Shape.prototype.setFillPatternPositionX;
+    Kinetic.Shape.prototype.getFillPatternX = Kinetic.Shape.prototype.getFillPatternPositionX;
+
 
     /**
      * set fill pattern x
@@ -728,7 +748,9 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternY');
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternPosition', 'y', 1, 0);
+    Kinetic.Shape.prototype.setFillPatternY = Kinetic.Shape.prototype.setFillPatternPositionY;
+    Kinetic.Shape.prototype.getFillPatternY = Kinetic.Shape.prototype.getFillPatternPositionY;
 
     /**
      * set fill pattern y
@@ -934,30 +956,28 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.addXYGetterSetter(Kinetic.Shape, 'fillPatternOffset', 0);
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternOffset', [0, 0]);
 
     /**
      * set fill pattern offset
      * @name setFillPatternOffset
      * @method
      * @memberof Kinetic.Shape.prototype
-     * @param {Number|Array|Object} offset
+     * @param {Array} offset [x, y]
      * @example
      * // set x and y<br>
-     * shape.setFillPatternOffset(20, 40);<br><br>
-     *
-     * // set x only <br>
-     * shape.setFillPatternOffset({<br>
-     *   x: 20<br>
-     * });<br><br>
-     *
-     * // set x and y using an array<br>
-     * shape.setFillPatternOffset([20, 40]);<br><br>
-     *
-     * // set x and y to the same value<br>
-     * shape.setFillPatternOffset(5);
+     * shape.setFillPatternOffset([20, 40]);
      */
 
+     /**
+     * get fill pattern offset
+     * @name getFillPatternOffset
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     * @returns {Array}
+     */
+
+     Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternOffset', 'x', 0, 0);
      /**
      * set fill pattern offset x
      * @name setFillPatternOffsetX
@@ -967,25 +987,19 @@
      */
 
      /**
+     * get fill pattern offset x
+     * @name getFillPatternOffsetX
+     * @method
+     * @memberof Kinetic.Shape.prototype
+     */
+
+     Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'fillPatternOffset', 'y', 1, 0);
+     /**
      * set fill pattern offset y
      * @name setFillPatternOffsetY
      * @method
      * @memberof Kinetic.Shape.prototype
      * @param {Number} y
-     */
-
-     /**
-     * get fill pattern offset
-     * @name getFillPatternOffset
-     * @method
-     * @memberof Kinetic.Shape.prototype
-     */
-
-     /**
-     * get fill pattern offset x
-     * @name getFillPatternOffsetX
-     * @method
-     * @memberof Kinetic.Shape.prototype
      */
 
      /**
@@ -1300,7 +1314,7 @@
      * @memberof Kinetic.Shape.prototype
      */
 
-    Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', [0, 0]);
+    Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'shadowOffset', [0, 0]);
 
     /**
      * set shadow offset
@@ -1321,7 +1335,7 @@
      * @returns {Array}
      */
 
-     Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', 'x', 0, 0);
+     Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'shadowOffset', 'x', 0, 0);
      /**
      * set shadow offset x
      * @name setShadowOffsetX
@@ -1338,7 +1352,7 @@
      * @returns {Number}
      */
 
-     Kinetic.Factory.add(Kinetic.Shape, 'shadowOffset', 'y', 1, 0);
+     Kinetic.Factory.addGetterSetter(Kinetic.Shape, 'shadowOffset', 'y', 1, 0);
      /**
      * set shadow offset y
      * @name setShadowOffsetY

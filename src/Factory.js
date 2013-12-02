@@ -42,7 +42,7 @@
         Y = 'y';
 
     Kinetic.Factory = {
-        add: function() {
+        addGetterSetter: function() {
             var constructor = arguments[0],
                 baseAttr = arguments[1],
                 util = Kinetic.Util,
@@ -111,13 +111,6 @@
 
 
 
-
-
-        // getter setter adders
-        addGetterSetter: function(constructor, attr, def) {
-            this.addGetter(constructor, attr, def);
-            this.addSetter(constructor, attr);
-        },
         addXYGetterSetter: function(constructor, attr, def) {
             var that = this,
                 capitalAttr = Kinetic.Util._capitalize(attr),
