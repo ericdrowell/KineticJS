@@ -34,6 +34,7 @@ module.exports = function(grunt) {
     'src/plugins/RegularPolygon.js', 
     'src/plugins/Star.js', 
     'src/plugins/Label.js',
+    'src/plugins/Crosshair.js',
 
     // filters
     'src/filters/FilterWrapper.js', 
