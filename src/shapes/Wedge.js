@@ -30,8 +30,9 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = 'Wedge';
+            this.setDrawFunc(this._drawFunc);
         },
-        drawFunc: function(context) {
+        _drawFunc: function(context) {
             context.beginPath();
             context.arc(0, 0, this.getRadius(), 0, this.getAngle(), this.getClockwise());
             context.lineTo(0, 0);
@@ -42,7 +43,9 @@
     Kinetic.Util.extend(Kinetic.Wedge, Kinetic.Shape);
 
     // add getters setters
-    Kinetic.Factory.addGetterSetter(Kinetic.Wedge, 'radius', 0);
+    Kinetic.Factory.addGetterSetter(Kinetic.Wedge, 'radius', function() {
+        return 0;
+    });
 
     /**
      * set radius

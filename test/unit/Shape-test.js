@@ -1,4 +1,4 @@
-suite('Shape-test', function() {
+suite('Shape', function() {
 
     // ======================================================
     test('shape color components', function() {
@@ -191,8 +191,8 @@ suite('Shape-test', function() {
                 fillPatternImage: imageObj,
                 fillPatternX: -20,
                 fillPatternY: -30,
-                fillPatternScale: 0.5,
-                fillPatternOffset: [219, 150],
+                fillPatternScale: {x: 0.5, y:0.5},
+                fillPatternOffset: {x: 219, y: 150},
                 fillPatternRotation: Math.PI * 0.5,
                 fillPatternRepeat: 'no-repeat',
 
@@ -223,12 +223,12 @@ suite('Shape-test', function() {
 
             assert.equal(star.getFillPatternRotation(), Math.PI, 'star fill rotation should be Math.PI');
 
-            star.setFillPatternScale(1);
+            star.setFillPatternScale({x:1, y:1});
 
             assert.equal(star.getFillPatternScale().x, 1, 'star fill scale x should be 1');
             assert.equal(star.getFillPatternScale().y, 1, 'star fill scale y should be 1');
 
-            star.setFillPatternOffset([100, 120]);
+            star.setFillPatternOffset({x:100, y:120});
 
             assert.equal(star.getFillPatternOffset().x, 100, 'star fill offset x should be 100');
             assert.equal(star.getFillPatternOffset().y, 120, 'star fill offset y should be 120');
@@ -301,7 +301,7 @@ suite('Shape-test', function() {
             circle.setFill(null);
             circle.setFillPatternImage(imageObj);
             circle.setFillPatternRepeat('no-repeat');
-            circle.setFillPatternOffset([-200, -70]);
+            circle.setFillPatternOffset({x:-200, y:-70});
 
             assert.notEqual(circle.getFillPatternImage(), undefined, 'circle fill image should be defined');
             assert.equal(circle.getFillPatternRepeat(), 'no-repeat', 'circle fill repeat should be no-repeat');
@@ -309,14 +309,14 @@ suite('Shape-test', function() {
             assert.equal(circle.getFillPatternOffset().y, -70, 'circle fill offset y should be -70');
 
             circle.setFillPatternImage(null);
-            circle.setFillLinearGradientStartPoint(-35);
-            circle.setFillLinearGradientEndPoint(35);
+            circle.setFillLinearGradientStartPoint({x:-35,y:-35});
+            circle.setFillLinearGradientEndPoint({x:35,y:35});
             circle.setFillLinearGradientColorStops([0, 'red', 1, 'blue']);
 
             circle.setFillLinearGradientStartPoint(null);
             circle.setFillPatternImage(imageObj);
             circle.setFillPatternRepeat('repeat');
-            circle.setFillPatternOffset(0);
+            circle.setFillPatternOffset({x:0,y:0});
 
             layer.draw();
 
@@ -338,7 +338,7 @@ suite('Shape-test', function() {
             strokeWidth: 4,
             shadowColor: 'black',
             shadowBlur: 10,
-            shadowOffset: 10,
+            shadowOffset: {x:10, y:10},
             dashArray: [10, 10],
             scaleX: 3
         });
@@ -403,7 +403,7 @@ suite('Shape-test', function() {
       opacity: 0.5,
       shadowColor: 'black',
       shadowBlur: 10,
-      shadowOffset: 10,
+      shadowOffset: {x:10, y:10},
       shadowOpacity: 0.5
     });
 
@@ -436,7 +436,7 @@ suite('Shape-test', function() {
       opacity: 0.5,
       shadowColor: 'black',
       shadowBlur: 10,
-      shadowOffset: 10,
+      shadowOffset: {x:10, y:10},
       shadowOpacity: 0.5
     });
 
@@ -468,7 +468,7 @@ suite('Shape-test', function() {
       opacity: 0.5,
       shadowColor: 'black',
       shadowBlur: 10,
-      shadowOffset: 10,
+      shadowOffset: {x:10, y:10},
       shadowOpacity: 0.5,
       draggable: true
     });
@@ -481,6 +481,67 @@ suite('Shape-test', function() {
 
     var trace = layer.getContext().getTrace();
     assert.equal(trace, 'clearRect(0,0,578,200);save();save();globalAlpha=0.25;shadowColor=black;shadowBlur=10;shadowOffsetX=10;shadowOffsetY=10;drawImage([object HTMLCanvasElement],0,0);restore();globalAlpha=0.5;drawImage([object HTMLCanvasElement],0,0);restore();');
+
+  });
+
+  // ======================================================
+  test('overloaded getters and setters', function(){
+    var stage = addStage();
+
+    var layer = new Kinetic.Layer();
+
+    var rect = new Kinetic.Rect({
+      x: 100,
+      y: 50,
+      width: 100,
+      height: 50,
+      fill: 'green',
+      stroke: 'red',
+      strokeWidth: 20,
+      draggable: true
+    });
+
+    layer.add(rect);
+    stage.add(layer);
+
+    rect.stroke('blue');
+    assert.equal(rect.stroke(), 'blue');
+
+    rect.strokeR(255);
+    assert.equal(rect.strokeR(), 255);
+
+    rect.strokeG(20);
+    assert.equal(rect.strokeG(), 20);
+
+    rect.strokeB(30);
+    assert.equal(rect.strokeB(), 30);
+
+    rect.strokeRGB({r: 1, g: 2, b: 3});
+    assert.equal(rect.strokeRGB().r, 1);
+    assert.equal(rect.strokeRGB().g, 2);
+    assert.equal(rect.strokeRGB().b, 3);
+
+    rect.lineJoin('bevel');
+    assert.equal(rect.lineJoin(), 'bevel');
+
+    rect.lineCap('square');
+    assert.equal(rect.lineCap(), 'square');
+
+    rect.strokeWidth(8);
+    assert.equal(rect.strokeWidth(), 8);
+
+    rect.drawFunc('function');
+    assert.equal(rect.drawFunc(), 'function');
+
+    rect.drawHitFunc('function');
+    assert.equal(rect.drawHitFunc(), 'function');
+
+    rect.dashArray([1]);
+    assert.equal(rect.dashArray()[0], 1);
+
+    // NOTE: skipping the rest because it would take hours to test all possible methods.  
+    // This should hopefully be enough to test Factor overloaded methods
+
 
   });
 });

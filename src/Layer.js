@@ -2,7 +2,28 @@
     // constants
     var HASH = '#',
         BEFORE_DRAW ='beforeDraw',
-        DRAW = 'draw';
+        DRAW = 'draw',
+
+        /*
+         * 2 - 3 - 4
+         * |       |
+         * 1 - 0   5
+         *         |
+         * 8 - 7 - 6     
+         */
+        INTERSECTION_OFFSETS = [
+            {x:  0, y:  0}, // 0
+            {x: -1, y:  0}, // 1
+            {x: -1, y: -1}, // 2
+            {x:  0, y: -1}, // 3
+            {x:  1, y: -1}, // 4
+            {x:  1, y:  0}, // 5
+            {x:  1, y:  1}, // 6
+            {x:  0, y:  1}, // 7
+            {x: -1, y:  1}  // 8
+        ],
+        INTERSECTION_OFFSETS_LEN = INTERSECTION_OFFSETS.length;
+
 
     Kinetic.Util.addMethods(Kinetic.Layer, {
         ___init: function(config) {
@@ -19,36 +40,61 @@
             }
         },
         /**
-         * get visible intersection object that contains shape and pixel data. This is the preferred
+         * get visible intersection shape. This is the preferred
          * method for determining if a point intersects a shape or not
          * @method
          * @memberof Kinetic.Layer.prototype
-         * @param {Object} pos point object
+         * @param {Object} pos
+         * @param {Number} pos.x
+         * @param {Number} pos.y
+         * @returns {Kinetic.Shape}
          */
-        getIntersection: function() {
-            var pos = Kinetic.Util._getXY(Array.prototype.slice.call(arguments)),
-                p, colorKey, shape;
+        getIntersection: function(pos) {
+            var obj, i, intersectionOffset, shape;
 
-            if(this.isVisible() && this.isListening()) {
-                p = this.hitCanvas.context._context.getImageData(pos.x | 0, pos.y | 0, 1, 1).data;
-                // this indicates that a hit pixel may have been found
-                if(p[3] === 255) {
-                    colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
-                    shape = Kinetic.shapes[HASH + colorKey];
-                    return {
-                        shape: shape,
-                        pixel: p
-                    };
-                }
-                // if no shape mapped to that pixel, return pixel array
-                else if(p[0] > 0 || p[1] > 0 || p[2] > 0 || p[3] > 0) {
-                    return {
-                        pixel: p
-                    };
+            if(this.isVisible()) {
+                for (i=0; i<INTERSECTION_OFFSETS_LEN; i++) {
+                    intersectionOffset = INTERSECTION_OFFSETS[i];
+                    obj = this._getIntersection({
+                        x: pos.x + intersectionOffset.x,
+                        y: pos.y + intersectionOffset.y
+                    });
+                    shape = obj.shape;
+                    if (shape) {
+                        return shape;
+                    }
+                    else if (!obj.antialiased) {
+                        return null;
+                    }
                 }
             }
+            else {
+                return null;
+            }
+        },
+        _getIntersection: function(pos) {
+            var p = this.hitCanvas.context._context.getImageData(pos.x, pos.y, 1, 1).data,
+                p3 = p[3],
+                colorKey, shape;
 
-            return null;
+            // fully opaque pixel
+            if(p3 === 255) {
+                colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
+                shape = Kinetic.shapes[HASH + colorKey];
+                return {
+                    shape: shape
+                };
+            }
+            // antialiased pixel
+            else if(p3 > 0) {
+                return {
+                    antialiased: true
+                };
+            }
+            // empty pixel
+            else {
+                return {};
+            }
         },
         drawScene: function(canvas) {
             canvas = canvas || this.getCanvas();
@@ -107,17 +153,21 @@
          * clear scene and hit canvas contexts tied to the layer
          * @method
          * @memberof Kinetic.Node.prototype
-         * @param {Array|Object} [bounds]
+         * @param {Object} [bounds]
+         * @param {Number} [bounds.x]
+         * @param {Number} [bounds.y]
+         * @param {Number} [bounds.width]
+         * @param {Number} [bounds.height]
          * @example
          * layer.clear();<br>
          * layer.clear(0, 0, 100, 100);
          */
-        clear: function() {
+        clear: function(bounds) {
             var context = this.getContext(),
                 hitContext = this.getHitCanvas().getContext();
 
-            context.clear.apply(context, arguments);
-            hitContext.clear.apply(hitContext, arguments);
+            context.clear(bounds);
+            hitContext.clear(bounds);
             return this;
         },
         // extend Node.prototype.setVisible
@@ -213,6 +263,28 @@
         },
         getStage: function() {
             return this.parent;
+        },
+        /**
+         * enable hit graph
+         * @name enableHitGraph
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @returns {Node}
+         */
+        enableHitGraph: function() {
+            this.setHitGraphEnabled(true);
+            return this;
+        },
+        /**
+         * disable hit graph
+         * @name enableHitGraph
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @returns {Node}
+         */
+        disableHitGraph: function() {
+            this.setHitGraphEnabled(false);
+            return this;
         }
     });
     Kinetic.Util.extend(Kinetic.Layer, Kinetic.Container);
@@ -225,8 +297,9 @@
      *  before drawing
      * @name setClearBeforeDraw
      * @method
-     * @memberof Kinetic.Node.prototype
+     * @memberof Kinetic.Layer.prototype
      * @param {Boolean} clearBeforeDraw
+     * @returns {Node}
      */
 
     /**
@@ -234,6 +307,28 @@
      *  before drawing
      * @name getClearBeforeDraw
      * @method
-     * @memberof Kinetic.Node.prototype
+     * @memberof Kinetic.Layer.prototype
+     * @returns {Boolean}
      */
+
+    Kinetic.Factory.addGetterSetter(Kinetic.Layer, 'hitGraphEnabled', true);
+
+    /**
+     * enable/disable hit graph
+     * @name setHitGraphEnabled
+     * @method
+     * @memberof Kinetic.Layer.prototype
+     * @param {Boolean} enabled
+     * @returns {Node}
+     */
+
+    /**
+     * determine if hit graph is enabled
+     * @name getHitGraphEnabled
+     * @method
+     * @memberof Kinetic.Layer.prototype
+     * @returns {Boolean}
+     */
+
+     Kinetic.Layer.prototype.isHitGraphEnabled = Kinetic.Layer.prototype.getHitGraphEnabled;
 })();

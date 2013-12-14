@@ -20,13 +20,12 @@ module.exports = function(grunt) {
     'src/shapes/Rect.js', 
     'src/shapes/Circle.js', 
     'src/shapes/Ellipse.js',
+    'src/shapes/Ring.js',
     'src/shapes/Wedge.js', 
+    'src/shapes/Arc.js',
     'src/shapes/Image.js', 
-    'src/shapes/Polygon.js', 
     'src/shapes/Text.js', 
     'src/shapes/Line.js', 
-    'src/shapes/Spline.js', 
-    'src/shapes/Blob.js', 
     'src/shapes/Sprite.js',
 
     // plugins
@@ -37,13 +36,24 @@ module.exports = function(grunt) {
     'src/plugins/Label.js',
 
     // filters
+    'src/filters/FilterWrapper.js', 
     'src/filters/Grayscale.js', 
     'src/filters/Brighten.js', 
     'src/filters/Invert.js', 
     'src/filters/Blur.js', 
+    'src/filters/QuickBlur.js', 
     'src/filters/Mask.js',
     'src/filters/ColorPack.js',
-    'src/filters/ConvolvePack.js'
+    'src/filters/ConvolvePack.js',
+    'src/filters/ColorStretch.js',
+    'src/filters/Flip.js',
+    'src/filters/Levels.js',
+    'src/filters/Mirror.js',
+    'src/filters/Noise.js',
+    'src/filters/Pixelate.js',
+    'src/filters/Polar.js',
+    'src/filters/Threshold.js',
+    'src/filters/Sepia.js'
   ];
 
   // Project configuration.

@@ -4,25 +4,14 @@ suite('Blob', function(){
         var stage = addStage();
         var layer = new Kinetic.Layer();
 
-        var blob = new Kinetic.Blob({
-            points: [{
-                x: 73,
-                y: 140
-            }, {
-                x: 340,
-                y: 23
-            }, {
-                x: 500,
-                y: 109
-            }, {
-                x: 300,
-                y: 170
-            }],
+        var blob = new Kinetic.Line({
+            points: [73,140,340,23,500,109,300,170],
             stroke: 'blue',
             strokeWidth: 10,
             draggable: true,
             fill: '#aaf',
-            tension: 0.8
+            tension: 0.8,
+            closed: true
         });
 
         layer.add(blob);
@@ -30,7 +19,7 @@ suite('Blob', function(){
 
         assert.equal(blob.getTension(), 0.8);
 
-        assert.equal(blob.getClassName(), 'Blob');
+        assert.equal(blob.getClassName(), 'Line');
 
         //console.log(blob1.getPoints())
 
@@ -48,32 +37,21 @@ suite('Blob', function(){
         var layer = new Kinetic.Layer();
 
 
-        var blob = new Kinetic.Blob({
+        var blob = new Kinetic.Line({
             tension: 0.8,
-            points: [{
-                x: 73,
-                y: 140
-            }, {
-                x: 340,
-                y: 23
-            }, {
-                x: 500,
-                y: 109
-            }, {
-                x: 300,
-                y: 170
-            }],
+            points: [73,140,340,23,500,109,300,170],
             stroke: 'blue',
             strokeWidth: 10,
             draggable: true,
-            fill: '#aaf'
+            fill: '#aaf',
+            closed: true
 
         });
 
         layer.add(blob);
         stage.add(layer);
 
-        assert.equal(stage.find('Blob')[0].getPoints().length, 4);
+        assert.equal(stage.find('Line')[0].getPoints().length, 8);
 
     });
 
@@ -82,25 +60,14 @@ suite('Blob', function(){
         var stage = addStage();
         var layer = new Kinetic.Layer();
 
-        var blob = new Kinetic.Blob({
-            points: [{
-                x: 73,
-                y: 140
-            }, {
-                x: 340,
-                y: 23
-            }, {
-                x: 500,
-                y: 109
-            }, {
-                x: 300,
-                y: 170
-            }],
+        var blob = new Kinetic.Line({
+            points: [73,140,340,23,500,109,300,170],
             stroke: 'blue',
             strokeWidth: 10,
             draggable: true,
             fill: '#aaf',
-            tension: 0.8
+            tension: 0.8,
+            closed: true
         });
 
         layer.add(blob);

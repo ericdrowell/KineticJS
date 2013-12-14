@@ -35,8 +35,10 @@
             this.on('dataChange.kinetic', function () {
                 that.dataArray = Kinetic.Path.parsePathData(this.getData());
             });
+
+            this.setDrawFunc(this._drawFunc);
         },
-        drawFunc: function (context) {
+        _drawFunc: function (context) {
             var ca = this.dataArray;
 
             // context position
@@ -288,9 +290,22 @@
 
                     // Note: lineTo handlers need to be above this point
                     case 'm':
-                        cpx += p.shift();
-                        cpy += p.shift();
+                        var dx = p.shift();
+                        var dy = p.shift();
+                        cpx += dx;
+                        cpy += dy;
                         cmd = 'M';
+                        // After closing the path move the current position 
+                        // to the the first point of the path (if any). 
+                        if(ca.length>2 && ca[ca.length-1].command==='z'){
+                            for(var idx=ca.length-2;idx>=0;idx--){
+                                if(ca[idx].command==='M'){
+                                    cpx=ca[idx].points[0]+dx;
+                                    cpy=ca[idx].points[1]+dy;
+                                    break;
+                                }
+                            }
+                        }
                         points.push(cpx, cpy);
                         c = 'l';
                         // subsequent points are treated as relative lineTo
