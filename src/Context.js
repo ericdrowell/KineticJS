@@ -90,8 +90,7 @@
          * @param {Kinetic.Shape} shape
          */
         fillStrokeShape: function(shape) {
-            var fillEnabled = shape.getFillEnabled();
-            if(fillEnabled) {
+            if(shape.getFillEnabled()) {
                 this._fill(shape);
             }
             if(shape.getStrokeEnabled()) {

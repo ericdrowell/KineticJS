@@ -37,8 +37,7 @@
             });
         },
         drawFunc: function (context) {
-            var ca = this.dataArray,
-                closedPath = false;
+            var ca = this.dataArray;
 
             // context position
             context.beginPath();
@@ -76,17 +75,11 @@
                         break;
                     case 'z':
                         context.closePath();
-                        closedPath = true;
                         break;
                 }
             }
 
-            if (closedPath) {
-                context.fillStrokeShape(this);
-            }
-            else {
-                context.strokeShape(this);
-            }
+            context.fillStrokeShape(this);
         }
     };
     Kinetic.Util.extend(Kinetic.Path, Kinetic.Shape);
