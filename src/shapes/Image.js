@@ -173,7 +173,7 @@
                 image = this.getImage(),
                 imageData, data, rgbColorKey, i, n;
 
-            context.drawImage(image, 0, 0);
+            context.drawImage(image, 0, 0, width, height);
 
             try {
                 imageData = context.getImageData(0, 0, width, height);
