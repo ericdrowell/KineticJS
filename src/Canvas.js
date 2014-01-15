@@ -34,9 +34,8 @@
         init: function(config) {
             config = config || {};
 
-            var pixelRatio = config.pixelRatio || Kinetic.pixelRatio || _pixelRatio;
+            this.pixelRatio = config.pixelRatio || Kinetic.pixelRatio || _pixelRatio;
 
-            this.pixelRatio = pixelRatio;
             this._canvas = document.createElement('canvas');
 
             // set inline styles
@@ -67,10 +66,10 @@
             return this.pixelRatio;
         },
         /**
-         * get pixel ratio
+         * set pixel ratio
          * @method
          * @memberof Kinetic.Canvas.prototype
-         * @param {Number} pixelRatio KineticJS automatically handles pixel ratio adustments in order to render crisp drawings 
+         * @param {Number} pixelRatio KineticJS automatically handles pixel ratio adjustments in order to render crisp drawings 
          *  on all devices. Most desktops, low end tablets, and low end phones, have device pixel ratios
          *  of 1.  Some high end tablets and phones, like iPhones and iPads (not the mini) have a device pixel ratio 
          *  of 2.  Some Macbook Pros, and iMacs also have a device pixel ratio of 2.  Some high end Android devices have pixel 
@@ -79,7 +78,7 @@
          *  ratio for special situations, or, if you don't want the pixel ratio to be taken into account, you can set it to 1.
          */
         setPixelRatio: function(pixelRatio) {
-            this.pixelRatio = pixelRatio;
+            this.pixelRatio = Kinetic.pixelRatio = pixelRatio;
             this.setSize(this.getWidth(), this.getHeight());
         },
         /**

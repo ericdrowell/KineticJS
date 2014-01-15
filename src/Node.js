@@ -150,12 +150,12 @@
                 height = conf.height || this.height(),
                 drawBorder = conf.drawBorder || false,
                 cachedSceneCanvas = new Kinetic.SceneCanvas({
-                    pixelRatio: 1,
+                    pixelRatio: Kinetic.pixelRatio,
                     width: width,
                     height: height
                 }),
                 cachedFilterCanvas = new Kinetic.SceneCanvas({
-                    pixelRatio: 1,
+                    pixelRatio: Kinetic.pixelRatio,
                     width: width,
                     height: height
                 }),
@@ -204,9 +204,14 @@
             return this;
         },
         _drawCachedSceneCanvas: function(context) {
+            var cachedScenCanvas = this._getCachedSceneCanvas(),
+                pixelRatio = cachedScenCanvas.getPixelRatio();
             context.save();
             context._applyTransform(this);
-            context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0);
+            // If canvas pixelRatio not equal to 1, the cached image will be enlarged, 
+            // we need to scale the cached image back to its original size
+            context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0, cachedScenCanvas.getWidth() / pixelRatio,
+                cachedScenCanvas.getHeight() / pixelRatio);
             context.restore();
         },
         _getCachedSceneCanvas: function() {
@@ -1206,7 +1211,7 @@
                 canvas = new Kinetic.SceneCanvas({
                     width: config.width || this.getWidth() || (stage ? stage.getWidth() : 0),
                     height: config.height || this.getHeight() || (stage ? stage.getHeight() : 0),
-                    pixelRatio: 1
+                    pixelRatio: Kinetic.pixelRatio
                 }),
                 context = canvas.getContext();
 
