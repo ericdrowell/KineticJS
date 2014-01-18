@@ -150,12 +150,10 @@
                 height = conf.height || this.height(),
                 drawBorder = conf.drawBorder || false,
                 cachedSceneCanvas = new Kinetic.SceneCanvas({
-                    pixelRatio: Kinetic.pixelRatio,
                     width: width,
                     height: height
                 }),
                 cachedFilterCanvas = new Kinetic.SceneCanvas({
-                    pixelRatio: Kinetic.pixelRatio,
                     width: width,
                     height: height
                 }),
@@ -253,12 +251,16 @@
         },
         _drawCachedHitCanvas: function(context) {
             var cachedCanvas = this._cache.canvas,
-                hitCanvas = cachedCanvas.hit;
+                hitCanvas = cachedCanvas.hit,
+                pixelRatio = hitCanvas.getPixelRatio();
 
             context.save();
             context._applyTransform(this);
-            context.drawImage(hitCanvas._canvas, 0, 0); 
-            context.restore(); 
+            // If canvas pixelRatio not equal to 1, the cached image will be enlarged, 
+            // we need to scale the cached image back to its original size
+            context.drawImage(hitCanvas._canvas, 0, 0, hitCanvas.getWidth() / pixelRatio,
+                hitCanvas.getHeight() / pixelRatio); 
+            context.restore();
         },
         /**
          * bind events to the node. KineticJS supports mouseover, mousemove,

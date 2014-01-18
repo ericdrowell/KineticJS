@@ -78,8 +78,12 @@
          *  ratio for special situations, or, if you don't want the pixel ratio to be taken into account, you can set it to 1.
          */
         setPixelRatio: function(pixelRatio) {
-            this.pixelRatio = Kinetic.pixelRatio = pixelRatio;
-            this.setSize(this.getWidth(), this.getHeight());
+            // get the original widht and height, take into account pixel ratio
+            var width = this.getWidth() / this.pixelRatio,
+                height = this.getHeight() / this.pixelRatio;
+
+            this.pixelRatio = pixelRatio;
+            this.setSize(width, height);
         },
         /**
          * set width

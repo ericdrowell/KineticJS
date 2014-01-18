@@ -28,8 +28,8 @@
     Kinetic.Util.addMethods(Kinetic.Layer, {
         ___init: function(config) {
             this.nodeType = 'Layer';
-            this.canvas = new Kinetic.SceneCanvas(config);
-            this.hitCanvas = new Kinetic.HitCanvas(config);
+            this.canvas = new Kinetic.SceneCanvas();
+            this.hitCanvas = new Kinetic.HitCanvas();
             // call super constructor
             Kinetic.Container.call(this, config);
         },

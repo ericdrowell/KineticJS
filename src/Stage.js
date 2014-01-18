@@ -56,7 +56,7 @@
     Kinetic.Util.addMethods(Kinetic.Stage, {
         ___init: function(config) {
             this.nodeType = STAGE;
-            Kinetic.pixelRatio = config.pixelRatio;
+            Kinetic.pixelRatio = config.pixelRatio || Kinetic.pixelRatio;
             // call super constructor
             Kinetic.Container.call(this, config);
             this._id = Kinetic.idCounter++;
