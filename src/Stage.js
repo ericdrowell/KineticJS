@@ -12,10 +12,12 @@
         MOUSEDOWN = 'mousedown',
         MOUSEUP = 'mouseup',
         CLICK = 'click',
+        CLICK_HOLD = 'clickhold',
         DBL_CLICK = 'dblclick',
         TOUCHSTART = 'touchstart',
         TOUCHEND = 'touchend',
         TAP = 'tap',
+        TAP_HOLD = 'taphold',
         DBL_TAP = 'dbltap',
         TOUCHMOVE = 'touchmove',
 
@@ -412,6 +414,9 @@
             if (shape && shape.isListening()) {
                 this.clickStartShape = shape;
                 shape._fireAndBubble(MOUSEDOWN, evt);
+                this.clickholdTimer = setTimeout(function() {
+                    shape._fireAndBubble(CLICK_HOLD, evt);   
+                }, Kinetic.clickHoldWindow);
             }
 
             // content event
@@ -429,7 +434,7 @@
                 shape = this.getIntersection(this.getPointerPosition()),
                 clickStartShape = this.clickStartShape,
                 fireDblClick = false;
-
+            clearTimeout(this.clickholdTimer);
             if(Kinetic.inDblClickWindow) {
                 fireDblClick = true;
                 Kinetic.inDblClickWindow = false;
@@ -480,7 +485,9 @@
             if (shape && shape.isListening()) {
                 this.tapStartShape = shape;
                 shape._fireAndBubble(TOUCHSTART, evt);
-
+                this.clickholdTimer = setTimeout(function() {
+                    shape._fireAndBubble(TAP_HOLD, evt);   
+                }, Kinetic.clickHoldWindow);
                 // only call preventDefault if the shape is listening for events
                 if (shape.isListening() && evt.preventDefault) {
                     evt.preventDefault();
@@ -495,6 +502,8 @@
                 shape = this.getIntersection(this.getPointerPosition());
                 fireDblClick = false;
 
+            clearTimeout(this.clickholdTimer);
+            
                 if(Kinetic.inDblClickWindow) {
                     fireDblClick = true;
                     Kinetic.inDblClickWindow = false;

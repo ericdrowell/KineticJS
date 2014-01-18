@@ -47,6 +47,7 @@ var Kinetic = {};
         enableTrace: false,
         traceArrMax: 100,
         dblClickWindow: 400,
+        clickHoldWindow: 300,
         pixelRatio: undefined,
 
         // user agent  
