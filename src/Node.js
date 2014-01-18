@@ -208,7 +208,7 @@
             context._applyTransform(this);
             // If canvas pixelRatio not equal to 1, the cached image will be enlarged, 
             // we need to scale the cached image back to its original size
-            context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0, cachedScenCanvas.getWidth() / pixelRatio,
+            context.drawImage(cachedScenCanvas._canvas, 0, 0, cachedScenCanvas.getWidth() / pixelRatio,
                 cachedScenCanvas.getHeight() / pixelRatio);
             context.restore();
         },
@@ -218,6 +218,7 @@
                 sceneCanvas = cachedCanvas.scene,
                 filterCanvas = cachedCanvas.filter,
                 filterContext = filterCanvas.getContext(),
+                pixelRation = sceneCanvas.getPixelRatio(),
                 len, imageData, n, filter;
 
             if (filters) {
@@ -226,7 +227,8 @@
                         len = filters.length;
                         filterContext.clear();
                         // copy cached canvas onto filter context
-                        filterContext.drawImage(sceneCanvas._canvas, 0, 0);
+                        filterContext.drawImage(sceneCanvas._canvas, 0, 0, sceneCanvas.getWidth() / pixelRatio,
+                            sceneCanvas.getHeight() / pixelRatio);
                         imageData = filterContext.getImageData(0, 0, filterCanvas.getWidth(), filterCanvas.getHeight());
 
                         // apply filters to filter context

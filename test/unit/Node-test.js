@@ -1878,7 +1878,10 @@ suite('Node', function() {
 
         circle.setOpacity(0.5);
         layer.add(circle);
+        layer.getCanvas().setPixelRatio(1);
+
         stage.add(layer);
+
 
         var sceneTrace = layer.getContext().getTrace();
         //console.log(sceneTrace);
@@ -2586,6 +2589,7 @@ suite('Node', function() {
 
     group.add(circle);
     layer.add(group);
+    layer.getCanvas().setPixelRatio(1);
     stage.add(layer);
 
     assert.equal(circle.transformsEnabled(), 'all');
@@ -2608,6 +2612,7 @@ suite('Node', function() {
     var layer = new Kinetic.Layer({
         x: 100
     });
+    layer.getCanvas().setPixelRatio(1);
     var group = new Kinetic.Group({
         x: 100
     });
@@ -2823,6 +2828,7 @@ suite('Node', function() {
 
     group.add(circle);
     layer.add(group);
+    layer.getCanvas().setPixelRatio(1);
     stage.add(layer);
 
     assert.equal(circle._cache.canvas, undefined);
@@ -2851,7 +2857,7 @@ suite('Node', function() {
 
     //console.log(layer.getContext().getTrace());
                                                  
-    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,74,74);beginPath();arc(0,0,70,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,0,0);drawImage([object HTMLCanvasElement],0,0);restore();');
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,74,74);beginPath();arc(0,0,70,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,0,0);drawImage([object HTMLCanvasElement],0,0,148,148);restore();');
 
     //console.log(circle._cache.canvas.scene.getContext().getTrace());
 
@@ -2944,6 +2950,7 @@ suite('Node', function() {
   test('cache group', function(){
     var stage = addStage();
     var layer = new Kinetic.Layer();
+    layer.getCanvas().setPixelRatio(1);
     var group = new Kinetic.Group({
         x: 100,
         y: 100,
@@ -3008,7 +3015,7 @@ suite('Node', function() {
     //console.log('---before second draw')
     layer.draw();
 
-    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();');
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0,80,80);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0,80,80);restore();');
 
     showHit(layer);
   });
@@ -3059,6 +3066,7 @@ suite('Node', function() {
 
     group.add(top).add(right).add(bottom).add(left);
     layer.add(group);
+    layer.getCanvas().setPixelRatio(1);
     stage.add(layer);
 
     //console.log('---before cache')
@@ -3085,7 +3093,7 @@ suite('Node', function() {
     layer.draw();
 
     //console.log(layer.getContext().getTrace())
-    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,147.883,-31.557);beginPath();arc(0,0,50,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,231.557,147.883);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,52.117,231.557);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,-31.557,52.117);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0);restore();');
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,147.883,-31.557);beginPath();arc(0,0,50,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,231.557,147.883);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,52.117,231.557);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,-31.557,52.117);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0,208,208);restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0,208,208);restore();');
     showHit(layer);
   });
 
@@ -3132,6 +3140,7 @@ suite('Node', function() {
 
     group.add(top).add(right).add(bottom).add(left);
     layer.add(group);
+    layer.getCanvas().setPixelRatio(1);
     stage.add(layer);
 
     assert.equal(layer._cache.canvas, undefined);
@@ -3149,7 +3158,7 @@ suite('Node', function() {
     layer.draw();
 
     //console.log(layer.getContext().getTrace());
-    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();');
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0,80,80);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0,80,80);restore();');
 
 
     // make sure that the hit graph is also rendered after caching the layer
