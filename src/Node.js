@@ -1215,7 +1215,6 @@
                 canvas = new Kinetic.SceneCanvas({
                     width: config.width || this.getWidth() || (stage ? stage.getWidth() : 0),
                     height: config.height || this.getHeight() || (stage ? stage.getHeight() : 0),
-                    pixelRatio: Kinetic.pixelRatio
                 }),
                 context = canvas.getContext();
 

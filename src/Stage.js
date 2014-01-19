@@ -200,7 +200,6 @@
                 canvas = new Kinetic.SceneCanvas({
                     width: config.width || this.getWidth(),
                     height: config.height || this.getHeight(),
-                    pixelRatio: Kinetic.pixelRatio
                 }),
                 _context = canvas.getContext()._context,
                 layers = this.children;

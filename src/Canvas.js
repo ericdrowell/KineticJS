@@ -198,8 +198,14 @@
         Kinetic.Canvas.call(this, config);
         this.context = new Kinetic.HitContext(this);
         this.setSize(width, height);
-        this.context._context.scale(this.getPixelRatio(), this.getPixelRatio());
+        this.context._context.scale(this.pixelRatio, this.pixelRatio);
     };
+    Kinetic.HitCanvas.prototype = {
+        setPixelRatio: function(pixelRatio) {
+            Kinetic.Canvas.prototype.setPixelRatio.call(this, pixelRatio);
+            this.context._context.scale(pixelRatio, pixelRatio);
+        }
+    }
     Kinetic.Util.extend(Kinetic.HitCanvas, Kinetic.Canvas);
 
 })();
