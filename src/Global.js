@@ -30,6 +30,7 @@
  */
 var Kinetic = {};
 (function() {
+
     Kinetic = {
         // public
         version: '@@version',
