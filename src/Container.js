@@ -287,7 +287,7 @@
                 clipY = this.getClipY();
 
                 context.save();
-                context._applyTransform(this);
+                context._applyTransform(this, canvas.isCache);
                 context.beginPath();
                 context.rect(clipX, clipY, clipWidth, clipHeight);
                 context.clip();

@@ -154,7 +154,7 @@
                         bufferContext.clear();
                         bufferContext.save();
                         bufferContext._applyLineJoin(this);
-                        bufferContext._applyTransform(this);
+                        bufferContext._applyTransform(this, canvas.isCache);
                      
                         drawFunc.call(this, bufferContext);
                         bufferContext.restore();
@@ -172,7 +172,7 @@
                     // if buffer canvas is not needed
                     else {
                         context._applyLineJoin(this);
-                        context._applyTransform(this);
+                        context._applyTransform(this, canvas.isCache);
                
                         if (hasShadow) {
                             context.save();
@@ -205,7 +205,7 @@
                 else if (drawFunc) {
                     context.save();
                     context._applyLineJoin(this);
-                    context._applyTransform(this);
+                    context._applyTransform(this, canvas.isCache);
                    
                     drawFunc.call(this, context);   
                     context.restore();

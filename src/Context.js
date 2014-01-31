@@ -223,12 +223,17 @@
                 this.setAttr('lineJoin', lineJoin);
             }
         },
-        _applyTransform: function(shape) {
+        _applyTransform: function(shape, isCacheCanvas) {
             var transformsEnabled = shape.getTransformsEnabled(),
                 m;
 
             if (transformsEnabled === 'all') {
-                m = shape.getAbsoluteTransform().getMatrix();
+                if (isCacheCanvas) {
+                    // don't apply parents' transform on cache canvas
+                    m = shape.getTransform().getMatrix();
+                } else {
+                    m = shape.getAbsoluteTransform().getMatrix();
+                }
                 this.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
             }
             else if (transformsEnabled === 'position') {
