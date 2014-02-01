@@ -2,6 +2,7 @@
     // CONSTANTS
     var ABSOLUTE_OPACITY = 'absoluteOpacity',
         ABSOLUTE_TRANSFORM = 'absoluteTransform',
+        RELATIVE_TRANSFORM = 'relativeTransform',
         BEFORE = 'before',
         CHANGE = 'Change',
         CHILDREN = 'children',
@@ -50,6 +51,7 @@
             this.on(TRANSFORM_CHANGE_STR, function() {
                 this._clearCache(TRANSFORM);
                 that._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+                that._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
             });
             this.on('visibleChange.kinetic', function() {
                 that._clearSelfAndDescendantCache(VISIBLE);
@@ -103,6 +105,7 @@
         clearCache: function() {
             delete this._cache.canvas;
             this._filterUpToDate = false;
+            this.cacheBegin = false;
             return this;
         },
         /**
@@ -168,10 +171,11 @@
                 origY = this.y(),
                 sceneContext;
 
+            this.clearCache();
+
             cachedSceneCanvas.isCache = true;
             cachedHitCanvas.isCache = true;
-
-            this.clearCache();
+            this.cacheBegin = true;
 
             this.transformsEnabled('position');
             this.x(x * -1);
@@ -404,6 +408,7 @@
             // traversal must be cleared when removing a node
             this._clearSelfAndDescendantCache(STAGE);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
             this._clearSelfAndDescendantCache(VISIBLE);
             this._clearSelfAndDescendantCache(LISTENING);
             this._clearSelfAndDescendantCache(ABSOLUTE_OPACITY);
@@ -756,6 +761,7 @@
 
             this._clearCache(TRANSFORM);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
         },
         _clearTransform: function() {
             var trans = {
@@ -782,6 +788,7 @@
 
             this._clearCache(TRANSFORM);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
 
             // return original transform
             return trans;
@@ -818,7 +825,7 @@
             this.setPosition({x:x, y:y});
             return this;
         },
-        _eachAncestorReverse: function(func, includeSelf) {
+        _eachAncestorReverse: function(func, includeSelf, stopAtCacheBegin) {
             var family = [],
                 parent = this.getParent(),
                 len, n;
@@ -827,7 +834,7 @@
             if(includeSelf) {
                 family.unshift(this);
             }
-            while(parent) {
+            while(parent && (!stopAtCacheBegin || !parent.cacheBegin)) {
                 family.unshift(parent);
                 parent = parent.parent;
             }
@@ -1093,6 +1100,36 @@
             }, true);
             return at;
         },
+
+        /**
+         * get relative transform of the node which takes into
+         *  account its ancestor transforms
+         * @method
+         * @memberof Kinetic.Node.prototype
+         * @returns {Kinetic.Transform}
+         */
+        getRelativeTransform: function() {
+            return this._getCache(RELATIVE_TRANSFORM, this._getRelativeTransform);
+        },
+        _getRelativeTransform: function() {
+            var at = new Kinetic.Transform(),
+                transformsEnabled, trans;
+
+            // start with stage and traverse downwards to self
+            this._eachAncestorReverse(function(node) {
+                transformsEnabled = node.transformsEnabled();
+                trans = node.getTransform();
+
+                if (transformsEnabled === 'all') {
+                    at.multiply(trans);
+                }
+                else if (transformsEnabled === 'position') {
+                    at.translate(node.x(), node.y());
+                }
+            }, true, true);
+            return at;
+        },
+
         /**
          * get transform of the node
          * @method

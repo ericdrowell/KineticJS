@@ -229,8 +229,7 @@
 
             if (transformsEnabled === 'all') {
                 if (isCacheCanvas) {
-                    // don't apply parents' transform on cache canvas
-                    m = shape.getTransform().getMatrix();
+                    m = shape.getRelativeTransform().getMatrix();
                 } else {
                     m = shape.getAbsoluteTransform().getMatrix();
                 }
