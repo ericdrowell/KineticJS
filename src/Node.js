@@ -212,7 +212,7 @@
         },
         _drawCachedSceneCanvas: function(context) {
             context.save();
-            context._applyTransform(this);
+            context._applyTransform(this, context.canvas.isCache);
             context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0);
             context.restore();
         },
@@ -258,7 +258,7 @@
                 hitCanvas = cachedCanvas.hit;
 
             context.save();
-            context._applyTransform(this);
+            context._applyTransform(this, context.canvas.isCache);
             context.drawImage(hitCanvas._canvas, 0, 0); 
             context.restore(); 
         },
