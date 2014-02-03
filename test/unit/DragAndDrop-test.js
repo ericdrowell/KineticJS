@@ -19,10 +19,17 @@ suite('DragAndDrop', function() {
         layer.draw();
 
         // test defaults
-        assert.equal(circle.isDraggable(), false);
+        assert.equal(circle.draggable(), false);
 
         //change properties
         circle.setDraggable(true);
+
+
+        //circle.on('click', function(){});
+
+        layer.draw();
+
+        showHit(layer);
 
         // test new properties
         assert.equal(circle.getDraggable(), true);

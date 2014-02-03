@@ -181,6 +181,73 @@ suite('MouseEvents', function() {
     });
 
     // ======================================================
+    test('test listening true/false with clicks', function() {
+        var stage = addStage();
+
+        var top = stage.content.getBoundingClientRect().top;
+
+        var layer = new Kinetic.Layer();
+
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4,
+            name: 'myCircle'
+        });
+
+        var clickCount = 0;
+
+        circle.on('click', function() {
+            clickCount++;
+        });
+
+        layer.add(circle);
+        stage.add(layer);
+
+        // -----------------------------------
+        stage._mousedown({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        Kinetic.DD._endDragBefore();
+        stage._mouseup({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        assert.equal(clickCount, 1, 'should be 1 click');
+
+        // -----------------------------------
+        circle.setListening(false);
+        stage._mousedown({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        Kinetic.DD._endDragBefore();
+        stage._mouseup({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        assert.equal(clickCount, 1, 'should be 1 click even though another click occurred');
+
+        // -----------------------------------
+        circle.setListening(true);
+        stage._mousedown({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        Kinetic.DD._endDragBefore();
+        stage._mouseup({
+            clientX: 291,
+            clientY: 112 + top
+        });
+        assert.equal(clickCount, 2, 'should be 2 clicks');
+
+    });
+
+    // ======================================================
     test('click mapping', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer({
@@ -866,7 +933,7 @@ suite('MouseEvents', function() {
             strokeWidth: 4,
             fill: 'red',
             stroke: 'black',
-            drawHitFunc: function(context) {
+            hitFunc: function(context) {
                 var _context = context._context;
 
                 _context.beginPath();
@@ -923,7 +990,7 @@ suite('MouseEvents', function() {
 
         // set drawBufferFunc with setter
 
-        circle.setDrawHitFunc(function(context) {
+        circle.hitFunc(function(context) {
             var _context = context._context;
             _context.beginPath();
             _context.arc(0, 0, this.getRadius() - 50, 0, Math.PI * 2, true);

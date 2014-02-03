@@ -13,22 +13,12 @@
      * @@shapeParams
      * @@nodeParams
      * @example
-     * // create simple circle
+     * // create circle
      * var circle = new Kinetic.Circle({<br>
      *   radius: 40,<br>
      *   fill: 'red',<br>
      *   stroke: 'black'<br>
      *   strokeWidth: 5<br>
-     * });<br><br>
-     *
-     * // create ellipse<br>
-     * var circle = new Kinetic.Circle({<br>
-     *   radius: 5,<br>
-     *   fill: 'red',<br>
-     *   stroke: 'black'<br>
-     *   strokeWidth: 5,<br>
-     *   scaleX: 2,<br>
-     *   strokeScaleEnabled: false<br>
      * });
      */
     Kinetic.Circle = function(config) {
@@ -40,8 +30,9 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = CIRCLE;
+            this.sceneFunc(this._sceneFunc);
         },
-        drawFunc: function(context) {
+        _sceneFunc: function(context) {
             context.beginPath();
             context.arc(0, 0, this.getRadius(), 0, PIx2, false);
             context.closePath();
@@ -72,18 +63,19 @@
     Kinetic.Factory.addGetterSetter(Kinetic.Circle, 'radius', 0);
 
     /**
-     * set radius
-     * @name setRadius
+     * get/set radius
+     * @name radius
      * @method
      * @memberof Kinetic.Circle.prototype
      * @param {Number} radius
+     * @returns {Number}
+     * @example
+     * // get radius<br>
+     * var radius = circle.radius();<br><br>
+     *
+     * // set radius<br>
+     * circle.radius(10);<br>
      */
 
-    /**
-     * get radius
-     * @name getRadius
-     * @method
-     * @memberof Kinetic.Circle.prototype
-     * @returns {Number}
-     */
+     Kinetic.Collection.mapMethods(Kinetic.Circle);
 })();

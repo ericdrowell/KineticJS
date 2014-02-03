@@ -29,8 +29,9 @@
             // call super constructor
             Kinetic.Shape.call(this, config);
             this.className = 'RegularPolygon';
+            this.sceneFunc(this._sceneFunc);
         },
-        drawFunc: function(context) {
+        _sceneFunc: function(context) {
             var sides = this.attrs.sides,
                 radius = this.attrs.radius,
                 n, x, y;
@@ -83,4 +84,6 @@
      * @method
      * @memberof Kinetic.RegularPolygon.prototype
      */
+
+     Kinetic.Collection.mapMethods(Kinetic.RegularPolygon);
 })();

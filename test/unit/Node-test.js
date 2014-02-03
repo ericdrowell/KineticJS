@@ -30,7 +30,24 @@ suite('Node', function() {
 
 
     });
+    // ======================================================
+    test('get layer', function() {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+        assert.equal(circle.getLayer(), null);
 
+        stage.add(layer.add(circle));
+        assert.equal(circle.getLayer(), layer);
+
+    });
     // ======================================================
     test('setAttr', function() {
         var stage = addStage();
@@ -51,7 +68,7 @@ suite('Node', function() {
 
         assert.equal(circle.getFill(), 'red');
 
-        circle.setAttr('position', 5, 6);
+        circle.setAttr('position', {x: 5, y: 6});
 
         assert.equal(circle.getX(), 5);
         assert.equal(circle.getY(), 6);
@@ -97,17 +114,17 @@ suite('Node', function() {
             strokeWidth: 4
         });
 
-        assert.equal(circle.cache.transform, undefined);
+        assert.equal(circle._cache.transform, undefined);
 
         layer.add(circle);
         stage.add(layer);
 
         // transform cache
-        assert.notEqual(circle.cache.transform, undefined);
+        assert.notEqual(circle._cache.transform, undefined);
         circle.setX(100);
-        assert.equal(circle.cache.transform, undefined);
+        assert.equal(circle._cache.transform, undefined);
         layer.draw();
-        assert.notEqual(circle.cache.transform, undefined);
+        assert.notEqual(circle._cache.transform, undefined);
     });
 
     // ======================================================
@@ -126,15 +143,15 @@ suite('Node', function() {
         stage.add(layer);
 
         // visible cache
-        assert.equal(circle.cache.visible, true);
+        assert.equal(circle._cache.visible, true);
         circle.hide();
-        assert.equal(circle.cache.visible, undefined);
+        assert.equal(circle._cache.visible, undefined);
         stage.draw();
-        assert.equal(circle.cache.visible, false);
+        assert.equal(circle._cache.visible, false);
         circle.show();
-        assert.equal(circle.cache.visible, undefined);
+        assert.equal(circle._cache.visible, undefined);
         layer.draw();
-        assert.equal(circle.cache.visible, true);
+        assert.equal(circle._cache.visible, true);
 
     });
 
@@ -154,14 +171,14 @@ suite('Node', function() {
         stage.add(layer);
 
         // shadow cache
-        assert.equal(circle.cache.hasShadow, false);
+        assert.equal(circle._cache.hasShadow, false);
         circle.setShadowColor('red');
         circle.setShadowOffset(10);
-        assert.equal(circle.cache.hasShadow, undefined);
+        assert.equal(circle._cache.hasShadow, undefined);
         layer.draw();
-        assert.equal(circle.cache.hasShadow, true);
+        assert.equal(circle._cache.hasShadow, true);
         layer.draw();
-        assert.equal(circle.cache.hasShadow, true);
+        assert.equal(circle._cache.hasShadow, true);
 
     });
 
@@ -181,11 +198,11 @@ suite('Node', function() {
         stage.add(layer);
 
         // opacity cache
-        assert.equal(circle.cache.absoluteOpacity, 1);
+        assert.equal(circle._cache.absoluteOpacity, 1);
         circle.setOpacity(0.5);
-        assert.equal(circle.cache.absoluteOpacity, undefined);
+        assert.equal(circle._cache.absoluteOpacity, undefined);
         layer.draw();
-        assert.equal(circle.cache.absoluteOpacity, 0.5);
+        assert.equal(circle._cache.absoluteOpacity, 0.5);
 
     });
 
@@ -205,11 +222,15 @@ suite('Node', function() {
         stage.add(layer);
 
         // listening cache
-        assert.equal(circle.cache.listening, true);
+        
+        // prime the cache
+        circle.isListening();
+
+        assert.equal(circle._cache.listening, true);
         circle.setListening(false);
-        assert.equal(circle.cache.listening, undefined);
-        layer.draw();
-        assert.equal(circle.cache.listening, false);
+        assert.equal(circle._cache.listening, undefined);
+        circle.isListening();
+        assert.equal(circle._cache.listening, false);
 
     });
 
@@ -230,7 +251,7 @@ suite('Node', function() {
 
         // stage cache
         var st = circle.getStage();
-        assert.equal(circle.cache.stage._id, stage._id);
+        assert.equal(circle._cache.stage._id, stage._id);
 
     });
 
@@ -286,8 +307,8 @@ suite('Node', function() {
         layer.add(rect).add(rect2);
         stage.add(layer);
 
-        assert.equal(rect.getListening(), true);
-        // test alias
+        assert.equal(rect.getListening(), 'inherit');
+
         assert.equal(rect.isListening(), true);
         rect.setListening(false);
         assert.equal(rect.getListening(), false);
@@ -335,9 +356,9 @@ suite('Node', function() {
             width: 200,
             height: 50,
             fill: 'blue',
-            offset: [10, 10],
+            offset: {x:10, y:10},
             shadowColor: 'black',
-            shadowOffset: [20, 20]
+            shadowOffset: {x:20, y:20}
         });
 
         layer.add(rect);
@@ -350,7 +371,7 @@ suite('Node', function() {
             offsetChange = true;
         });
 
-        rect.setOffset(1, 2);
+        rect.offset({x:1, y:2});
 
         assert.equal(offsetChange, true);
     });
@@ -389,9 +410,11 @@ suite('Node', function() {
             width: 200,
             height: 50,
             fill: 'blue',
-            offset: [10, 10],
+            offsetX: 10,
+            offsetY: 10,
             shadowColor: 'black',
-            shadowOffset: [20, 20],
+            shadowOffsetX: 20,
+            shadowOffsetY: 20,
             draggable: true,
             name: 'myRect'
         });
@@ -457,7 +480,8 @@ suite('Node', function() {
             width: 200,
             height: 50,
             fill: 'red',
-            offset: [10, 10],
+            offsetX: 10,
+            offsetY: 10,
             shadowColor: 'black',
             shadowOffset: [20, 20],
             name: 'myRect',
@@ -499,7 +523,7 @@ suite('Node', function() {
         assert.equal(clone.getY(), 0);
         assert.equal(clone.getDraggable(), true);
         // test alias
-        assert.equal(clone.isDraggable(), true);
+        assert.equal(clone.draggable(), true);
         assert.equal(clone.getName(), 'groupClone');
 
         assert.equal(group.getChildren().length, 2);
@@ -557,7 +581,7 @@ suite('Node', function() {
             width: 200,
             height: 50,
             fill: 'blue',
-            shadowOffset: [10, 10],
+            shadowOffset: {x: 10, y: 10},
         });
 
         var circle = new Kinetic.Circle({
@@ -591,9 +615,9 @@ suite('Node', function() {
             radiusChanged++;
         });
 
-        circle.setRadius(70, 20);
+        circle.setRadius(70);
 
-        rect.setSize(210);
+        rect.setSize({width: 210, height: 210});
         rect.setShadowOffset({
             x: 20
         });
@@ -688,14 +712,14 @@ suite('Node', function() {
             fill: 'green',
             stroke: 'black',
             strokeWidth: 4,
-            rotationDeg: 10
+            rotation: 10
         });
 
-        assert.equal(rect.getRotationDeg(), 10);
-        rect.setRotationDeg(20);
-        assert.equal(rect.getRotationDeg(), 20);
-        rect.rotateDeg(20);
-        assert.equal(rect.getRotationDeg(), 40);
+        assert.equal(rect.rotation(), 10);
+        rect.rotation(20);
+        assert.equal(rect.rotation(), 20);
+        rect.rotate(20);
+        assert.equal(rect.rotation(), 40);
 
         layer.add(rect);
         stage.add(layer);
@@ -750,16 +774,16 @@ suite('Node', function() {
                 x: 0.5,
                 y: 0.5
             },
-            rotation: 20 * Math.PI / 180
+            rotation: 20
         });
 
         assert.equal(rect.getPosition().x, 200);
         assert.equal(rect.getPosition().y, 100);
         assert.equal(rect.getScale().x, 0.5);
         assert.equal(rect.getScale().y, 0.5);
-        assert.equal(rect.getRotation(), 20 * Math.PI / 180);
+        assert.equal(rect.getRotation(), 20);
 
-        rect.setScale(2, 0.3);
+        rect.setScale({x:2, y:0.3});
         assert.equal(rect.getScale().x, 2);
         assert.equal(rect.getScale().y, 0.3);
 
@@ -774,88 +798,34 @@ suite('Node', function() {
             var stage = addStage();
             var layer = new Kinetic.Layer();
 
-            var anims = {
-                standing: [{
-                    x: 0,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }, {
-                    x: 52,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }, {
-                    x: 105,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }, {
-                    x: 158,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }, {
-                    x: 210,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }, {
-                    x: 262,
-                    y: 0,
-                    width: 49,
-                    height: 109
-                }],
-
-                kicking: [{
-                    x: 0,
-                    y: 109,
-                    width: 45,
-                    height: 98
-                }, {
-                    x: 45,
-                    y: 109,
-                    width: 45,
-                    height: 98
-                }, {
-                    x: 95,
-                    y: 109,
-                    width: 63,
-                    height: 98
-                }, {
-                    x: 156,
-                    y: 109,
-                    width: 70,
-                    height: 98
-                }, {
-                    x: 229,
-                    y: 109,
-                    width: 60,
-                    height: 98
-                }, {
-                    x: 287,
-                    y: 109,
-                    width: 41,
-                    height: 98
-                }]
-            };
-
-            //for(var n = 0; n < 50; n++) {
-            sprite = new Kinetic.Sprite({
-                //x: Math.random() * stage.getWidth() - 30,
+            var sprite = new Kinetic.Sprite({
                 x: 200,
-                //y: Math.random() * stage.getHeight() - 50,
                 y: 50,
                 image: imageObj,
                 animation: 'standing',
-                animations: anims,
-                index: 0,
-                frameRate: Math.random() * 6 + 6,
+                animations: {
+                    standing: [
+                        0, 0, 49, 109,
+                        52, 0, 49, 109,
+                        105, 0, 49, 109,
+                        158, 0, 49, 109,
+                        210, 0, 49, 109,
+                        262, 0, 49, 109
+                    ],
+                    kicking: [
+                        0, 109, 45, 98,
+                        45, 109, 45, 98,
+                        95, 109, 63, 98,
+                        156, 109, 70, 98,
+                        229, 109, 60, 98,
+                        287, 109, 41, 98
+                    ]              
+                },
                 frameRate: 10,
                 draggable: true,
                 shadowColor: 'black',
                 shadowBlur: 3,
-                shadowOffset: [3, 1],
+                shadowOffset: {x: 3, y:1},
                 shadowOpacity: 0.3
             });
 
@@ -895,12 +865,13 @@ suite('Node', function() {
             y: 93
         }];
 
-        var poly = new Kinetic.Polygon({
+        var poly = new Kinetic.Line({
             points: points,
             fill: 'green',
             stroke: 'blue',
             strokeWidth: 5,
-            draggable: true
+            draggable: true,
+            closed: true
         });
 
         group.add(poly);
@@ -1056,7 +1027,7 @@ suite('Node', function() {
     });
 
     // ======================================================
-    test('set center offset after instantiation', function() {
+    test('set offset offset after instantiation', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
         var rect = new Kinetic.Rect({
@@ -1074,19 +1045,19 @@ suite('Node', function() {
         layer.add(rect);
         stage.add(layer);
 
-        assert.equal(rect.getOffsetX(), 40);
-        assert.equal(rect.getOffsetY(), 20);
+        assert.equal(rect.offsetX(), 40);
+        assert.equal(rect.offsetY(), 20);
 
-        assert.equal(rect.getOffset().x, 40);
-        assert.equal(rect.getOffset().y, 20);
+        assert.equal(rect.offset().x, 40);
+        assert.equal(rect.offset().y, 20);
 
-        rect.setOffset(80, 40);
+        rect.offset({x:80, y:40});
 
-        assert.equal(rect.getOffsetX(), 80);
-        assert.equal(rect.getOffsetY(), 40);
+        assert.equal(rect.offsetX(), 80);
+        assert.equal(rect.offsetY(), 40);
 
-        assert.equal(rect.getOffset().x, 80);
-        assert.equal(rect.getOffset().y, 40);
+        assert.equal(rect.offset().x, 80);
+        assert.equal(rect.offset().y, 40);
 
     });
 
@@ -1102,14 +1073,14 @@ suite('Node', function() {
             fill: 'green',
             stroke: 'black',
             strokeWidth: 4,
-            rotationDeg: 10
+            rotation: 10
         });
 
-        assert.equal(rect.getRotationDeg(), 10);
-        rect.setRotationDeg(20);
-        assert.equal(rect.getRotationDeg(), 20);
-        rect.rotateDeg(20);
-        assert.equal(rect.getRotationDeg(), 40);
+        assert.equal(rect.rotation(), 10);
+        rect.rotation(20);
+        assert.equal(rect.rotation(), 20);
+        rect.rotate(20);
+        assert.equal(rect.rotation(), 40);
 
         layer.add(rect);
         stage.add(layer);
@@ -1152,7 +1123,7 @@ suite('Node', function() {
         layer.add(rect);
         stage.add(layer);
 
-        rect.setShadowOffset([1, 2]);
+        rect.setShadowOffset({x:1, y:2});
         assert.equal(rect.getShadowOffset().x, 1);
         assert.equal(rect.getShadowOffset().y, 2);
         // make sure we still have the other properties
@@ -1167,23 +1138,19 @@ suite('Node', function() {
         assert.equal(rect.getShadowOffset().y, 4);
 
         // test partial setting
-        rect.setShadowOffset({
-            x: 5
-        });
+        rect.setShadowOffsetX(5);
         assert.equal(rect.getShadowOffset().x, 5);
         assert.equal(rect.getShadowOffset().y, 4);
 
         // test partial setting
-        rect.setShadowOffset({
-            y: 6
-        });
+        rect.setShadowOffsetY(6);
         assert.equal(rect.getShadowOffset().x, 5);
         assert.equal(rect.getShadowOffset().y, 6);
 
     });
 
     // ======================================================
-    test('test setOffset', function() {
+    test('test offset', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
         var rect = new Kinetic.Rect({
@@ -1197,32 +1164,28 @@ suite('Node', function() {
         layer.add(rect);
         stage.add(layer);
 
-        rect.setOffset(1, 2);
-        assert.equal(rect.getOffset().x, 1);
-        assert.equal(rect.getOffset().y, 2);
+        rect.offset({x:1, y: 2});
+        assert.equal(rect.offset().x, 1);
+        assert.equal(rect.offset().y, 2);
 
-        rect.setOffset([3, 4]);
-        assert.equal(rect.getOffset().x, 3);
-        assert.equal(rect.getOffset().y, 4);
+        rect.offset({x:3, y:4});
+        assert.equal(rect.offset().x, 3);
+        assert.equal(rect.offset().y, 4);
 
-        rect.setOffset({
+        rect.offset({
             x: 5,
             y: 6
         });
-        assert.equal(rect.getOffset().x, 5);
-        assert.equal(rect.getOffset().y, 6);
+        assert.equal(rect.offset().x, 5);
+        assert.equal(rect.offset().y, 6);
 
-        rect.setOffset({
-            x: 7
-        });
-        assert.equal(rect.getOffset().x, 7);
-        assert.equal(rect.getOffset().y, 6);
+        rect.offsetX(7);
+        assert.equal(rect.offset().x, 7);
+        assert.equal(rect.offset().y, 6);
 
-        rect.setOffset({
-            y: 8
-        });
-        assert.equal(rect.getOffset().x, 7);
-        assert.equal(rect.getOffset().y, 8);
+        rect.offsetY(8);
+        assert.equal(rect.offset().x, 7);
+        assert.equal(rect.offset().y, 8);
 
     });
 
@@ -1241,11 +1204,11 @@ suite('Node', function() {
         layer.add(rect);
         stage.add(layer);
 
-        rect.setPosition(1, 2);
+        rect.setPosition({x:1, y:2});
         assert.equal(rect.getPosition().x, 1);
         assert.equal(rect.getPosition().y, 2);
 
-        rect.setPosition([3, 4]);
+        rect.setPosition({x:3, y:4});
         assert.equal(rect.getPosition().x, 3);
         assert.equal(rect.getPosition().y, 4);
 
@@ -1256,19 +1219,15 @@ suite('Node', function() {
         assert.equal(rect.getPosition().x, 5);
         assert.equal(rect.getPosition().y, 6);
 
-        rect.setPosition({
-            x: 7
-        });
+        rect.setX(7);
         assert.equal(rect.getPosition().x, 7);
         assert.equal(rect.getPosition().y, 6);
 
-        rect.setPosition({
-            y: 8
-        });
+        rect.setY(8);
         assert.equal(rect.getPosition().x, 7);
         assert.equal(rect.getPosition().y, 8);
 
-        rect.move(10);
+        rect.move({x: 10, y: 10});
         assert.equal(rect.getPosition().x, 17);
         assert.equal(rect.getPosition().y, 18);
 
@@ -1291,19 +1250,19 @@ suite('Node', function() {
         layer.add(rect);
         stage.add(layer);
 
-        rect.setScale(2, 3);
+        rect.setScale({x:2, y:3});
         assert.equal(rect.getScale().x, 2);
         assert.equal(rect.getScale().y, 3);
 
-        rect.setScale(4);
+        rect.setScale({x:4,y:4});
         assert.equal(rect.getScale().x, 4);
         assert.equal(rect.getScale().y, 4);
 
-        rect.setScale([5, 6]);
+        rect.setScale({x:5, y:6});
         assert.equal(rect.getScale().x, 5);
         assert.equal(rect.getScale().y, 6);
 
-        rect.setScale([7, 8, 999, 999]);
+        rect.setScale({x: 7, y:8});
         assert.equal(rect.getScale().x, 7);
         assert.equal(rect.getScale().y, 8);
 
@@ -1314,15 +1273,11 @@ suite('Node', function() {
         assert.equal(rect.getScale().x, 9);
         assert.equal(rect.getScale().y, 10);
 
-        rect.setScale({
-            x: 11
-        });
+        rect.setScaleX(11);
         assert.equal(rect.getScale().x, 11);
         assert.equal(rect.getScale().y, 10);
 
-        rect.setScale({
-            y: 12
-        });
+        rect.setScaleY(12);
         assert.equal(rect.getScale().x, 11);
         assert.equal(rect.getScale().y, 12);
 
@@ -1350,7 +1305,7 @@ suite('Node', function() {
             width: 100,
             height: 50,
             fill: 'red',
-            scale: 2
+            scale: {x:2,y:2}
         });
 
         var rect3 = new Kinetic.Rect({
@@ -1359,7 +1314,7 @@ suite('Node', function() {
             width: 100,
             height: 50,
             fill: 'red',
-            scale: [2, 3]
+            scale: {x:2, y:3}
         });
 
         var rect4 = new Kinetic.Rect({
@@ -1368,9 +1323,7 @@ suite('Node', function() {
             width: 100,
             height: 50,
             fill: 'red',
-            scale: {
-                x: 2
-            }
+            scaleX: 2
         });
 
         var rect5 = new Kinetic.Rect({
@@ -1379,9 +1332,7 @@ suite('Node', function() {
             width: 100,
             height: 50,
             fill: 'red',
-            scale: {
-                y: 2
-            }
+            scaleY: 2
         });
 
         layer.add(rect1).add(rect2).add(rect3).add(rect4).add(rect5);
@@ -1399,7 +1350,7 @@ suite('Node', function() {
         assert.equal(rect4.getScale().x, 2);
         assert.equal(rect4.getScale().y, 1);
 
-        assert.equal(rect5.getScale().x, 1);
+        //assert.equal(rect5.getScale().x, 1);
         assert.equal(rect5.getScale().y, 2);
     });
 
@@ -1475,8 +1426,8 @@ suite('Node', function() {
 
         //console.log(rect.getAbsoluteTransform().getTranslation())
 
-        stage.rotate(Math.PI / 3);
-        stage.setScale(0.5);
+        stage.rotate(180 / 3);
+        stage.setScale({x:0.5, y:0.5});
 
         stage.draw();
 
@@ -1500,7 +1451,8 @@ suite('Node', function() {
             stroke: 'black',
             strokeWidth: 4,
             draggable: true,
-            offset: 30
+            offsetX: 30,
+            offsetY: 30
             //rotationDeg: 60
             //rotationDeg: Math.PI / 3
         });
@@ -1517,7 +1469,7 @@ suite('Node', function() {
     });
 
     // ======================================================
-    test('test getPosition and getAbsolutePosition for transformed parent with center offset', function() {
+    test('test getPosition and getAbsolutePosition for transformed parent with offset offset', function() {
         var side = 100;
         var diagonal = Math.sqrt(side * side * 2);
 
@@ -1529,8 +1481,8 @@ suite('Node', function() {
         var group = new Kinetic.Group({
             name: 'groupName',
             id: 'groupId',
-            rotationDeg: 45,
-            offset: [side / 2, side / 2],
+            rotation: 45,
+            offset: {x:side / 2, y:side / 2},
             x: diagonal / 2,
             y: diagonal / 2
         });
@@ -1614,17 +1566,26 @@ suite('Node', function() {
         rect.setListening(false);
         assert.equal(rect.isListening(), false);
 
-        rect.setListening(true);
+        rect.setListening('inherit');
         assert.equal(rect.isListening(), true);
 
         layer.setListening(false);
+
         assert.equal(rect.isListening(), false);
 
         layer.setListening(true);
         assert.equal(rect.isListening(), true);
 
+        // even though we set stage listening to false, since the layer
+        // listening is set to try, rect listening will be true
         stage.setListening(false);
+        assert.equal(rect.isListening(), true);
+
+        // setting layer listening to inherit means that the layer listening
+        // will inherit the stage listening, which is false
+        layer.setListening('inherit');
         assert.equal(rect.isListening(), false);
+
     });
 
     // ======================================================
@@ -1819,9 +1780,9 @@ suite('Node', function() {
         layer.add(group);
         stage.add(layer);
 
-        circle.setPosition(100, 0);
-        group.setPosition(100, 0);
-        layer.setPosition(100, 0);
+        circle.setPosition({x:100, y:0});
+        group.setPosition({x: 100, y: 0});
+        layer.setPosition({x: 100, y: 0});
 
         // test relative positions
         assert.equal(circle.getPosition().x, 100);
@@ -1847,7 +1808,7 @@ suite('Node', function() {
         });
         var group = new Kinetic.Group({
             x: 100,
-            rotationDeg: 90
+            rotation: 90
         });
 
         var rect = new Kinetic.Rect({
@@ -2176,7 +2137,7 @@ suite('Node', function() {
         var stage = Kinetic.Node.create(json, container);
 
         stage.find('#myTriangle').each(function(node) {
-            node.setDrawFunc(drawTriangle);
+            node.sceneFunc(drawTriangle);
         });
 
         stage.draw();
@@ -2574,4 +2535,655 @@ suite('Node', function() {
         // TODO: stage hide() fails.  also need to find a good way to test this
 
     });
+
+  // ======================================================
+  test('listening, & shouldDrawHit', function(){
+    var stage = addStage();
+
+    var layer = new Kinetic.Layer();
+
+    var rect = new Kinetic.Rect({
+      x: 100,
+      y: 50,
+      width: 100,
+      height: 50,
+      fill: 'green',
+      stroke: 'blue'
+    });
+
+    layer.add(rect);
+    stage.add(layer);
+
+
+
+    assert.equal(rect.isListening(), true);
+    assert.equal(rect.shouldDrawHit(), true);
+
+    rect.setListening(false);
+
+
+    assert.equal(rect.isListening(), false);
+    assert.equal(rect.shouldDrawHit(), false);
+
+
+  });
+
+    // ======================================================
+  test('transformEnabled methods', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 100,
+        y: 100,
+        radius: 70,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(circle.transformsEnabled(), 'all');
+
+    circle.transformsEnabled('position');
+    assert.equal(circle.transformsEnabled(), 'position');
+
+    layer.draw();
+
+
+
+  });
+
+    // ======================================================
+  test('transformEnabled context tracing', function(){
+    var stage = addStage();
+
+    stage.setX(100);
+
+    var layer = new Kinetic.Layer({
+        x: 100
+    });
+    var group = new Kinetic.Group({
+        x: 100
+    });
+    var circle = new Kinetic.Circle({
+        x: 100,
+        y: 100,
+        radius: 40,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,400,100);beginPath();arc(0,0,40,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+
+    stage.transformsEnabled('none');
+    layer.getContext().clearTrace();
+    stage.draw();
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,300,100);beginPath();arc(0,0,40,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+
+    layer.transformsEnabled('none');
+    layer.getContext().clearTrace();
+    stage.draw();
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,200,100);beginPath();arc(0,0,40,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+
+    group.transformsEnabled('none');
+    layer.getContext().clearTrace();
+    stage.draw();
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);beginPath();arc(0,0,40,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+
+    // disabling a shape transform disables all transforms but x and y.  In this case, the Kinetic.Context uses translate instead of transform
+    circle.transformsEnabled('position');
+    layer.getContext().clearTrace();
+    stage.draw();
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();translate(100,100);beginPath();arc(0,0,40,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+
+    //console.log(layer.getContext().getTrace());
+
+  });
+
+    // ======================================================
+  test('isVisible', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 100,
+        y: 100,
+        radius: 70,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), true);
+    assert.equal(circle.isVisible(), true);
+
+    stage.setVisible(false);
+
+    assert.equal(stage.isVisible(), false);
+    assert.equal(layer.isVisible(), false);
+    assert.equal(circle.isVisible(), false);
+
+    stage.setVisible('inherit');
+    layer.setVisible(false);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), false);
+    assert.equal(circle.isVisible(), false);
+
+    layer.setVisible('inherit');
+    circle.setVisible(false);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), true);
+    assert.equal(circle.isVisible(), false);
+
+    circle.setVisible('inherit');
+    stage.setVisible(true);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), true);
+    assert.equal(circle.isVisible(), true);
+
+    stage.setVisible('inherit');
+    layer.setVisible(true);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), true);
+    assert.equal(circle.isVisible(), true);
+
+    layer.setVisible('inherit');
+    circle.setVisible(true);
+
+    assert.equal(stage.isVisible(), true);
+    assert.equal(layer.isVisible(), true);
+    assert.equal(circle.isVisible(), true);
+
+  });
+
+  test('overloaders', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 100,
+        y: 100,
+        radius: 70,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    circle.x(1);
+    assert.equal(circle.x(), 1);
+
+    circle.y(2);
+    assert.equal(circle.y(), 2);
+
+    circle.opacity(0.5);
+    assert.equal(circle.opacity(), 0.5);
+
+    circle.name('foo');
+    assert.equal(circle.name(), 'foo'); 
+
+    circle.id('bar');
+    assert.equal(circle.id(), 'bar'); 
+
+    circle.rotation(2);
+    assert.equal(circle.rotation(), 2);
+
+    circle.scale({x: 2, y: 2});
+    assert.equal(circle.scale().x, 2);
+    assert.equal(circle.scale().y, 2);
+
+    circle.scaleX(5);
+    assert.equal(circle.scaleX(), 5);
+
+    circle.scaleY(8);
+    assert.equal(circle.scaleY(), 8);
+
+    circle.skew({x: 2, y: 2});
+    assert.equal(circle.skew().x, 2);
+    assert.equal(circle.skew().y, 2);
+
+    circle.skewX(5);
+    assert.equal(circle.skewX(), 5);
+
+    circle.skewY(8);
+    assert.equal(circle.skewY(), 8);
+
+    circle.offset({x: 2, y: 2});
+    assert.equal(circle.offset().x, 2);
+    assert.equal(circle.offset().y, 2);
+
+    circle.offsetX(5);
+    assert.equal(circle.offsetX(), 5);
+
+    circle.offsetY(8);
+    assert.equal(circle.offsetY(), 8);
+
+    circle.width(23);
+    assert.equal(circle.width(), 23); 
+
+    circle.height(11);
+    assert.equal(circle.height(), 11); 
+
+    circle.listening(false);
+    assert.equal(circle.listening(), false);
+
+    circle.visible(false);
+    assert.equal(circle.visible(), false); 
+
+    circle.transformsEnabled(false);
+    assert.equal(circle.transformsEnabled(), false);  
+
+    circle.position({x: 6, y: 8});
+    assert.equal(circle.position().x, 6);
+    assert.equal(circle.position().y, 8);
+  });
+
+  test('cache shape', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 74,
+        y: 74,
+        radius: 70,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(circle._cache.canvas, undefined);
+
+    circle.cache({
+        x: -74,
+        y: -74,
+        width: 148,
+        height: 148
+    }).offset({
+        x: 74,
+        y: 74
+    });
+
+    assert.notEqual(circle._cache.canvas.scene, undefined);
+    assert.notEqual(circle._cache.canvas.hit, undefined);
+
+    layer.draw();
+
+
+    //document.body.appendChild(circle._cache.canvas.scene._canvas);
+    // document.body.appendChild(circle._cache.canvas.hit._canvas);
+
+    showHit(layer)
+
+
+    //console.log(layer.getContext().getTrace());
+                                                 
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,74,74);beginPath();arc(0,0,70,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,0,0);drawImage([object HTMLCanvasElement],0,0);restore();');
+
+    //console.log(circle._cache.canvas.scene.getContext().getTrace());
+
+    assert.equal(circle._cache.canvas.scene.getContext().getTrace(), 'save();translate(74,74);beginPath();arc(0,0,70,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();');
+  });
+
+
+  test('cache shape thats larger than stage', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 74,
+        y: 74,
+        radius: 300,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(circle._cache.canvas, undefined);
+
+    circle.cache({
+        x: -304,
+        y: -304,
+        width: 608,
+        height: 608
+    }).offset({
+        x: 304,
+        y: 304
+    });
+    layer.draw();
+
+
+  });
+
+  test('show cache border', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group();
+    var circle = new Kinetic.Circle({
+        x: 74,
+        y: 74,
+        radius: 70,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4,
+        name: 'myCircle',
+        draggable: true
+    });
+
+    group.add(circle);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(circle._cache.canvas, undefined);
+
+    circle.cache({
+        x: -74,
+        y: -74,
+        width: 148,
+        height: 148,
+        drawBorder: true
+    }).offset({
+        x: 74,
+        y: 74
+    });
+
+    assert.notEqual(circle._cache.canvas.scene, undefined);
+    assert.notEqual(circle._cache.canvas.hit, undefined);
+
+    layer.draw();
+
+
+    showHit(layer);
+
+
+    //console.log(circle._cache.canvas.scene.getContext().getTrace());
+
+    // make sure the border rectangle was drawn onto the cached scene canvas
+    assert.equal(circle._cache.canvas.scene.getContext().getTrace(),'save();translate(74,74);beginPath();arc(0,0,70,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();beginPath();rect(0,0,148,148);closePath();strokeStyle=red;lineWidth=5;stroke();restore();');
+  });
+
+  test('cache group', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group({
+        x: 100,
+        y: 100,
+        draggable: true
+    });
+    var top = new Kinetic.Circle({
+        x: 0,
+        y: -70,
+        radius: 30,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var right = new Kinetic.Circle({
+        x: 70,
+        y: 0,
+        radius: 30,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var bottom = new Kinetic.Circle({
+        x: 0,
+        y: 70,
+        radius: 30,
+        fill: 'blue',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var left = new Kinetic.Circle({
+        x: -70,
+        y: 0,
+        radius: 30,
+        fill: 'yellow',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+
+    group.add(top).add(right).add(bottom).add(left);
+    layer.add(group);
+    stage.add(layer);
+
+    //console.log('---before cache')
+
+    assert.equal(group._cache.canvas, undefined);
+
+    group.cache({
+        width: 80,
+        height: 80
+    });
+
+    assert.notEqual(group._cache.canvas.scene, undefined);
+    assert.notEqual(group._cache.canvas.hit, undefined);
+
+    //console.log('---before first draw')
+    layer.draw();
+
+    //console.log(layer.getContext().getTrace())
+
+    //document.body.appendChild(group._cache.canvas.scene._canvas);
+
+    //console.log('---before second draw')
+    layer.draw();
+
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();');
+
+    showHit(layer);
+  });
+
+  test('cache transformed group', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group({
+        x: 100,
+        y: 100,
+        draggable: true,
+        rotation: 20,
+        scaleX: 2,
+        scaleY: 2
+    });
+    var top = new Kinetic.Circle({
+        x: 0,
+        y: -70,
+        radius: 50,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var right = new Kinetic.Circle({
+        x: 70,
+        y: 0,
+        radius: 30,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var bottom = new Kinetic.Circle({
+        x: 0,
+        y: 70,
+        radius: 30,
+        fill: 'blue',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var left = new Kinetic.Circle({
+        x: -70,
+        y: 0,
+        radius: 30,
+        fill: 'yellow',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+
+    group.add(top).add(right).add(bottom).add(left);
+    layer.add(group);
+    stage.add(layer);
+
+    //console.log('---before cache')
+
+    //console.log(group.getAbsoluteTransform().getTranslation())
+
+    group.cache({
+        x: -104,
+        y: -104,
+        width: 208,
+        height: 208
+    });
+
+    group.offsetX(104).offsetY(104);
+
+    //console.log('--after cache');
+    //console.log(group.getAbsoluteTransform().getTranslation())
+    //console.log(group.getAbsolutePosition());
+    //console.log('---before first draw')
+    layer.draw();
+
+    //document.body.appendChild(group._cache.canvas.scene._canvas);
+    //console.log('---before second draw')
+    layer.draw();
+
+    //console.log(layer.getContext().getTrace())
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,147.883,-31.557);beginPath();arc(0,0,50,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,231.557,147.883);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,52.117,231.557);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1.879,0.684,-0.684,1.879,-31.557,52.117);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1.879,0.684,-0.684,1.879,-24.316,-166.596);drawImage([object HTMLCanvasElement],0,0);restore();');
+    showHit(layer);
+  });
+
+  test('cache layer', function(){
+    var stage = addStage();
+    var layer = new Kinetic.Layer({
+        x: 100,
+        y: 100,
+        draggable: true
+    });
+    var group = new Kinetic.Group();
+    var top = new Kinetic.Circle({
+        x: 0,
+        y: -70,
+        radius: 30,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var right = new Kinetic.Circle({
+        x: 70,
+        y: 0,
+        radius: 30,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var bottom = new Kinetic.Circle({
+        x: 0,
+        y: 70,
+        radius: 30,
+        fill: 'blue',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+    var left = new Kinetic.Circle({
+        x: -70,
+        y: 0,
+        radius: 30,
+        fill: 'yellow',
+        stroke: 'black',
+        strokeWidth: 4
+    });
+
+    group.add(top).add(right).add(bottom).add(left);
+    layer.add(group);
+    stage.add(layer);
+
+    assert.equal(layer._cache.canvas, undefined);
+
+    layer.cache({
+        width: 80,
+        height: 80
+    });
+
+    assert.notEqual(layer._cache.canvas.scene, undefined);
+    assert.notEqual(layer._cache.canvas.hit, undefined);
+
+
+    layer.draw();
+    layer.draw();
+
+    //console.log(layer.getContext().getTrace());
+    assert.equal(layer.getContext().getTrace(), 'clearRect(0,0,578,200);save();transform(1,0,0,1,100,30);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=green;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,170,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=red;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,100,170);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=blue;fill();lineWidth=4;strokeStyle=black;stroke();restore();save();transform(1,0,0,1,30,100);beginPath();arc(0,0,30,0,6.283,false);closePath();fillStyle=yellow;fill();lineWidth=4;strokeStyle=black;stroke();restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();clearRect(0,0,578,200);save();transform(1,0,0,1,100,100);drawImage([object HTMLCanvasElement],0,0);restore();');
+
+
+    // make sure that the hit graph is also rendered after caching the layer
+    assert.equal(layer.hitCanvas.getContext().getTrace(true), 'clearRect();save();transform();beginPath();arc();closePath();save();fillStyle;fill();restore();lineWidth;strokeStyle;stroke();restore();save();transform();beginPath();arc();closePath();save();fillStyle;fill();restore();lineWidth;strokeStyle;stroke();restore();save();transform();beginPath();arc();closePath();save();fillStyle;fill();restore();lineWidth;strokeStyle;stroke();restore();save();transform();beginPath();arc();closePath();save();fillStyle;fill();restore();lineWidth;strokeStyle;stroke();restore();clearRect();clearRect();save();transform();drawImage();restore();clearRect();save();transform();drawImage();restore();');
+
+    showHit(layer);
+
+  });
+
+  test('stage.toObject() when stage contains an image', function(done){
+      var imageObj = new Image();
+      imageObj.onload = function() {
+          var stage = addStage();
+
+          var layer = new Kinetic.Layer();
+          darth = new Kinetic.Image({
+              x: 200,
+              y: 60,
+              image: imageObj,
+              width: 100,
+              height: 100,
+              offset: {x: 50, y: 30},
+              crop: {x: 135, y: 7, width: 167, height: 134},
+              draggable: true
+          });
+
+          layer.add(darth);
+          stage.add(layer);
+
+          assert.equal(stage.toObject().className, 'Stage');
+
+          done();
+
+      };
+      imageObj.src = 'assets/darth-vader.jpg';
+  });
 });

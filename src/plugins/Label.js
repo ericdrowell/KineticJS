@@ -154,6 +154,8 @@
 
     Kinetic.Util.extend(Kinetic.Label, Kinetic.Group);
 
+    Kinetic.Collection.mapMethods(Kinetic.Label);
+
     /**
      * Tag constructor.&nbsp; A Tag can be configured
      *  to have a pointer element that points up, right, down, or left
@@ -174,8 +176,9 @@
         ___init: function(config) {
             Kinetic.Shape.call(this, config);
             this.className = 'Tag';
+            this.sceneFunc(this._sceneFunc);
         },
-        drawFunc: function(context) {
+        _sceneFunc: function(context) {
             var width = this.getWidth(),
                 height = this.getHeight(),
                 pointerDirection = this.getPointerDirection(),
@@ -290,4 +293,6 @@
      * @method
      * @memberof Kinetic.Tag.prototype
      */
+
+     Kinetic.Collection.mapMethods(Kinetic.Tag);
 })();

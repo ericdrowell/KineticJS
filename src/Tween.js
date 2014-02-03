@@ -103,16 +103,10 @@
             start = node.getAttr(key);
 
             if (Kinetic.Util._isArray(end)) {
-                end = Kinetic.Util._getPoints(end);
                 diff = [];
                 len = end.length;
                 for (n=0; n<len; n++) {
-                    startVal = start[n];
-                    endVal = end[n];
-                    diff.push({
-                        x: endVal.x - startVal.x,
-                        y: endVal.y - startVal.y
-                    });
+                    diff.push(end[n] - start[n]);
                 }
 
             }
@@ -140,12 +134,7 @@
                     newVal = [];
                     len = start.length;
                     for (n=0; n<len; n++) {
-                        startVal = start[n];
-                        diffVal = diff[n];
-                        newVal.push({
-                            x: startVal.x + (diffVal.x * i),
-                            y: startVal.y + (diffVal.y * i)
-                        });
+                        newVal.push(start[n] + (diff[n] * i));
                     }
                 }
                 else {
@@ -185,6 +174,7 @@
          * play
          * @method
          * @memberof Kinetic.Tween.prototype
+         * @returns {Tween}
          */
         play: function() {
             this.tween.play();
@@ -194,6 +184,7 @@
          * reverse
          * @method
          * @memberof Kinetic.Tween.prototype
+         * @returns {Tween}
          */
         reverse: function() {
             this.tween.reverse();
@@ -203,6 +194,7 @@
          * reset
          * @method
          * @memberof Kinetic.Tween.prototype
+         * @returns {Tween}
          */
         reset: function() {
             var node = this.node;
@@ -215,6 +207,7 @@
          * @method
          * @memberof Kinetic.Tween.prototype
          * @param {Integer} t time in seconds between 0 and the duration
+         * @returns {Tween}
          */
         seek: function(t) {
             var node = this.node;
@@ -226,6 +219,7 @@
          * pause
          * @method
          * @memberof Kinetic.Tween.prototype
+         * @returns {Tween}
          */
         pause: function() {
             this.tween.pause();
@@ -235,6 +229,7 @@
          * finish
          * @method
          * @memberof Kinetic.Tween.prototype
+         * @returns {Tween}
          */
         finish: function() {
             var node = this.node;

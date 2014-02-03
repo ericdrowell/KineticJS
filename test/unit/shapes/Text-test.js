@@ -44,8 +44,8 @@ suite('Text', function(){
         });
 
         // center text box
-        rect.setOffset(text.getWidth() / 2, text.getHeight() / 2);
-        text.setOffset(text.getWidth() / 2, text.getHeight() / 2);
+        rect.offset(text.getWidth() / 2, text.getHeight() / 2);
+        text.offset(text.getWidth() / 2, text.getHeight() / 2);
 
         group.add(rect);
         group.add(text);
@@ -82,7 +82,7 @@ suite('Text', function(){
         });
 
         // center text box
-        text.setOffset(text.getWidth() / 2, text.getHeight() / 2);
+        text.offset(text.getWidth() / 2, text.getHeight() / 2);
 
         layer.add(text);
         stage.add(layer);

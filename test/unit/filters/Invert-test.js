@@ -17,7 +17,8 @@ suite('Invert', function() {
             layer.add(darth);
             stage.add(layer);
 
-            darth.setFilter(Kinetic.Filters.Invert);
+            darth.cache();
+            darth.filters([Kinetic.Filters.Invert]);
             layer.draw();
 
             done();
@@ -45,7 +46,8 @@ suite('Invert', function() {
             layer.add(darth);
             stage.add(layer);
 
-            darth.setFilter(Kinetic.Filters.Invert);
+            darth.cache();
+            darth.filters([Kinetic.Filters.Invert]);
             layer.draw();
 
             done();
@@ -72,7 +74,8 @@ suite('Invert', function() {
             layer.add(darth);
             stage.add(layer);
 
-            darth.setFilter(Kinetic.Filters.Invert);
+            darth.cache();
+            darth.filters([Kinetic.Filters.Invert]);
             layer.draw();
 
             done();
@@ -80,5 +83,4 @@ suite('Invert', function() {
         imageObj.src = 'assets/lion.png';
 
     });
-
 });

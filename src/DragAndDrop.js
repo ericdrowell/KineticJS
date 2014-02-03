@@ -120,12 +120,6 @@
         dd._endDragAfter(evt);
     };
 
-    /**
-     * set draggable
-     * @method
-     * @memberof Kinetic.Node.prototype
-     * @param {String} draggable
-     */
     Kinetic.Node.prototype.setDraggable = function(draggable) {
         this._setAttr('draggable', draggable);
         this._dragChange();
@@ -174,6 +168,12 @@
                 }
             });
         }
+
+        // listening is required for drag and drop
+        /*
+        this._listeningEnabled = true;
+        this._clearSelfAndAncestorCache('listeningEnabled');
+        */
     };
 
     Kinetic.Node.prototype._dragChange = function() {
@@ -210,38 +210,46 @@
     Kinetic.Factory.addGetterSetter(Kinetic.Node, 'dragBoundFunc');
 
     /**
-     * set drag bound function.  This is used to override the default
+     * get/set drag bound function.  This is used to override the default
      *  drag and drop position
-     * @name setDragBoundFunc
+     * @name dragBoundFunc
      * @method
      * @memberof Kinetic.Node.prototype
      * @param {Function} dragBoundFunc
-     */
-
-    /**
-     * get dragBoundFunc
-     * @name getDragBoundFunc
-     * @method
-     * @memberof Kinetic.Node.prototype
+     * @returns {Function}
+     * @example
+     * // get drag bound function<br>
+     * var dragBoundFunc = node.dragBoundFunc();<br><br>
+     *
+     * // create vertical drag and drop<br>
+     * node.dragBoundFunc(function(){<br>
+     *   return {<br>
+     *     x: this.getAbsolutePosition().x,<br>
+     *     y: pos.y<br>
+     *   };<br>
+     * });
      */
 
     Kinetic.Factory.addGetter(Kinetic.Node, 'draggable', false);
+    Kinetic.Factory.addOverloadedGetterSetter(Kinetic.Node, 'draggable');
 
      /**
-     * get draggable
-     * @name getDraggable
+     * get/set draggable flag
+     * @name draggable
      * @method
      * @memberof Kinetic.Node.prototype
+     * @param {Boolean} draggable
+     * @returns {Boolean}
+     * @example
+     * // get draggable flag<br>
+     * var draggable = node.draggable();<br><br>
+     *
+     * // enable drag and drop<br>
+     * node.draggable(true);<br><br>
+     *
+     * // disable drag and drop<br>
+     * node.draggable(false);
      */
-
-    /**
-     * alias of getDraggable()
-     * @name isDraggable
-     * @method
-     * @memberof Kinetic.Node.prototype
-     */
-
-    Kinetic.Node.prototype.isDraggable = Kinetic.Node.prototype.getDraggable;
 
     var html = document.documentElement;
     html.addEventListener('mouseup', Kinetic.DD._endDragBefore, true);

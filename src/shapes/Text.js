@@ -8,10 +8,8 @@
         DASH = '-',
         EMPTY_STRING = '',
         LEFT = 'left',
-        NEW_LINE = '\n',
         TEXT = 'text',
         TEXT_UPPER = 'Text',
-        TOP = 'top',
         MIDDLE = 'middle',
         NORMAL = 'normal',
         PX_SPACE = 'px ',
@@ -46,7 +44,7 @@
      * @@nodeParams
      * @example
      * var text = new Kinetic.Text({<br>
-     *   x: stage.getWidth() / 2,<br>
+     *   x: 10,<br>
      *   y: 15,<br>
      *   text: 'Simple Text',<br>
      *   fontSize: 30,<br>
@@ -88,17 +86,17 @@
             }
 
             this._setTextData();
+            this.sceneFunc(this._sceneFunc);
+            this.hitFunc(this._hitFunc);
         },
-        drawFunc: function(context) {
+        _sceneFunc: function(context) {
             var p = this.getPadding(),
-                fontStyle = this.getFontStyle(),
-                fontSize = this.getFontSize(),
-                fontFamily = this.getFontFamily(),
                 textHeight = this.getTextHeight(),
                 lineHeightPx = this.getLineHeight() * textHeight,
                 textArr = this.textArr,
                 textArrLen = textArr.length,
-                totalWidth = this.getWidth();
+                totalWidth = this.getWidth(),
+                n;
 
             context.setAttr('font', this._getContextFont());
             context.setAttr('textBaseline', MIDDLE);
@@ -108,7 +106,7 @@
             context.translate(0, p + textHeight / 2);
 
             // draw text lines
-            for(var n = 0; n < textArrLen; n++) {
+            for(n = 0; n < textArrLen; n++) {
                 var obj = textArr[n],
                     text = obj.text,
                     width = obj.width;
@@ -129,7 +127,7 @@
             }
             context.restore();
         },
-        drawHitFunc: function(context) {
+        _hitFunc: function(context) {
             var width = this.getWidth(),
                 height = this.getHeight();
 
@@ -138,15 +136,10 @@
             context.closePath();
             context.fillStrokeShape(this);
         },
-        /**
-         * set text
-         * @method
-         * @memberof Kinetic.Text.prototype
-         * @param {String} text
-         */
         setText: function(text) {
             var str = Kinetic.Util._isString(text) ? text : text.toString();
             this._setAttr(TEXT, str);
+            return this;
         },
         /**
          * get width of text area, which includes padding
@@ -202,118 +195,118 @@
         _getContextFont: function() {
             return this.getFontStyle() + SPACE + this.getFontSize() + PX_SPACE + this.getFontFamily();
         },
-        _addTextLine: function (line, width, height) {
+        _addTextLine: function (line, width) {
             return this.textArr.push({text: line, width: width});
         },
         _getTextWidth: function (text) {
             return dummyContext.measureText(text).width;
         },
         _setTextData: function () {
-             var lines = this.getText().split('\n'),
-                 fontSize = +this.getFontSize(),
-                 textWidth = 0,
-                 lineHeightPx = this.getLineHeight() * fontSize,
-                 width = this.attrs.width,
-                 height = this.attrs.height,
-                 fixedWidth = width !== AUTO,
-                 fixedHeight = height !== AUTO,
-                 padding = this.getPadding(),
-                 maxWidth = width - padding * 2,
-                 maxHeightPx = height - padding * 2,
-                 currentHeightPx = 0,
-                 wrap = this.getWrap(),
-                 shouldWrap = wrap !== NONE,
-                 wrapAtWord = wrap !==  CHAR && shouldWrap;
+            var lines = this.getText().split('\n'),
+                fontSize = +this.getFontSize(),
+                textWidth = 0,
+                lineHeightPx = this.getLineHeight() * fontSize,
+                width = this.attrs.width,
+                height = this.attrs.height,
+                fixedWidth = width !== AUTO,
+                fixedHeight = height !== AUTO,
+                padding = this.getPadding(),
+                maxWidth = width - padding * 2,
+                maxHeightPx = height - padding * 2,
+                currentHeightPx = 0,
+                wrap = this.getWrap(),
+                shouldWrap = wrap !== NONE,
+                wrapAtWord = wrap !==  CHAR && shouldWrap;
 
-             this.textArr = [];
-             dummyContext.save();
-             dummyContext.font = this.getFontStyle() + SPACE + fontSize + PX_SPACE + this.getFontFamily();
-             for (var i = 0, max = lines.length; i < max; ++i) {
-                 var line = lines[i],
-                     lineWidth = this._getTextWidth(line);
-                 if (fixedWidth && lineWidth > maxWidth) {
-                     /*
-                      * if width is fixed and line does not fit entirely
-                      * break the line into multiple fitting lines
-                      */
-                     while (line.length > 0) {
+            this.textArr = [];
+            dummyContext.save();
+            dummyContext.font = this.getFontStyle() + SPACE + fontSize + PX_SPACE + this.getFontFamily();
+            for (var i = 0, max = lines.length; i < max; ++i) {
+                var line = lines[i],
+                    lineWidth = this._getTextWidth(line);
+                if (fixedWidth && lineWidth > maxWidth) {
+                    /*
+                     * if width is fixed and line does not fit entirely
+                     * break the line into multiple fitting lines
+                     */
+                    while (line.length > 0) {
                         /*
                          * use binary search to find the longest substring that
                          * that would fit in the specified width
                          */
-                         var low = 0, high = line.length,
-                             match = '', matchWidth = 0;
-                         while (low < high) {
-                             var mid = (low + high) >>> 1,
-                                 substr = line.slice(0, mid + 1),
-                                 substrWidth = this._getTextWidth(substr);
-                             if (substrWidth <= maxWidth) {
-                                 low = mid + 1;
-                                 match = substr;
-                                 matchWidth = substrWidth;
-                             } else {
-                                 high = mid;
-                             }
-                         }
-                         /*
-                          * 'low' is now the index of the substring end
-                          * 'match' is the substring
-                          * 'matchWidth' is the substring width in px
-                          */
-                         if (match) {
-                             // a fitting substring was found
-                             if (wrapAtWord) {
-                                 // try to find a space or dash where wrapping could be done
-                                 var wrapIndex = Math.max(match.lastIndexOf(SPACE),
+                        var low = 0, high = line.length,
+                            match = '', matchWidth = 0;
+                        while (low < high) {
+                            var mid = (low + high) >>> 1,
+                                substr = line.slice(0, mid + 1),
+                                substrWidth = this._getTextWidth(substr);
+                            if (substrWidth <= maxWidth) {
+                                low = mid + 1;
+                                match = substr;
+                                matchWidth = substrWidth;
+                            } else {
+                                high = mid;
+                            }
+                        }
+                        /*
+                         * 'low' is now the index of the substring end
+                         * 'match' is the substring
+                         * 'matchWidth' is the substring width in px
+                         */
+                        if (match) {
+                            // a fitting substring was found
+                            if (wrapAtWord) {
+                                // try to find a space or dash where wrapping could be done
+                                var wrapIndex = Math.max(match.lastIndexOf(SPACE),
                                                           match.lastIndexOf(DASH)) + 1;
-                                 if (wrapIndex > 0) {
-                                     // re-cut the substring found at the space/dash position
-                                     low = wrapIndex;
-                                     match = match.slice(0, low);
-                                     matchWidth = this._getTextWidth(match);
-                                 }
-                             }
-                             this._addTextLine(match, matchWidth);
-                             currentHeightPx += lineHeightPx;
-                             if (!shouldWrap ||
-                                 (fixedHeight && currentHeightPx + lineHeightPx > maxHeightPx)) {
-                                 /*
-                                  * stop wrapping if wrapping is disabled or if adding
-                                  * one more line would overflow the fixed height
-                                  */
-                                 break;
-                             }
-                             line = line.slice(low);
-                             if (line.length > 0) {
-                                 // Check if the remaining text would fit on one line
-                                 lineWidth = this._getTextWidth(line);
-                                 if (lineWidth <= maxWidth) {
-                                     // if it does, add the line and break out of the loop
-                                     this._addTextLine(line, lineWidth);
-                                     currentHeightPx += lineHeightPx;
-                                     break;
-                                 }
-                             }
-                         } else {
-                             // not even one character could fit in the element, abort
-                             break;
-                         }
-                     }
-                 } else {
-                     // element width is automatically adjusted to max line width
-                     this._addTextLine(line, lineWidth);
-                     currentHeightPx += lineHeightPx;
-                     textWidth = Math.max(textWidth, lineWidth);
-                 }
-                 // if element height is fixed, abort if adding one more line would overflow
-                 if (fixedHeight && currentHeightPx + lineHeightPx > maxHeightPx) {
-                     break;
-                 }
-             }
-             dummyContext.restore();
-             this.textHeight = fontSize;
-             this.textWidth = textWidth;
-         }
+                                if (wrapIndex > 0) {
+                                    // re-cut the substring found at the space/dash position
+                                    low = wrapIndex;
+                                    match = match.slice(0, low);
+                                    matchWidth = this._getTextWidth(match);
+                                }
+                            }
+                            this._addTextLine(match, matchWidth);
+                            currentHeightPx += lineHeightPx;
+                            if (!shouldWrap ||
+                                (fixedHeight && currentHeightPx + lineHeightPx > maxHeightPx)) {
+                                /*
+                                 * stop wrapping if wrapping is disabled or if adding
+                                 * one more line would overflow the fixed height
+                                 */
+                                break;
+                            }
+                            line = line.slice(low);
+                            if (line.length > 0) {
+                                // Check if the remaining text would fit on one line
+                                lineWidth = this._getTextWidth(line);
+                                if (lineWidth <= maxWidth) {
+                                    // if it does, add the line and break out of the loop
+                                    this._addTextLine(line, lineWidth);
+                                    currentHeightPx += lineHeightPx;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // not even one character could fit in the element, abort
+                            break;
+                        }
+                    }
+                } else {
+                    // element width is automatically adjusted to max line width
+                    this._addTextLine(line, lineWidth);
+                    currentHeightPx += lineHeightPx;
+                    textWidth = Math.max(textWidth, lineWidth);
+                }
+                // if element height is fixed, abort if adding one more line would overflow
+                if (fixedHeight && currentHeightPx + lineHeightPx > maxHeightPx) {
+                    break;
+                }
+            }
+            dummyContext.restore();
+            this.textHeight = fontSize;
+            this.textWidth = textWidth;
+        }
     };
     Kinetic.Util.extend(Kinetic.Text, Kinetic.Shape);
 
@@ -321,156 +314,142 @@
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'fontFamily', 'Arial');
 
     /**
-     * set font family
-     * @name setFontFamily
+     * get/set font family
+     * @name fontFamily
      * @method
      * @memberof Kinetic.Text.prototype
      * @param {String} fontFamily
-     */
-
-     /**
-     * get font family
-     * @name getFontFamily
-     * @method
-     * @memberof Kinetic.Text.prototype
      * @returns {String}
+     * @example
+     * // get font family<br>
+     * var fontFamily = text.fontFamily();<br><br><br>
+     *
+     * // set font family<br>
+     * text.fontFamily('Arial');
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'fontSize', 12);
 
     /**
-     * set font size in pixels
-     * @name setFontSize
+     * get/set font size in pixels
+     * @name fontSize
      * @method
      * @memberof Kinetic.Text.prototype
      * @param {Number} fontSize
-     */
-
-     /**
-     * get font size
-     * @name getFontSize
-     * @method
-     * @memberof Kinetic.Text.prototype
      * @returns {Number}
+     * @example
+     * // get font size<br>
+     * var fontSize = text.fontSize();<br><br>
+     *
+     * // set font size to 22px<br>
+     * text.fontSize(22);
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'fontStyle', NORMAL);
 
     /**
      * set font style.  Can be 'normal', 'italic', or 'bold'.  'normal' is the default.
-     * @name setFontStyle
+     * @name fontStyle
      * @method
      * @memberof Kinetic.Text.prototype
      * @param {String} fontStyle
-     */
-
-     /**
-     * get font style
-     * @name getFontStyle
-     * @method
-     * @memberof Kinetic.Text.prototype
      * @returns {String}
+     * @example
+     * // get font style<br>
+     * var fontStyle = text.fontStyle();<br><br>
+     *
+     * // set font style<br>
+     * text.fontStyle('bold');
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'padding', 0);
 
     /**
      * set padding
-     * @name setPadding
+     * @name padding
      * @method
      * @memberof Kinetic.Text.prototype
-     * @param {int} padding
-     */
-
-     /**
-     * get padding
-     * @name getPadding
-     * @method
-     * @memberof Kinetic.Text.prototype
+     * @param {Number} padding
      * @returns {Number}
+     * @example
+     * // get padding<br>
+     * var padding = text.padding();<br><br>
+     * 
+     * // set padding to 10 pixels<br>
+     * text.padding(10);
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'align', LEFT);
 
     /**
-     * set horizontal align of text
-     * @name setAlign
+     * get/set horizontal align of text.  Can be 'left', 'center', or 'right'
+     * @name align
      * @method
      * @memberof Kinetic.Text.prototype
-     * @param {String} align align can be 'left', 'center', or 'right'
-     */
-
-     /**
-     * get horizontal align
-     * @name getAlign
-     * @method
-     * @memberof Kinetic.Text.prototype
+     * @param {String} align
      * @returns {String}
+     * @example
+     * // get text align<br>
+     * var align = text.align();<br><br>
+     *
+     * // center text<br>
+     * text.align('center');<br><br>
+     *
+     * // align text to right<br>
+     * text.align('right');
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'lineHeight', 1);
 
     /**
-     * set line height
-     * @name setLineHeight
+     * get/set line height.  The default is 1.
+     * @name lineHeight
      * @method
      * @memberof Kinetic.Text.prototype
-     * @param {Number} lineHeight default is 1
-     */
-
-     /**
-     * get line height
-     * @name getLineHeight
-     * @method
-     * @memberof Kinetic.Text.prototype
+     * @param {Number} lineHeight
      * @returns {Number}
+     * @example 
+     * // get line height<br>
+     * var lineHeight = text.lineHeight();<br><br><br>
+     *
+     * // set the line height<br>
+     * text.lineHeight(2);
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Text, 'wrap', WORD);
 
     /**
-     * set wrap
-     * @name setWrap
+     * get/set wrap.  Can be word, char, or none. Default is word.
+     * @name wrap
      * @method
      * @memberof Kinetic.Text.prototype
-     * @param {String} wrap can be word, char, or none. Default is word
-     */
-
-     /**
-     * get wrap
-     * @name getWrap
-     * @method
-     * @memberof Kinetic.Text.prototype
+     * @param {String} wrap
      * @returns {String}
+     * @example
+     * // get wrap<br>
+     * var wrap = text.wrap();<br><br>
+     *
+     * // set wrap<br>
+     * text.wrap('word');
      */
 
-    Kinetic.Factory.addGetter(Kinetic.Text, TEXT, EMPTY_STRING);
+    Kinetic.Factory.addGetter(Kinetic.Text, 'text', EMPTY_STRING);
+    Kinetic.Factory.addOverloadedGetterSetter(Kinetic.Text, 'text');
 
     /**
-     * get text
+     * get/set text
      * @name getText
      * @method
      * @memberof Kinetic.Text.prototype
+     * @param {String} text
      * @returns {String}
+     * @example
+     * // get text<br>
+     * var text = text.text();<br><br>
+     * 
+     * // set text<br>
+     * text.text('Hello world!');
      */
 
-    Kinetic.Factory.addSetter(Kinetic.Text, 'width');
-
-    /**
-     * set width
-     * @name setWidth
-     * @method
-     * @memberof Kinetic.Text.prototype
-     * @param {Number|String} width default is auto
-     */
-
-    Kinetic.Factory.addSetter(Kinetic.Text, 'height');
-
-    /**
-     * set height
-     * @name setHeight
-     * @method
-     * @memberof Kinetic.Text.prototype
-     * @param {Number|String} height default is auto
-     */
+     Kinetic.Collection.mapMethods(Kinetic.Text);
 })();

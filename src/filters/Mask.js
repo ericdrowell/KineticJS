@@ -161,38 +161,32 @@
 	
 	/**
 	 * Mask Filter
-	 *
-	 * Only crop unicolor background images for instance
-	 *
 	 * @function
 	 * @memberof Kinetic.Filters
 	 * @param {Object} imageData
 	 */
-	Kinetic.Filters.Mask = function(idata) {
+	Kinetic.Filters.Mask = function(imageData) {
 		// Detect pixels close to the background color
-		var threshold = this.getFilterThreshold(),
-                    mask = backgroundMask(idata, threshold);
+		var threshold = this.threshold(),
+        mask = backgroundMask(imageData, threshold);
 		if (mask) {
 			// Erode
-			mask = erodeMask(mask, idata.width, idata.height);
+			mask = erodeMask(mask, imageData.width, imageData.height);
 
 			// Dilate
-			mask = dilateMask(mask, idata.width, idata.height);
+			mask = dilateMask(mask, imageData.width, imageData.height);
 
 			// Gradient
-			mask = smoothEdgeMask(mask, idata.width, idata.height);
+			mask = smoothEdgeMask(mask, imageData.width, imageData.height);
 
 			// Apply mask
-			applyMask(idata, mask);
+			applyMask(imageData, mask);
 			
 			// todo : Update hit region function according to mask
 		}
 
-		return idata;
+		return imageData;
 	};
 
-	Kinetic.Factory.addFilterGetterSetter(Kinetic.Image, 'filterThreshold', 0);
-
-	//threshold The RGB euclidian distance threshold (default : 10) 
-
+	Kinetic.Factory.addGetterSetter(Kinetic.Node, 'threshold', 0, null, Kinetic.Factory.afterSetFilter);
 })();
