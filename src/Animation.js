@@ -223,8 +223,12 @@
             || FRAF;
     })();
 
+    var _lastTime = null;
     function FRAF(callback) {
-        window.setTimeout(callback, 1000 / 60);
+        var currTime = new Date().getTime();
+        var timeToCall = _lastTime ? Math.max(0, 16 - (currTime - _lastTime)) : 16;
+        window.setTimeout(callback , timeToCall);
+        _lastTime = currTime + timeToCall;
     }
 
     Kinetic.Animation.requestAnimFrame = function(callback) {
