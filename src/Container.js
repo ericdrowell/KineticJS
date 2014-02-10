@@ -32,12 +32,11 @@
 
             nrChildren = children.length;
             while(nrChildren > 0) {
-                child = children[nrChildren - 1];
+                child = children[--nrChildren];
                 if (child.hasChildren()) {
                     child.removeChildren();
                 }
                 child.remove();
-                nrChildren--;
             }
 
             return this;
