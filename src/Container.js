@@ -236,10 +236,11 @@
 
             return arr;
         },
-        _setChildrenIndices: function() {
-            this.children.each(function(child, n) {
-                child.index = n;
-            });
+        _setChildrenIndices: function(fromIndex) {
+            var i, len = this.children.length;
+            for(i = fromIndex || 0; i < len; i++) {
+                this.children[i].index = i;
+            }
         },
         drawScene: function(can) {
             var layer = this.getLayer(),
