@@ -48,9 +48,10 @@
          * @memberof Kinetic.Container.prototype
          */
         destroyChildren: function() {
-            var children = this.children;
-            while(children.length > 0) {
-                children[0].destroy();
+            var children = this.getChildren(),
+                i = children.length - 1;
+            while(i >= 0) {
+                children[i--].destroy();
             }
             return this;
         },
