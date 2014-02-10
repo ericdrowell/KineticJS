@@ -28,14 +28,16 @@
          */
         removeChildren: function() {
             var children = this.children,
-                child;
+                child, nrChildren;
 
-            while(children.length > 0) {
-                child = children[0];
+            nrChildren = children.length;
+            while(nrChildren > 0) {
+                child = children[nrChildren - 1];
                 if (child.hasChildren()) {
                     child.removeChildren();
                 }
                 child.remove();
+                nrChildren--;
             }
 
             return this;
