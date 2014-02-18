@@ -211,10 +211,15 @@
                 this.setAttr('lineCap', lineCap);
             }
         },
-        _applyOpacity: function(shape) {
-            var absOpacity = shape.getAbsoluteOpacity();
-            if(absOpacity !== 1) {
-                this.setAttr('globalAlpha', absOpacity);
+        _applyOpacity: function(shape, isCacheCanvas) {
+            var opacity;
+            if (isCacheCanvas) {
+                opacity = shape.getRelativeOpacity();
+            } else {
+                opacity = shape.getAbsoluteOpacity();
+            }
+            if(opacity !== 1) {
+                this.setAttr('globalAlpha', opacity);
             }
         },
         _applyLineJoin: function(shape) {
@@ -223,12 +228,16 @@
                 this.setAttr('lineJoin', lineJoin);
             }
         },
-        _applyTransform: function(shape) {
+        _applyTransform: function(shape, isCacheCanvas) {
             var transformsEnabled = shape.getTransformsEnabled(),
                 m;
 
             if (transformsEnabled === 'all') {
-                m = shape.getAbsoluteTransform().getMatrix();
+                if (isCacheCanvas) {
+                    m = shape.getRelativeTransform().getMatrix();
+                } else {
+                    m = shape.getAbsoluteTransform().getMatrix();
+                }
                 this.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
             }
             else if (transformsEnabled === 'position') {

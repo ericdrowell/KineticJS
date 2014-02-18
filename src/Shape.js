@@ -154,7 +154,7 @@
                         bufferContext.clear();
                         bufferContext.save();
                         bufferContext._applyLineJoin(this);
-                        bufferContext._applyTransform(this);
+                        bufferContext._applyTransform(this, canvas.isCache);
                      
                         drawFunc.call(this, bufferContext);
                         bufferContext.restore();
@@ -166,13 +166,13 @@
                             context.restore();
                         }
 
-                        context._applyOpacity(this);
+                        context._applyOpacity(this, canvas.isCache);
                         context.drawImage(bufferCanvas._canvas, 0, 0);
                     }
                     // if buffer canvas is not needed
                     else {
                         context._applyLineJoin(this);
-                        context._applyTransform(this);
+                        context._applyTransform(this, canvas.isCache);
                
                         if (hasShadow) {
                             context.save();
@@ -181,7 +181,7 @@
                             context.restore();
                         }   
 
-                        context._applyOpacity(this);
+                        context._applyOpacity(this, canvas.isCache);
                         drawFunc.call(this, context);
                     }   
                     context.restore(); 
@@ -205,7 +205,7 @@
                 else if (drawFunc) {
                     context.save();
                     context._applyLineJoin(this);
-                    context._applyTransform(this);
+                    context._applyTransform(this, canvas.isCache);
                    
                     drawFunc.call(this, context);   
                     context.restore();

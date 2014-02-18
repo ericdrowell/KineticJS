@@ -1,7 +1,9 @@
 (function() {
     // CONSTANTS
     var ABSOLUTE_OPACITY = 'absoluteOpacity',
+        RELATIVE_OPACITY = 'relativeOpacity',
         ABSOLUTE_TRANSFORM = 'absoluteTransform',
+        RELATIVE_TRANSFORM = 'relativeTransform',
         BEFORE = 'before',
         CHANGE = 'Change',
         CHILDREN = 'children',
@@ -50,6 +52,7 @@
             this.on(TRANSFORM_CHANGE_STR, function() {
                 this._clearCache(TRANSFORM);
                 that._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+                that._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
             });
             this.on('visibleChange.kinetic', function() {
                 that._clearSelfAndDescendantCache(VISIBLE);
@@ -59,6 +62,7 @@
             });
             this.on('opacityChange.kinetic', function() {
                 that._clearSelfAndDescendantCache(ABSOLUTE_OPACITY);
+                that._clearSelfAndDescendantCache(RELATIVE_OPACITY);
             });
         },
         _clearCache: function(attr){
@@ -103,6 +107,7 @@
         clearCache: function() {
             delete this._cache.canvas;
             this._filterUpToDate = false;
+            this.cacheBegin = false;
             return this;
         },
         /**
@@ -170,6 +175,10 @@
 
             this.clearCache();
 
+            cachedSceneCanvas.isCache = true;
+            cachedHitCanvas.isCache = true;
+            this.cacheBegin = true;
+
             this.transformsEnabled('position');
             this.x(x * -1);
             this.y(y * -1);
@@ -205,7 +214,8 @@
         },
         _drawCachedSceneCanvas: function(context) {
             context.save();
-            context._applyTransform(this);
+            context._applyTransform(this, context.canvas.isCache);
+            context._applyOpacity(this, context.canvas.isCache);
             context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0);
             context.restore();
         },
@@ -251,7 +261,7 @@
                 hitCanvas = cachedCanvas.hit;
 
             context.save();
-            context._applyTransform(this);
+            context._applyTransform(this, context.canvas.isCache);
             context.drawImage(hitCanvas._canvas, 0, 0); 
             context.restore(); 
         },
@@ -401,9 +411,11 @@
             // traversal must be cleared when removing a node
             this._clearSelfAndDescendantCache(STAGE);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
             this._clearSelfAndDescendantCache(VISIBLE);
             this._clearSelfAndDescendantCache(LISTENING);
             this._clearSelfAndDescendantCache(ABSOLUTE_OPACITY);
+            this._clearSelfAndDescendantCache(RELATIVE_OPACITY);
 
             return this;
         },
@@ -753,6 +765,7 @@
 
             this._clearCache(TRANSFORM);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
         },
         _clearTransform: function() {
             var trans = {
@@ -779,6 +792,7 @@
 
             this._clearCache(TRANSFORM);
             this._clearSelfAndDescendantCache(ABSOLUTE_TRANSFORM);
+            this._clearSelfAndDescendantCache(RELATIVE_TRANSFORM);
 
             // return original transform
             return trans;
@@ -815,7 +829,7 @@
             this.setPosition({x:x, y:y});
             return this;
         },
-        _eachAncestorReverse: function(func, includeSelf) {
+        _eachAncestorReverse: function(func, includeSelf, stopAtCacheBegin) {
             var family = [],
                 parent = this.getParent(),
                 len, n;
@@ -824,7 +838,7 @@
             if(includeSelf) {
                 family.unshift(this);
             }
-            while(parent) {
+            while(parent && (!stopAtCacheBegin || !parent.cacheBegin)) {
                 family.unshift(parent);
                 parent = parent.parent;
             }
@@ -936,6 +950,22 @@
                 absOpacity *= this.getParent().getAbsoluteOpacity();
             }
             return absOpacity;
+        },
+        /**
+         * get relative opacity
+         * @method
+         * @memberof Kinetic.Node.prototype
+         * @returns {Number}
+         */
+        getRelativeOpacity: function() {
+            return this._getCache(RELATIVE_OPACITY, this._getRelativeOpacity);
+        },
+        _getRelativeOpacity: function() {
+            var opacity = 1;
+            this._eachAncestorReverse(function(node) {
+                opacity *= node.getOpacity();
+            }, true, true);
+            return opacity;
         },
         /**
          * move node to another container
@@ -1094,6 +1124,36 @@
             }, true);
             return at;
         },
+
+        /**
+         * get relative transform of the node which takes into
+         *  account its ancestor transforms
+         * @method
+         * @memberof Kinetic.Node.prototype
+         * @returns {Kinetic.Transform}
+         */
+        getRelativeTransform: function() {
+            return this._getCache(RELATIVE_TRANSFORM, this._getRelativeTransform);
+        },
+        _getRelativeTransform: function() {
+            var at = new Kinetic.Transform(),
+                transformsEnabled, trans;
+
+            // start with stage and traverse downwards to self
+            this._eachAncestorReverse(function(node) {
+                transformsEnabled = node.transformsEnabled();
+                trans = node.getTransform();
+
+                if (transformsEnabled === 'all') {
+                    at.multiply(trans);
+                }
+                else if (transformsEnabled === 'position') {
+                    at.translate(node.x(), node.y());
+                }
+            }, true, true);
+            return at;
+        },
+
         /**
          * get transform of the node
          * @method
