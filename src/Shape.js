@@ -166,7 +166,7 @@
                             context.restore();
                         }
 
-                        context._applyOpacity(this);
+                        context._applyOpacity(this, canvas.isCache);
                         context.drawImage(bufferCanvas._canvas, 0, 0);
                     }
                     // if buffer canvas is not needed
@@ -181,7 +181,7 @@
                             context.restore();
                         }   
 
-                        context._applyOpacity(this);
+                        context._applyOpacity(this, canvas.isCache);
                         drawFunc.call(this, context);
                     }   
                     context.restore(); 

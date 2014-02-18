@@ -1,6 +1,7 @@
 (function() {
     // CONSTANTS
     var ABSOLUTE_OPACITY = 'absoluteOpacity',
+        RELATIVE_OPACITY = 'relativeOpacity',
         ABSOLUTE_TRANSFORM = 'absoluteTransform',
         RELATIVE_TRANSFORM = 'relativeTransform',
         BEFORE = 'before',
@@ -61,6 +62,7 @@
             });
             this.on('opacityChange.kinetic', function() {
                 that._clearSelfAndDescendantCache(ABSOLUTE_OPACITY);
+                that._clearSelfAndDescendantCache(RELATIVE_OPACITY);
             });
         },
         _clearCache: function(attr){
@@ -213,6 +215,7 @@
         _drawCachedSceneCanvas: function(context) {
             context.save();
             context._applyTransform(this, context.canvas.isCache);
+            context._applyOpacity(this, context.canvas.isCache);
             context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0);
             context.restore();
         },
@@ -412,6 +415,7 @@
             this._clearSelfAndDescendantCache(VISIBLE);
             this._clearSelfAndDescendantCache(LISTENING);
             this._clearSelfAndDescendantCache(ABSOLUTE_OPACITY);
+            this._clearSelfAndDescendantCache(RELATIVE_OPACITY);
 
             return this;
         },
@@ -946,6 +950,22 @@
                 absOpacity *= this.getParent().getAbsoluteOpacity();
             }
             return absOpacity;
+        },
+        /**
+         * get relative opacity
+         * @method
+         * @memberof Kinetic.Node.prototype
+         * @returns {Number}
+         */
+        getRelativeOpacity: function() {
+            return this._getCache(RELATIVE_OPACITY, this._getRelativeOpacity);
+        },
+        _getRelativeOpacity: function() {
+            var opacity = 1;
+            this._eachAncestorReverse(function(node) {
+                opacity *= node.getOpacity();
+            }, true, true);
+            return opacity;
         },
         /**
          * move node to another container

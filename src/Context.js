@@ -211,10 +211,15 @@
                 this.setAttr('lineCap', lineCap);
             }
         },
-        _applyOpacity: function(shape) {
-            var absOpacity = shape.getAbsoluteOpacity();
-            if(absOpacity !== 1) {
-                this.setAttr('globalAlpha', absOpacity);
+        _applyOpacity: function(shape, isCacheCanvas) {
+            var opacity;
+            if (isCacheCanvas) {
+                opacity = shape.getRelativeOpacity();
+            } else {
+                opacity = shape.getAbsoluteOpacity();
+            }
+            if(opacity !== 1) {
+                this.setAttr('globalAlpha', opacity);
             }
         },
         _applyLineJoin: function(shape) {
