@@ -8770,6 +8770,7 @@ var Kinetic = {};
          * @memberof Kinetic.Stage.prototype
          * @param {Object} config
          * @param {Function} config.callback function executed when the composite has completed
+         * @param {Function} [config.fallback] function executed when creation of the composite fails
          * @param {String} [config.mimeType] can be "image/png" or "image/jpeg".
          *  "image/png" is the default
          * @param {Number} [config.x] x position of canvas section
@@ -8792,6 +8793,7 @@ var Kinetic = {};
                     height: config.height || this.getHeight(),
                     pixelRatio: 1
                 }),
+                fallback = config.fallback || function() {},
                 _context = canvas.getContext()._context,
                 layers = this.children;
 
@@ -8803,6 +8805,10 @@ var Kinetic = {};
                 var layer = layers[n],
                     layerUrl = layer.toDataURL(),
                     imageObj = new Image();
+
+                if (layerUrl === '') {
+                    return fallback();
+                }
 
                 imageObj.onload = function() {
                     _context.drawImage(imageObj, 0, 0);
