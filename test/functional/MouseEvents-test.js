@@ -622,6 +622,87 @@ suite('MouseEvents', function() {
     });
 
     // ======================================================
+    test('clickhold', function(done) {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'red',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        // desktop events
+        var clickhold = false;
+
+
+        circle.on('clickhold', function() {
+            clickhold = true;
+        });
+
+
+        layer.add(circle);
+        stage.add(layer);
+
+        var top = stage.content.getBoundingClientRect().top;
+
+
+        stage._mousedown({
+            clientX: 290,
+            clientY: 100 + top
+        });
+
+        assert(!clickhold, 'clickhold should be false');
+        setTimeout(function() {
+            assert(clickhold, 'clickhold should be true');
+            done();
+        }, 302);
+    });
+    // ======================================================
+    test('no clickhold after mouseup', function(done) {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+        var circle = new Kinetic.Circle({
+            x: stage.getWidth() / 2,
+            y: stage.getHeight() / 2,
+            radius: 70,
+            fill: 'red',
+            stroke: 'black',
+            strokeWidth: 4
+        });
+
+        // desktop events
+        var clickhold = false;
+
+
+        circle.on('clickhold', function() {
+            clickhold = true;
+        });
+
+
+        layer.add(circle);
+        stage.add(layer);
+
+        var top = stage.content.getBoundingClientRect().top;
+
+
+        stage._mousedown({
+            clientX: 290,
+            clientY: 100 + top
+        });
+        stage._mouseup({
+            clientX: 290,
+            clientY: 100 + top
+        });
+        setTimeout(function() {
+            assert(!clickhold, 'clickhold should be false');
+            done();
+        }, 302);
+    });
+
+    // ======================================================
     test('test group mousedown events', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();

@@ -1761,6 +1761,8 @@ suite('Node', function() {
         assert.equal(clicks[1], 'layer');
     });
 
+    
+
     // ======================================================
     test('move shape, group, and layer, and then get absolute position', function() {
         var stage = addStage();
