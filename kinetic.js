@@ -4397,7 +4397,7 @@ var Kinetic = {};
      * @param {Object} imageData
      */
     Kinetic.Filters.Blur = function(imageData) {
-        var radius = this.blurRadius() | 0;
+        var radius = this.blurRadius() || 0;
 
         if (radius > 0) {
             filterGaussBlurRGBA(imageData, radius);
@@ -7323,7 +7323,7 @@ var Kinetic = {};
 
             bufferHitCanvas.getContext().clear();
             this.drawScene(bufferHitCanvas);
-            p = bufferHitCanvas.context.getImageData(pos.x | 0, pos.y | 0, 1, 1).data;
+            p = bufferHitCanvas.context.getImageData(pos.x || 0, pos.y || 0, 1, 1).data;
             return p[3] > 0;
         },
         // extends Node.prototype.destroy 
