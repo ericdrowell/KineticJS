@@ -401,7 +401,7 @@
 
             if(parent && parent.children) {
                 parent.children.splice(this.index, 1);
-                parent._setChildrenIndices();
+                parent._setChildrenIndices(this.index);
                 delete this.parent;
             }
 
@@ -867,7 +867,7 @@
             var index = this.index;
             this.parent.children.splice(index, 1);
             this.parent.children.push(this);
-            this.parent._setChildrenIndices();
+            this.parent._setChildrenIndices(index);
             return true;
         },
         /**
@@ -886,7 +886,7 @@
             if(index < len - 1) {
                 this.parent.children.splice(index, 1);
                 this.parent.children.splice(index + 1, 0, this);
-                this.parent._setChildrenIndices();
+                this.parent._setChildrenIndices(index);
                 return true;
             }
             return false;
@@ -906,7 +906,7 @@
             if(index > 0) {
                 this.parent.children.splice(index, 1);
                 this.parent.children.splice(index - 1, 0, this);
-                this.parent._setChildrenIndices();
+                this.parent._setChildrenIndices(index - 1);
                 return true;
             }
             return false;
@@ -946,7 +946,7 @@
             var index = this.index;
             this.parent.children.splice(index, 1);
             this.parent.children.splice(zIndex, 0, this);
-            this.parent._setChildrenIndices();
+            this.parent._setChildrenIndices(Math.min(index, zIndex));
             return this;
         },
         /**

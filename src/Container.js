@@ -28,10 +28,11 @@
          */
         removeChildren: function() {
             var children = this.children,
-                child;
+                child, nrChildren;
 
-            while(children.length > 0) {
-                child = children[0];
+            nrChildren = children.length;
+            while(nrChildren > 0) {
+                child = children[--nrChildren];
                 if (child.hasChildren()) {
                     child.removeChildren();
                 }
@@ -46,9 +47,10 @@
          * @memberof Kinetic.Container.prototype
          */
         destroyChildren: function() {
-            var children = this.children;
-            while(children.length > 0) {
-                children[0].destroy();
+            var children = this.getChildren(),
+                i = children.length - 1;
+            while(i >= 0) {
+                children[i--].destroy();
             }
             return this;
         },
@@ -236,10 +238,11 @@
 
             return arr;
         },
-        _setChildrenIndices: function() {
-            this.children.each(function(child, n) {
-                child.index = n;
-            });
+        _setChildrenIndices: function(fromIndex) {
+            var i, len = this.children.length;
+            for(i = fromIndex || 0; i < len; i++) {
+                this.children[i].index = i;
+            }
         },
         drawScene: function(can) {
             var layer = this.getLayer(),
