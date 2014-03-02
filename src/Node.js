@@ -986,7 +986,7 @@
          * @memberof Kinetic.Node.prototype
          * @returns {Object}
          */
-        toObject: function() {
+        toObject: function(keepDefaults) {
             var type = Kinetic.Util,
                 obj = {},
                 attrs = this.getAttrs(),
@@ -998,14 +998,18 @@
             for(key in attrs) {
                 val = attrs[key];
                 if (!type._isFunction(val) && !type._isElement(val) && !(type._isObject(val) && type._hasMethods(val))) {
-                    getter = this[key];
-                    // remove attr value so that we can extract the default value from the getter
-                    delete attrs[key];
-                    defaultValue = getter ? getter.call(this) : null;
-                    // restore attr value
-                    attrs[key] = val;
-                    if (defaultValue !== val) {
+                    if (keepDefaults) {
                         obj.attrs[key] = val;
+                    } else {
+                        getter = this[key];
+                        // remove attr value so that we can extract the default value from the getter
+                        delete attrs[key];
+                        defaultValue = getter ? getter.call(this) : null;
+                        // restore attr value
+                        attrs[key] = val;
+                        if (defaultValue !== val) {
+                            obj.attrs[key] = val;
+                        }
                     }
                 }
             }
