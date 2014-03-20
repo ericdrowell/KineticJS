@@ -1508,7 +1508,7 @@
 
             if (events) {
                 for(i = 0; i < events.length; i++) {
-                    events[i].handler.call(this, evt);
+                    events[i].handler.call(this, evt, eventType);
                 }
             }
         },
