@@ -333,6 +333,7 @@
                 context.beginPath();
                 context.rect(clipX, clipY, clipWidth, clipHeight);
                 context.clip();
+				context.reset();
             }
 
             this.children.each(function(child) {
