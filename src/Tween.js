@@ -21,17 +21,17 @@
      * @memberof Kinetic
      * @example
      * // instantiate new tween which fully rotates a node in 1 second
-     * var tween = new Kinetic.Tween({<br>
-     *   node: node,<br>
-     *   rotationDeg: 360,<br>
-     *   duration: 1,<br>
-     *   easing: Kinetic.Easings.EaseInOut<br>
-     * });<br><br>
+     * var tween = new Kinetic.Tween({
+     *   node: node,
+     *   rotationDeg: 360,
+     *   duration: 1,
+     *   easing: Kinetic.Easings.EaseInOut
+     * });
      *
-     * // play tween<br>
-     * tween.play();<br><br>
+     * // play tween
+     * tween.play();
      *
-     * // pause tween<br>
+     * // pause tween
      * tween.pause();
      */
     Kinetic.Tween = function(config) {
@@ -48,7 +48,7 @@
 
         this.anim = new Kinetic.Animation(function() {
             that.tween.onEnterFrame();
-        }, node.getLayer() || node.getLayers());
+        }, node.getLayer());
 
         this.tween = new Tween(key, function(i) {
             that._tweenFunc(i);
@@ -199,7 +199,6 @@
         reset: function() {
             var node = this.node;
             this.tween.reset();
-            (node.getLayer() || node.getLayers()).draw();
             return this;
         },
         /**
@@ -212,7 +211,6 @@
         seek: function(t) {
             var node = this.node;
             this.tween.seek(t * 1000);
-            (node.getLayer() || node.getLayers()).draw();
             return this;
         },
         /**
@@ -234,7 +232,6 @@
         finish: function() {
             var node = this.node;
             this.tween.finish();
-            (node.getLayer() || node.getLayers()).draw();
             return this;
         },
         /**

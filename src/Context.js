@@ -222,19 +222,6 @@
                 this.setAttr('lineJoin', lineJoin);
             }
         },
-        _applyTransform: function(shape) {
-            var transformsEnabled = shape.getTransformsEnabled(),
-                m;
-
-            if (transformsEnabled === 'all') {
-                m = shape.getAbsoluteTransform().getMatrix();
-                this.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-            }
-            else if (transformsEnabled === 'position') {
-                // best performance for position only transforms
-                this.translate(shape.getX(), shape.getY());
-            }
-        },
         setAttr: function(attr, val) {
             this._context[attr] = val;
         },
@@ -441,7 +428,7 @@
                 fillPatternX = shape.getFillPatternX(),
                 fillPatternY = shape.getFillPatternY(),
                 fillPatternScale = shape.getFillPatternScale(),
-                fillPatternRotation = shape.getFillPatternRotation(),
+                fillPatternRotation = Kinetic.getAngle(shape.getFillPatternRotation()),
                 fillPatternOffset = shape.getFillPatternOffset(),
                 fillPatternRepeat = shape.getFillPatternRepeat();
 
@@ -561,7 +548,7 @@
                 absOpacity = shape.getAbsoluteOpacity(),
                 color = util.get(shape.getShadowColor(), 'black'),
                 blur = util.get(shape.getShadowBlur(), 5),
-                shadowOpacity = util.get(shape.getShadowOpacity(), 0),
+                shadowOpacity = util.get(shape.getShadowOpacity(), 1),
                 offset = util.get(shape.getShadowOffset(), {
                     x: 0,
                     y: 0

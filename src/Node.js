@@ -11,7 +11,6 @@
         ID = 'id',
         KINETIC = 'kinetic',
         LISTENING = 'listening',
-        //LISTENING_ENABLED = 'listeningEnabled',
         MOUSEENTER = 'mouseenter',
         MOUSELEAVE = 'mouseleave',
         NAME = 'name',
@@ -22,6 +21,7 @@
         TRANSFORM = 'transform',
         UPPER_STAGE = 'Stage',
         VISIBLE = 'visible',
+        CLONE_BLACK_LIST = ['id'],
 
         TRANSFORM_CHANGE_STR = [
             'xChange.kinetic',
@@ -35,6 +35,7 @@
             'offsetYChange.kinetic',
             'transformsEnabledChange.kinetic'
         ].join(SPACE);
+
 
     Kinetic.Util.addMethods(Kinetic.Node, {
         _init: function(config) {
@@ -119,27 +120,27 @@
         *  region for debugging purposes
         * @returns {Kinetic.Node}
         * @example
-        * // cache a shape with the x,y position of the bounding box at the center and<br>
-        * // the width and height of the bounding box equal to the width and height of<br>
-        * // the shape obtained from shape.width() and shape.height()<br>
-        * image.cache();<br><br>
+        * // cache a shape with the x,y position of the bounding box at the center and
+        * // the width and height of the bounding box equal to the width and height of
+        * // the shape obtained from shape.width() and shape.height()
+        * image.cache();
         *
-        * // cache a node and define the bounding box position and size<br>
-        * node.cache({<br>
-        *   x: -30,<br>
-        *   y: -30,<br>
-        *   width: 100,<br>
-        *   height: 200<br>
-        * });<br><br>
+        * // cache a node and define the bounding box position and size
+        * node.cache({
+        *   x: -30,
+        *   y: -30,
+        *   width: 100,
+        *   height: 200
+        * });
         *
-        * // cache a node and draw a red border around the bounding box<br>
-        * // for debugging purposes<br>
-        * node.cache({<br>
-        *   x: -30,<br>
-        *   y: -30,<br>
-        *   width: 100,<br>
-        *   height: 200,<br>
-        *   drawBorder: true<br>
+        * // cache a node and draw a red border around the bounding box
+        * // for debugging purposes
+        * node.cache({
+        *   x: -30,
+        *   y: -30,
+        *   width: 100,
+        *   height: 200,
+        *   drawBorder: true
         * });
         */
         cache: function(config) {
@@ -149,7 +150,12 @@
                 width = conf.width || this.width(),
                 height = conf.height || this.height(),
                 drawBorder = conf.drawBorder || false,
-                cachedSceneCanvas = new Kinetic.SceneCanvas({
+                layer = this.getLayer();
+            if (width === 0 || height === 0) {
+                Kinetic.Util.warn('Width or height of caching configuration equals 0. Cache is ignored.');
+                return;
+            }
+            var cachedSceneCanvas = new Kinetic.SceneCanvas({
                     pixelRatio: 1,
                     width: width,
                     height: height
@@ -166,21 +172,17 @@
                 origTransEnabled = this.transformsEnabled(),
                 origX = this.x(),
                 origY = this.y(),
-                sceneContext;
+                sceneContext = cachedSceneCanvas.getContext(),
+                hitContext = cachedHitCanvas.getContext();
 
             this.clearCache();
-
-            this.transformsEnabled('position');
-            this.x(x * -1);
-            this.y(y * -1);
-
-            this.drawScene(cachedSceneCanvas);
-            this.drawHit(cachedHitCanvas);
+   
+            sceneContext.save();
+            hitContext.save();
 
             // this will draw a red border around the cached box for
             // debugging purposes
-            if (drawBorder) {
-                sceneContext = cachedSceneCanvas.getContext();
+            if (drawBorder) {        
                 sceneContext.save();
                 sceneContext.beginPath();
                 sceneContext.rect(0, 0, width, height);
@@ -191,9 +193,19 @@
                 sceneContext.restore();
             }
 
-            this.x(origX);
-            this.y(origY);
-            this.transformsEnabled(origTransEnabled);
+            sceneContext.translate(x * -1, y * -1);
+            hitContext.translate(x * -1, y * -1);
+
+            if (this.nodeType === 'Shape') {
+                sceneContext.translate(this.x() * -1, this.y() * -1);
+                hitContext.translate(this.x() * -1, this.y() * -1);        
+            }
+
+            this.drawScene(cachedSceneCanvas, this);
+            this.drawHit(cachedHitCanvas, this);
+
+            sceneContext.restore();
+            hitContext.restore();
 
             this._cache.canvas = {
                 scene: cachedSceneCanvas,
@@ -205,7 +217,7 @@
         },
         _drawCachedSceneCanvas: function(context) {
             context.save();
-            context._applyTransform(this);
+            this.getLayer()._applyTransform(this, context);
             context.drawImage(this._getCachedSceneCanvas()._canvas, 0, 0);
             context.restore();
         },
@@ -251,7 +263,7 @@
                 hitCanvas = cachedCanvas.hit;
 
             context.save();
-            context._applyTransform(this);
+            this.getLayer()._applyTransform(this, context);
             context.drawImage(hitCanvas._canvas, 0, 0);
             context.restore();
         },
@@ -270,29 +282,45 @@
          * @param {Function} handler The handler function is passed an event object
          * @returns {Kinetic.Node}
          * @example
-         * // add click listener<br>
-         * node.on('click', function() {<br>
-         *   console.log('you clicked me!');<br>
-         * });<br><br>
+         * // add click listener
+         * node.on('click', function() {
+         *   console.log('you clicked me!');
+         * });
          *
-         * // get the target node<br>
-         * node.on('click', function(evt) {<br>
-         *   console.log(evt.targetNode);<br>
-         * });<br><br>
+         * // get the target node
+         * node.on('click', function(evt) {
+         *   console.log(evt.target);
+         * });
          *
-         * // stop event propagation<br>
-         * node.on('click', function(evt) {<br>
-         *   evt.cancelBubble = true;<br>
-         * });<br><br>
+         * // stop event propagation
+         * node.on('click', function(evt) {
+         *   evt.cancelBubble = true;
+         * });
          *
-         * // bind multiple listeners<br>
-         * node.on('click touchstart', function() {<br>
-         *   console.log('you clicked/touched me!');<br>
-         * });<br><br>
+         * // bind multiple listeners
+         * node.on('click touchstart', function() {
+         *   console.log('you clicked/touched me!');
+         * });
          *
-         * // namespace listener<br>
-         * node.on('click.foo', function() {<br>
-         *   console.log('you clicked/touched me!');<br>
+         * // namespace listener
+         * node.on('click.foo', function() {
+         *   console.log('you clicked/touched me!');
+         * });
+         *
+         * // get the event type
+         * node.on('click tap', function(evt) {
+         *   var eventType = evt.type;
+         * });
+         *
+         * // get native event object
+         * node.on('click tap', function(evt) {
+         *   var nativeEvent = evt.evt;
+         * });
+         *
+         * // for change events, get the old and new val
+         * node.on('xChange', function(evt) {
+         *   var oldVal = evt.oldVal;
+         *   var newVal = evt.newVal;
          * });
          */
         on: function(evtStr, handler) {
@@ -347,13 +375,13 @@
          * @param {String} evtStr e.g. 'click', 'mousedown touchstart', '.foobar'
          * @returns {Kinetic.Node}
          * @example
-         * // remove listener<br>
-         * node.off('click');<br><br>
+         * // remove listener
+         * node.off('click');
          *
-         * // remove multiple listeners<br>
-         * node.off('click touchstart');<br><br>
+         * // remove multiple listeners
+         * node.off('click touchstart');
          *
-         * // remove listener by name<br>
+         * // remove listener by name
          * node.off('click.foo');
          */
         off: function(evtStr) {
@@ -380,13 +408,20 @@
             }
             return this;
         },
-        // some event aliases for third party integration like HammerJS 
+        // some event aliases for third party integration like HammerJS
         dispatchEvent: function(evt) {
-            evt.targetNode = this;
-            this.fire(evt.type, evt);
+            var e = {
+              target: this,
+              type: evt.type,
+              evt: evt
+            };
+            this.fire(evt.type, e);
         },
-        addEventListener: function() {
-            this.on.apply(this, arguments);
+        addEventListener: function(type, handler) {
+            // we to pass native event to handler
+            this.on(type, function(evt){
+                handler.call(this, evt.evt);
+            });
         },
         /**
          * remove self from parent, but don't destroy
@@ -485,10 +520,10 @@
          * @param {Object} config object containing key value pairs
          * @returns {Kinetic.Node}
          * @example
-         * node.setAttrs({<br>
-         *   x: 5,<br>
-         *   fill: 'red'<br>
-         * });<br>
+         * node.setAttrs({
+         *   x: 5,
+         *   fill: 'red'
+         * });
          */
         setAttrs: function(config) {
             var key, method;
@@ -673,7 +708,7 @@
             return index;
         },
         /**
-         * get node depth in node tree.  Returns an integer.<br><br>
+         * get node depth in node tree.  Returns an integer.
          *  e.g. Stage depth will always be 0.  Layers will always be 1.  Groups and Shapes will always
          *  be >= 2
          * @method
@@ -800,10 +835,10 @@
          * @param {Number} change.y
          * @returns {Kinetic.Node}
          * @example
-         * // move node in x direction by 1px and y direction by 2px<br>
-         * node.move({<br>
-         *   x: 1,<br>
-         *   y: 2)<br>
+         * // move node in x direction by 1px and y direction by 2px
+         * node.move({
+         *   x: 1,
+         *   y: 2)
          * });
          */
         move: function(change) {
@@ -823,16 +858,22 @@
             this.setPosition({x:x, y:y});
             return this;
         },
-        _eachAncestorReverse: function(func, includeSelf) {
+        _eachAncestorReverse: function(func, top) {
             var family = [],
                 parent = this.getParent(),
                 len, n;
 
-            // build family by traversing ancestors
-            if(includeSelf) {
-                family.unshift(this);
+            // if top node is defined, and this node is top node,
+            // there's no need to build a family tree.  just execute
+            // func with this because it will be the only node
+            if (top && top._id === this._id) {
+                func(this);
+                return true;
             }
-            while(parent) {
+
+            family.unshift(this);
+
+            while(parent && (!top || parent._id !== top._id)) {
                 family.unshift(parent);
                 parent = parent.parent;
             }
@@ -972,7 +1013,7 @@
          * @param {Container} newContainer
          * @returns {Kinetic.Node}
          * @example
-         * // move node from current layer into layer2<br>
+         * // move node from current layer into layer2
          * node.moveTo(layer2);
          */
         moveTo: function(newContainer) {
@@ -1073,18 +1114,18 @@
          *  not bubbling.  Setting the value to true will result in the event bubbling.
          * @returns {Kinetic.Node}
          * @example
-         * // manually fire click event<br>
-         * node.fire('click');<br><br>
+         * // manually fire click event
+         * node.fire('click');
          *
-         * // fire custom event<br>
-         * node.fire('foo');<br><br>
+         * // fire custom event
+         * node.fire('foo');
          *
-         * // fire custom event with custom event object<br>
-         * node.fire('foo', {<br>
-         *   bar: 10<br>
-         * });<br><br>
+         * // fire custom event with custom event object
+         * node.fire('foo', {
+         *   bar: 10
+         * });
          *
-         * // fire click event that bubbles<br>
+         * // fire click event that bubbles
          * node.fire('click', null, true);
          */
         fire: function(eventType, evt, bubble) {
@@ -1105,10 +1146,17 @@
          * @memberof Kinetic.Node.prototype
          * @returns {Kinetic.Transform}
          */
-        getAbsoluteTransform: function() {
-            return this._getCache(ABSOLUTE_TRANSFORM, this._getAbsoluteTransform);
+        getAbsoluteTransform: function(top) {
+            // if using an argument, we can't cache the result.
+            if (top) {
+                return this._getAbsoluteTransform(top); 
+            }
+            // if no argument, we can cache the result
+            else {
+                return this._getCache(ABSOLUTE_TRANSFORM, this._getAbsoluteTransform);
+            }
         },
-        _getAbsoluteTransform: function() {
+        _getAbsoluteTransform: function(top) {
             var at = new Kinetic.Transform(),
                 transformsEnabled, trans;
 
@@ -1123,7 +1171,7 @@
                 else if (transformsEnabled === 'position') {
                     at.translate(node.x(), node.y());
                 }
-            }, true);
+            }, top);
             return at;
         },
         /**
@@ -1139,7 +1187,7 @@
             var m = new Kinetic.Transform(),
                 x = this.getX(),
                 y = this.getY(),
-                rotation = this.getRotation() * Math.PI / 180,
+                rotation = Kinetic.getAngle(this.getRotation()),
                 scaleX = this.getScaleX(),
                 scaleY = this.getScaleY(),
                 skewX = this.getSkewX(),
@@ -1174,20 +1222,30 @@
          * @param {Object} attrs override attrs
          * @returns {Kinetic.Node}
          * @example
-         * // simple clone<br>
-         * var clone = node.clone();<br><br>
+         * // simple clone
+         * var clone = node.clone();
          *
-         * // clone a node and override the x position<br>
-         * var clone = rect.clone({<br>
-         *   x: 5<br>
+         * // clone a node and override the x position
+         * var clone = rect.clone({
+         *   x: 5
          * });
          */
         clone: function(obj) {
             // instantiate new node
             var className = this.getClassName(),
-                node = new Kinetic[className](this.attrs),
+                attrs = Kinetic.Util.cloneObject(this.attrs),
                 key, allListeners, len, n, listener;
+            // filter black attrs
+            for (var i in CLONE_BLACK_LIST) {
+                var blockAttr = CLONE_BLACK_LIST[i];
+                delete attrs[blockAttr];
+            }
+            // apply attr overrides
+            for (key in obj) {
+                attrs[key] = obj[key];
+            }
 
+            var node = new Kinetic[className](attrs);
             // copy over listeners
             for(key in this.eventListeners) {
                 allListeners = this.eventListeners[key];
@@ -1207,9 +1265,6 @@
                     }
                 }
             }
-
-            // apply attr overrides
-            node.setAttrs(obj);
             return node;
         },
         /**
@@ -1274,10 +1329,10 @@
          *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
          *  is very high quality
          * @example
-         * var image = node.toImage({<br>
-         *   callback: function(img) {<br>
-         *     // do stuff with img<br>
-         *   }<br>
+         * var image = node.toImage({
+         *   callback: function(img) {
+         *     // do stuff with img
+         *   }
          * });
          */
         toImage: function(config) {
@@ -1285,26 +1340,11 @@
                 config.callback(img);
             });
         },
-        /**
-         * set size
-         * @method
-         * @memberof Kinetic.Node.prototype
-         * @param {Object} size
-         * @param {Number} size.width
-         * @param {Number} size.height
-         * @returns {Kinetic.Node}
-         */
         setSize: function(size) {
             this.setWidth(size.width);
             this.setHeight(size.height);
             return this;
         },
-        /**
-         * get size
-         * @method
-         * @memberof Kinetic.Node.prototype
-         * @returns {Object}
-         */
         getSize: function() {
             return {
                 width: this.getWidth(),
@@ -1347,6 +1387,16 @@
         getType: function() {
             return this.nodeType;
         },
+        getDragDistance: function() {
+            // compare with undefined because we need to track 0 value
+            if (this.attrs.dragDistance !== undefined) {
+                return this.attrs.dragDistance;
+            } else if (this.parent) {
+                return this.parent.getDragDistance();
+            } else {
+                return Kinetic.dragDistance;
+            }
+        },
         _get: function(selector) {
             return this.nodeType === selector ? [this] : [];
         },
@@ -1369,12 +1419,6 @@
                     i--;
                 }
             }
-        },
-        _fireBeforeChangeEvent: function(attr, oldVal, newVal) {
-            this._fire([BEFORE, Kinetic.Util._capitalize(attr), CHANGE].join(EMPTY_STRING), {
-                oldVal: oldVal,
-                newVal: newVal
-            });
         },
         _fireChangeEvent: function(attr, oldVal, newVal) {
             this._fire(attr + CHANGE, {
@@ -1449,7 +1493,6 @@
                     this.attrs[key] = this.getAttr(key);
                 }
                 
-                //this._fireBeforeChangeEvent(key, oldVal, val);
                 this.attrs[key][component] = val;
                 this._fireChangeEvent(key, oldVal, val);
             }
@@ -1458,7 +1501,7 @@
             var okayToRun = true;
 
             if(evt && this.nodeType === SHAPE) {
-                evt.targetNode = this;
+                evt.target = this;
             }
 
             if(eventType === MOUSEENTER && compareShape && this._id === compareShape._id) {
@@ -1485,6 +1528,8 @@
         _fire: function(eventType, evt) {
             var events = this.eventListeners[eventType],
                 i;
+
+            evt.type = eventType;
 
             if (events) {
                 for(i = 0; i < events.length; i++) {
@@ -1556,13 +1601,13 @@
      * @param {Nubmer} pos.y
      * @returns {Object}
      * @example
-     * // get position<br>
-     * var position = node.position();<br><br>
+     * // get position
+     * var position = node.position();
      *
-     * // set position<br>
-     * node.position({<br>
-     *   x: 5<br>
-     *   y: 10<br>
+     * // set position
+     * node.position({
+     *   x: 5
+     *   y: 10
      * });
      */
 
@@ -1576,10 +1621,10 @@
      * @param {Number} x
      * @returns {Object}
      * @example
-     * // get x<br>
-     * var x = node.x();<br><br>
+     * // get x
+     * var x = node.x();
      *
-     * // set x<br>
+     * // set x
      * node.x(5);
      */
 
@@ -1593,10 +1638,10 @@
      * @param {Number} y
      * @returns {Integer}
      * @example
-     * // get y<br>
-     * var y = node.y();<br><br>
+     * // get y
+     * var y = node.y();
      *
-     * // set y<br>
+     * // set y
      * node.y(5);
      */
 
@@ -1612,10 +1657,10 @@
      * @param {Object} opacity
      * @returns {Number}
      * @example
-     * // get opacity<br>
-     * var opacity = node.opacity();<br><br>
+     * // get opacity
+     * var opacity = node.opacity();
      *
-     * // set opacity<br>
+     * // set opacity
      * node.opacity(0.5);
      */
 
@@ -1630,10 +1675,10 @@
      * @param {String} name
      * @returns {String}
      * @example
-     * // get name<br>
-     * var name = node.name();<br><br>
+     * // get name
+     * var name = node.name();
      *
-     * // set name<br>
+     * // set name
      * node.name('foo');
      */
 
@@ -1648,10 +1693,10 @@
      * @param {String} id
      * @returns {String}
      * @example
-     * // get id<br>
-     * var name = node.id();<br><br>
+     * // get id
+     * var name = node.id();
      *
-     * // set id<br>
+     * // set id
      * node.id('foo');
      */
 
@@ -1665,10 +1710,10 @@
      * @param {Number} rotation
      * @returns {Number}
      * @example
-     * // get rotation in degrees<br>
-     * var rotation = node.rotation();<br><br>
+     * // get rotation in degrees
+     * var rotation = node.rotation();
      *
-     * // set rotation in degrees<br>
+     * // set rotation in degrees
      * node.rotation(45);
      */
 
@@ -1684,13 +1729,13 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Object}
      * @example
-     * // get scale<br>
-     * var scale = node.scale();<br><br>
+     * // get scale
+     * var scale = node.scale();
      *
-     * // set scale <br>
-     * shape.scale({<br>
-     *   x: 2<br>
-     *   y: 3<br>
+     * // set scale 
+     * shape.scale({
+     *   x: 2
+     *   y: 3
      * });
      */
 
@@ -1704,10 +1749,10 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Number}
      * @example
-     * // get scale x<br>
-     * var scaleX = node.scaleX();<br><br>
+     * // get scale x
+     * var scaleX = node.scaleX();
      *
-     * // set scale x<br>
+     * // set scale x
      * node.scaleX(2);
      */
 
@@ -1721,10 +1766,10 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Number}
      * @example
-     * // get scale y<br>
-     * var scaleY = node.scaleY();<br><br>
+     * // get scale y
+     * var scaleY = node.scaleY();
      *
-     * // set scale y<br>
+     * // set scale y
      * node.scaleY(2);
      */
 
@@ -1740,12 +1785,12 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Object}
      * @example
-     * // get skew<br>
-     * var skew = node.skew();<br><br>
+     * // get skew
+     * var skew = node.skew();
      *
-     * // set skew <br>
-     * node.skew({<br>
-     *   x: 20<br>
+     * // set skew 
+     * node.skew({
+     *   x: 20
      *   y: 10
      * });
      */
@@ -1760,10 +1805,10 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Number}
      * @example
-     * // get skew x<br>
-     * var skewX = node.skewX();<br><br>
+     * // get skew x
+     * var skewX = node.skewX();
      *
-     * // set skew x<br>
+     * // set skew x
      * node.skewX(3);
      */
 
@@ -1777,10 +1822,10 @@
      * @memberof Kinetic.Node.prototype
      * @returns {Number}
      * @example
-     * // get skew y<br>
-     * var skewY = node.skewY();<br><br>
+     * // get skew y
+     * var skewY = node.skewY();
      *
-     * // set skew y<br>
+     * // set skew y
      * node.skewY(3);
      */
 
@@ -1795,13 +1840,13 @@
      * @param {Number} offset.y
      * @returns {Object}
      * @example
-     * // get offset<br>
-     * var offset = node.offset();<br><br>
+     * // get offset
+     * var offset = node.offset();
      *
-     * // set offset<br>
-     * node.offset({<br>
-     *   x: 20<br>
-     *   y: 10<br>
+     * // set offset
+     * node.offset({
+     *   x: 20
+     *   y: 10
      * });
      */
 
@@ -1814,14 +1859,34 @@
      * @param {Number} x
      * @returns {Number}
      * @example
-     * // get offset x<br>
-     * var offsetX = node.offsetX();<br><br>
+     * // get offset x
+     * var offsetX = node.offsetX();
      *
-     * // set offset x<br>
+     * // set offset x
      * node.offsetX(3);
      */
 
     Kinetic.Factory.addGetterSetter(Kinetic.Node, 'offsetY', 0);
+
+    /**
+     * get/set drag distance
+     * @name dragDistance
+     * @memberof Kinetic.Node.prototype
+     * @param {Number} distance
+     * @returns {Number}
+     * @example
+     * // get drag distance
+     * var dragDistance = node.dragDistance();
+     *
+     * // set distance
+     * // node starts dragging only if pointer moved more then 3 pixels
+     * node.dragDistance(3);
+     * // or set globally
+     * Kinetic.dragDistance = 3;
+     */
+
+    Kinetic.Factory.addSetter(Kinetic.Node, 'dragDistance');
+    Kinetic.Factory.addOverloadedGetterSetter(Kinetic.Node, 'dragDistance');
 
     /**
      * get/set offset y
@@ -1831,10 +1896,10 @@
      * @param {Number} y
      * @returns {Number}
      * @example
-     * // get offset y<br>
-     * var offsetY = node.offsetY();<br><br>
+     * // get offset y
+     * var offsetY = node.offsetY();
      *
-     * // set offset y<br>
+     * // set offset y
      * node.offsetY(3);
      */
 
@@ -1848,10 +1913,10 @@
      * @param {Number} width
      * @returns {Number}
      * @example
-     * // get width<br>
-     * var width = node.width();<br><br>
+     * // get width
+     * var width = node.width();
      *
-     * // set width<br>
+     * // set width
      * node.width(100);
      */
 
@@ -1865,10 +1930,10 @@
      * @param {Number} height
      * @returns {Number}
      * @example
-     * // get height<br>
-     * var height = node.height();<br><br>
+     * // get height
+     * var height = node.height();
      *
-     * // set height<br>
+     * // set height
      * node.height(100);
      */
 
@@ -1882,16 +1947,16 @@
      * @param {Boolean|String} listening Can be "inherit", true, or false.  The default is "inherit".
      * @returns {Boolean|String}
      * @example
-     * // get listening attr<br>
-     * var listening = node.listening();<br><br>
+     * // get listening attr
+     * var listening = node.listening();
      *
-     * // stop listening for events<br>
-     * node.listening(false);<br><br>
+     * // stop listening for events
+     * node.listening(false);
      *
-     * // listen for events<br>
-     * node.listening(true);<br><br>
+     * // listen for events
+     * node.listening(true);
      *
-     * // listen to events according to the parent<br>
+     * // listen to events according to the parent
      * node.listening('inherit');
      */
 
@@ -1904,19 +1969,19 @@
      * @param {Array} filters array of filters
      * @returns {Array}
      * @example
-     * // get filters<br>
-     * var filters = node.filters();<br><br>
+     * // get filters
+     * var filters = node.filters();
      *
-     * // set a single filter<br>
-     * node.cache();<br>
-     * node.filters([Kinetic.Filters.Blur]);<br><br>
+     * // set a single filter
+     * node.cache();
+     * node.filters([Kinetic.Filters.Blur]);
      *
-     * // set multiple filters<br>
-     * node.cache();<br>
-     * node.filters([<br>
-     *   Kinetic.Filters.Blur,<br>
-     *   Kinetic.Filters.Sepia,<br>
-     *   Kinetic.Filters.Invert<br>
+     * // set multiple filters
+     * node.cache();
+     * node.filters([
+     *   Kinetic.Filters.Blur,
+     *   Kinetic.Filters.Sepia,
+     *   Kinetic.Filters.Invert
      * ]);
      */
 
@@ -1931,16 +1996,16 @@
      * @param {Boolean|String} visible
      * @returns {Boolean|String}
      * @example
-     * // get visible attr<br>
-     * var visible = node.visible();<br><br>
+     * // get visible attr
+     * var visible = node.visible();
      *
-     * // make invisible<br>
-     * node.visible(false);<br><br>
+     * // make invisible
+     * node.visible(false);
      *
-     * // make visible<br>
-     * node.visible(true);<br><br>
+     * // make visible
+     * node.visible(true);
      *
-     * // make visible according to the parent<br>
+     * // make visible according to the parent
      * node.visible('inherit');
      */
 
@@ -1955,12 +2020,37 @@
      * @param {String} enabled
      * @returns {String}
      * @example
-     * // enable position transform only to improve draw performance<br>
-     * node.transformsEnabled('position');<br><br>
+     * // enable position transform only to improve draw performance
+     * node.transformsEnabled('position');
      *
-     * // enable all transforms<br>
+     * // enable all transforms
      * node.transformsEnabled('all');
      */
+
+
+
+    /**
+     * get/set node size
+     * @name size
+     * @method
+     * @memberof Kinetic.Node.prototype
+     * @param {Object} size
+     * @param {Number} size.width
+     * @param {Number} size.height
+     * @returns {Object}
+     * @example
+     * // get node size
+     * var size = node.size();
+     * var x = size.x;
+     * var y = size.y;
+     *
+     * // set size
+     * node.size({
+     *   width: 100,
+     *   height: 200
+     * });
+     */
+    Kinetic.Factory.addOverloadedGetterSetter(Kinetic.Node, 'size');
 
     Kinetic.Factory.backCompat(Kinetic.Node, {
         rotateDeg: 'rotate',

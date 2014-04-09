@@ -34,7 +34,9 @@ module.exports = function(grunt) {
     'src/Container.js',
     'src/Shape.js',
     'src/Stage.js',
+    'src/BaseLayer.js',
     'src/Layer.js',
+    'src/FastLayer.js',
     'src/Group.js',
 
     // shapes
@@ -203,7 +205,7 @@ module.exports = function(grunt) {
                 stderr : true,
                 failOnError : true
             },
-            command: './node_modules/.bin/jsdoc ./dist/kinetic-v<%= pkg.version %>.js -d ./documentation'
+            command: './node_modules/.bin/jsdoc ./dist/kinetic-v<%= pkg.version %>.js -d ./docs'
         }
     },
     mocha_phantomjs: {
@@ -247,7 +249,7 @@ module.exports = function(grunt) {
     'copy:prod2'
   ]);
 
-  grunt.registerTask('docs', 'Generate documentation to documentation folder', [
+  grunt.registerTask('docs', 'Generate docs', [
     'full',
     'shell:jsdoc',
   ]);
@@ -255,15 +257,25 @@ module.exports = function(grunt) {
   grunt.registerTask('hint', 'Check hint errors', ['jshint']);
   grunt.registerTask('test', 'Run tests', ['dev', 'mocha_phantomjs']);
 
-  grunt.registerTask('server', 'run local server and create dev version', function() {
-
+  grunt.registerTask('node-test', 'Run tests in pure NodeJS environment', function(){
     grunt.task.run('dev');
-    grunt.log.writeln('Tests server starts on http://localhost:8080/test/runner.html');
+    grunt.task.run('_run-node-test');
+  });
+
+
+  grunt.registerTask('server', 'run local server and create dev version', function() {
+    grunt.task.run('dev');
     var connect = require('connect');
     connect.createServer(
         connect.static(__dirname)
     ).listen(8080);
     grunt.task.run('watch:dev');
+    grunt.log.writeln('Tests server starts on http://localhost:8080/test/runner.html');
+  });
+
+  // run pure node tests
+  grunt.registerTask('_run-node-test', function(){
+    require('./test/node-runner');
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');

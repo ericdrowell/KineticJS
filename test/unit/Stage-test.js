@@ -2,7 +2,7 @@ suite('Stage', function() {
 
     // ======================================================
     test('instantiate stage with id', function() {
-      var container = document.createElement('div');
+      var container = Kinetic.document.createElement('div');
       container.id = 'container';
 
       kineticContainer.appendChild(container);
@@ -21,7 +21,7 @@ suite('Stage', function() {
 
     // ======================================================
     test('test stage buffer canvas and hit buffer canvas', function() {
-      var container = document.createElement('div');
+      var container = Kinetic.document.createElement('div');
       container.id = 'container';
 
       kineticContainer.appendChild(container);
@@ -45,7 +45,7 @@ suite('Stage', function() {
 
     // ======================================================
     test('instantiate stage with dom element', function() {
-      var container = document.createElement('div');
+      var container = Kinetic.document.createElement('div');
 
       kineticContainer.appendChild(container);
 
@@ -58,8 +58,8 @@ suite('Stage', function() {
 
     // ======================================================
     test('stage instantiation should clear container', function() {
-        var container = document.createElement('div');
-        var dummy = document.createElement('p');
+        var container = Kinetic.document.createElement('div');
+        var dummy = Kinetic.document.createElement('p');
         
         container.appendChild(dummy);
         kineticContainer.appendChild(container);
@@ -71,6 +71,19 @@ suite('Stage', function() {
         });
 
         assert.equal(container.getElementsByTagName('p').length, 0, 'container should have no p tags');
+    });
+
+    // ======================================================
+    test('test stage cloning', function() {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+        stage.add(layer);
+
+        var stageClone = stage.clone();
+        assert.notEqual(stage.getContainer(), stageClone.getContainer(), 'clone should be in different container');
+
+        assert.equal(stage.getContainer().childNodes[0].childNodes.length, 1, 'container should not have changes');
+
     });
 
     // ======================================================
@@ -365,7 +378,7 @@ suite('Stage', function() {
 
     // ======================================================
     test('destroy stage', function() {
-        var container = document.createElement('div');
+        var container = Kinetic.document.createElement('div');
 
         kineticContainer.appendChild(container);
 
@@ -427,6 +440,15 @@ suite('Stage', function() {
         assert.notEqual(stage.getStage(), undefined);
 
         //console.log(stage.getStage());
+    });
+
+    test('add multiple layers to stage', function() {
+        var stage = addStage();
+        var layer1 = new Kinetic.Layer();
+        var layer2 = new Kinetic.Layer();
+        var layer3 = new Kinetic.Layer();
+        stage.add(layer1, layer2, layer3);
+        assert.equal(stage.getLayers().length, 3, 'stage has exactly three layers');
     });
 
 });

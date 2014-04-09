@@ -32,6 +32,8 @@
 /*jshint -W079, -W020*/
 var Kinetic = {};
 (function(root) {
+    var PI_OVER_180 = Math.PI / 180;
+
     Kinetic = {
         // public
         version: '@@version',
@@ -50,7 +52,8 @@ var Kinetic = {};
         traceArrMax: 100,
         dblClickWindow: 400,
         pixelRatio: undefined,
-        enableThrottling: true,
+        dragDistance : 0,
+        angleDeg: true,
 
         // user agent  
         UA: (function() {
@@ -105,19 +108,19 @@ var Kinetic = {};
          * @@shapeParams
          * @@nodeParams
          * @example
-         * var customShape = new Kinetic.Shape({<br>
-         *   x: 5,<br>
-         *   y: 10,<br>
-         *   fill: 'red',<br>
-         *   // a Kinetic.Canvas renderer is passed into the drawFunc function<br>
-         *   drawFunc: function(context) {<br>
-         *     context.beginPath();<br>
-         *     context.moveTo(200, 50);<br>
-         *     context.lineTo(420, 80);<br>
-         *     context.quadraticCurveTo(300, 100, 260, 170);<br>
-         *     context.closePath();<br>
-         *     context.fillStrokeShape(this);<br>
-         *   }<br>
+         * var customShape = new Kinetic.Shape({
+         *   x: 5,
+         *   y: 10,
+         *   fill: 'red',
+         *   // a Kinetic.Canvas renderer is passed into the drawFunc function
+         *   drawFunc: function(context) {
+         *     context.beginPath();
+         *     context.moveTo(200, 50);
+         *     context.lineTo(420, 80);
+         *     context.quadraticCurveTo(300, 100, 260, 170);
+         *     context.closePath();
+         *     context.fillStrokeShape(this);
+         *   }
          *});
          */
         Shape: function(config) {
@@ -148,10 +151,10 @@ var Kinetic = {};
          * @@nodeParams
          * @@containerParams
          * @example
-         * var stage = new Kinetic.Stage({<br>
-         *   width: 500,<br>
-         *   height: 800,<br>
-         *   container: 'containerId'<br>
+         * var stage = new Kinetic.Stage({
+         *   width: 500,
+         *   height: 800,
+         *   container: 'containerId'
          * });
          */
         Stage: function(config) {
@@ -159,8 +162,25 @@ var Kinetic = {};
         },
 
         /**
+         * BaseLayer constructor. 
+         * @constructor
+         * @memberof Kinetic
+         * @augments Kinetic.Container
+         * @param {Object} config
+         * @param {Boolean} [config.clearBeforeDraw] set this property to false if you don't want
+         * to clear the canvas before each layer draw.  The default value is true.
+         * @@nodeParams
+         * @@containerParams
+         * @example
+         * var layer = new Kinetic.Layer();
+         */
+        BaseLayer: function(config) {
+            this.___init(config);
+        },
+
+        /**
          * Layer constructor.  Layers are tied to their own canvas element and are used
-         * to contain groups or shapes
+         * to contain groups or shapes.
          * @constructor
          * @memberof Kinetic
          * @augments Kinetic.Container
@@ -173,7 +193,27 @@ var Kinetic = {};
          * var layer = new Kinetic.Layer();
          */
         Layer: function(config) {
-            this.___init(config);
+            this.____init(config);
+        },
+
+        /**
+         * FastLayer constructor. Layers are tied to their own canvas element and are used
+         * to contain shapes only.  If you don't need node nesting, mouse and touch interactions,
+         * or event pub/sub, you should use FastLayer instead of Layer to create your layers.
+         * It renders about 2x faster than normal layers.
+         * @constructor
+         * @memberof Kinetic
+         * @augments Kinetic.Container
+         * @param {Object} config
+         * @param {Boolean} [config.clearBeforeDraw] set this property to false if you don't want
+         * to clear the canvas before each layer draw.  The default value is true.
+         * @@nodeParams
+         * @@containerParams
+         * @example
+         * var layer = new Kinetic.FastLayer();
+         */
+        FastLayer: function(config) {
+            this.____init(config);
         },
 
         /**
@@ -261,6 +301,9 @@ var Kinetic = {};
                     }
                 }
             }
+        },
+        getAngle: function(angle) {
+            return this.angleDeg ? angle * PI_OVER_180 : angle;
         }
     };
 })(this);

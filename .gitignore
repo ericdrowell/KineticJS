@@ -1,9 +1,11 @@
 dist
+documentation
 analysis
 node_modules
 bower_components
 phantomjs.exe
-documentation
+docs
+jsdoc-template
 test/sandbox.html
 
 # Numerous always-ignore extensions
