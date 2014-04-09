@@ -196,7 +196,7 @@
 
     Kinetic.HitCanvas = function(config) {
         config = config || {};
-		config.pixelRatio = 1;
+        config.pixelRatio = 1;
         var width = config.width || 0,
             height = config.height || 0;
             
