@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/ericdrowell/kineticjs.png?label=ready&title=Ready)](https://waffle.io/ericdrowell/kineticjs)
 #Hiatus
 
 Hi all! I will be taking a 3 month break from KineticJS (until July 2014) to focus on other endeavors.  KineticJS is in a great state right now (v5.1.0).  Please continue to file any issues that you may find, or submit pull requests.  They will eventually be addressed.
