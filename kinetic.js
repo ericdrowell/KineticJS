@@ -4,7 +4,7 @@
  * http://www.kineticjs.com/
  * Copyright 2013, Eric Rowell
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: 2014-06-10
+ * Date: 2014-07-09
  *
  * Copyright (C) 2011 - 2013 by Eric Rowell
  *
@@ -1035,7 +1035,6 @@ var Kinetic = {};
         },
         createCanvasElement: function() {
             var canvas = Kinetic.document.createElement('canvas');
-            canvas.style = canvas.style || {};
             return canvas;
         },
         isBrowser: function() {

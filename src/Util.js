@@ -406,7 +406,6 @@
         },
         createCanvasElement: function() {
             var canvas = Kinetic.document.createElement('canvas');
-            canvas.style = canvas.style || {};
             return canvas;
         },
         isBrowser: function() {
