@@ -1,0 +1,26 @@
+{
+    "title": "KineticJS",
+    "tagline": "KineticJS is an HTML5 Canvas JavaScript framework that extends the 2d context by enabling canvas interactivity for desktop and mobile applications",
+    "author": "Eric Rowell",
+    "image": "<base_url>img/app.png",
+    "theme": "daux-blue",
+    "template": "default",
+    "toggle_code": true,
+    "breadcrumbs": true,
+    "breadcrumb_separator": "Chevrons",
+    "date_modified": true,
+    "float": false,
+    "file_editor": false,   
+    "repo": "ericdrowell/KineticJS",
+    "ignore": {
+            "files": ["Work_In_Progress.md"],
+            "folders": ["99_Not_Ready"]
+    },
+    "twitter": ["ericdrowell", "lavrton"],
+    "google_analytics": "",
+    "links": {
+        "Download": "https://github.com/ericdrowell/KineticJS/releases",
+        "GitHub Repo": "https://github.com/ericdrowell/KineticJS",
+        "Help/Support/Bugs": "https://github.com/ericdrowell/KineticJS/issues"
+    }
+}
