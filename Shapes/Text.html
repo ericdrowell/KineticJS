@@ -4,7 +4,7 @@
 <!--[if IE 8]>          <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!-->  <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-    <title>Line</title>
+    <title>Text</title>
     <meta name="description" content="KineticJS is an HTML5 Canvas JavaScript framework that extends the 2d context by enabling canvas interactivity for desktop and mobile applications" />
     <meta name="author" content="Eric Rowell">
     <link rel="icon" href="../themes/daux-blue/img/favicon-blue.png" type="image/x-icon">
@@ -39,7 +39,7 @@
                     </div>
                     <div id="sub-nav-collapse" class="sub-nav-collapse">
                         <!-- Navigation -->
-                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li class="active"><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li><a href="../Shapes/Image.html">Image</a></li><li><a href="../Shapes/Sprite.html">Sprite</a></li><li><a href="../Shapes/Text.html">Text</a></li><li><a href="../Shapes/Custom.html">Custom</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
+                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li><a href="../Shapes/Image.html">Image</a></li><li><a href="../Shapes/Sprite.html">Sprite</a></li><li class="active"><a href="../Shapes/Text.html">Text</a></li><li><a href="../Shapes/Custom.html">Custom</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
 
                                 <!-- Links -->
                                 <a href="https://github.com/ericdrowell/KineticJS/releases" target="_blank">Download</a><br><a href="https://github.com/ericdrowell/KineticJS" target="_blank">GitHub Repo</a><br><a href="https://github.com/ericdrowell/KineticJS/issues" target="_blank">Help/Support/Bugs</a><br>                                
@@ -59,15 +59,15 @@
                     <div class="content-page">
                         <article>
                                                             <div class="page-header sub-header clearfix">
-                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Line.html">Line</a>                                                                            </h1>
+                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Text.html">Text</a>                                                                            </h1>
                                     <span style="float: left; font-size: 10px; color: gray;">
                                         Tuesday, September 2, 2014                                    </span>
                                     <span style="float: right; font-size: 10px; color: gray;">
-                                        8:52 AM                                    </span>
+                                        6:31 PM                                    </span>
                                 </div>
                             
-                            <p>To create a line with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Line()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Line.html">Kinetic.Line documentation</a>.</p>
-<p><iframe width="650" height="350" src="../Examples/Shapes/Line.html" frameborder="0" allowfullscreen></iframe></p>
+                            <p>To create a text with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Text()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Text.html">Kinetic.Text documentation</a>.</p>
+<p><iframe width="650" height="350" src="../Examples/Shapes/Text.html" frameborder="0" allowfullscreen></iframe></p>
 <pre><code class="language-html">&lt;!DOCTYPE HTML&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -84,76 +84,63 @@
     &lt;script defer="defer"&gt;
       var stage = new Kinetic.Stage({
         container: 'container',
-        width: 600,
-        height: 300
+        width: 578,
+        height: 220
       });
-
       var layer = new Kinetic.Layer();
 
-      var redLine = new Kinetic.Line({
-        points: [73, 70, 340, 23, 450, 60, 500, 20],
-        stroke: 'red',
-        strokeWidth: 15,
-        lineCap: 'round',
-        lineJoin: 'round'
+      var simpleText = new Kinetic.Text({
+        x: stage.getWidth() / 2,
+        y: 15,
+        text: 'Simple Text',
+        fontSize: 30,
+        fontFamily: 'Calibri',
+        fill: 'green'
       });
 
-      // dashed line
-      var greenLine = new Kinetic.Line({
-        points: [73, 70, 340, 23, 450, 60, 500, 20],
-        stroke: 'green',
-        strokeWidth: 2,
-        lineJoin: 'round',
-        /*
-         * line segments with a length of 33px
-         * with a gap of 10px
-         */
-        dash: [33, 10]
+      // to align text in the middle of the screen, we can set the
+      // shape offset to the center of the text shape after instantiating it
+      simpleText.setOffset({
+        x: simpleText.getWidth() / 2
       });
 
-      // complex dashed and dotted line
-      var blueLine = new Kinetic.Line({
-        points: [73, 70, 340, 23, 450, 60, 500, 20],
-        stroke: 'blue',
-        strokeWidth: 10,
-        lineCap: 'round',
-        lineJoin: 'round',
-        /*
-         * line segments with a length of 29px with a gap
-         * of 20px followed by a line segment of 0.001px (a dot)
-         * followed by a gap of 20px
-         */
-        dash: [29, 20, 0.001, 20]
+      // since this text is inside of a defined area, we can center it using
+      // align: 'center'
+      var complexText = new Kinetic.Text({
+        x: 100,
+        y: 60,
+        text: 'COMPLEX TEXT\n\nAll the world\'s a stage, and all the men and women merely players. They have their exits and their entrances.',
+        fontSize: 18,
+        fontFamily: 'Calibri',
+        fill: '#555',
+        width: 380,
+        padding: 20,
+        align: 'center'
       });
 
-      /*
-       * since each line has the same point array, we can
-       * adjust the position of each one using the
-       * move() method
-       */
-      redLine.move({
-        x : 0,
-        y : 5
-      });
-      greenLine.move({
-        x : 0,
-        y : 55
-      });
-      blueLine.move({
-        x : 0,
-        y : 105
+      var rect = new Kinetic.Rect({
+        x: 100,
+        y: 60,
+        stroke: '#555',
+        strokeWidth: 5,
+        fill: '#ddd',
+        width: 380,
+        height: complexText.getHeight(),
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: [10, 10],
+        shadowOpacity: 0.2,
+        cornerRadius: 10
       });
 
-      layer.add(redLine);
-      layer.add(greenLine);
-      layer.add(blueLine);
-
-      // add the layer to the stage
+      // add the shapes to the layer
+      layer.add(simpleText);
+      layer.add(rect);
+      layer.add(complexText);
       stage.add(layer);
     &lt;/script&gt;
   &lt;/body&gt;
-&lt;/html&gt;
-</code></pre>                                                    </article>
+&lt;/html&gt;</code></pre>                                                    </article>
                     </div>
                 </div>
             </div>
