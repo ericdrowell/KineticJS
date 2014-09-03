@@ -4,7 +4,7 @@
 <!--[if IE 8]>          <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!-->  <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-    <title>Circle</title>
+    <title>Sprite</title>
     <meta name="description" content="KineticJS is an HTML5 Canvas JavaScript framework that extends the 2d context by enabling canvas interactivity for desktop and mobile applications" />
     <meta name="author" content="Eric Rowell">
     <link rel="icon" href="../themes/daux-blue/img/favicon-blue.png" type="image/x-icon">
@@ -39,7 +39,7 @@
                     </div>
                     <div id="sub-nav-collapse" class="sub-nav-collapse">
                         <!-- Navigation -->
-                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li class="active"><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li><a href="../Shapes/Image.html">Image</a></li><li><a href="../Shapes/Sprite.html">Sprite</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
+                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li><a href="../Shapes/Image.html">Image</a></li><li class="active"><a href="../Shapes/Sprite.html">Sprite</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
 
                                 <!-- Links -->
                                 <a href="https://github.com/ericdrowell/KineticJS/releases" target="_blank">Download</a><br><a href="https://github.com/ericdrowell/KineticJS" target="_blank">GitHub Repo</a><br><a href="https://github.com/ericdrowell/KineticJS/issues" target="_blank">Help/Support/Bugs</a><br>                                
@@ -59,15 +59,15 @@
                     <div class="content-page">
                         <article>
                                                             <div class="page-header sub-header clearfix">
-                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Circle.html">Circle</a>                                                                            </h1>
+                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Sprite.html">Sprite</a>                                                                            </h1>
                                     <span style="float: left; font-size: 10px; color: gray;">
                                         Tuesday, September 2, 2014                                    </span>
                                     <span style="float: right; font-size: 10px; color: gray;">
-                                        8:29 AM                                    </span>
+                                        6:29 PM                                    </span>
                                 </div>
                             
-                            <p>To create  a circle with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Circle()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Circle.html">Kinetic.Circle documentation</a>.</p>
-<p><iframe width="350" height="350" src="../Examples/Shapes/Circle.html" frameborder="0" allowfullscreen></iframe></p>
+                            <p>To create an sprite with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Sprite()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Sprite.html">Kinetic.Sprite documentation</a>.</p>
+<p><iframe width="650" height="350" src="../Examples/Shapes/Sprite.html" frameborder="0" allowfullscreen></iframe></p>
 <pre><code class="language-html">&lt;!DOCTYPE HTML&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -76,38 +76,91 @@
         margin: 0px;
         padding: 0px;
       }
+      #container {
+        background-color: #222;
+        display: inline-block;
+        width: 580px;
+        height: 202px;
+      }
+      #buttons {
+        position: absolute;
+        top: 5px;
+        left: 10px;
+        z-index: 4;
+      }
+      #buttons &gt; input {
+        padding: 10px;
+        display: block;
+        margin-top: 5px;
+      }
     &lt;/style&gt;
   &lt;/head&gt;
   &lt;body&gt;
+    &lt;div id="buttons"&gt;
+      &lt;input type="button" id="punch" value="Punch"&gt;
+    &lt;/div&gt;
     &lt;div id="container"&gt;&lt;/div&gt;
     &lt;script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.1.0.min.js"&gt;&lt;/script&gt;
     &lt;script defer="defer"&gt;
       var stage = new Kinetic.Stage({
         container: 'container',
-        width: 300,
-        height: 300
+        width: 578,
+        height: 200
       });
-
       var layer = new Kinetic.Layer();
+      var animations = {
+        idle: [
+          2, 2, 70, 119,
+          71, 2, 74, 119,
+          146, 2, 81, 119,
+          226, 2, 76, 119
+        ],
+        punch: [
+          2, 138, 74, 122,
+          76, 138, 84, 122,
+          346, 138, 120, 122
+        ]
+      };
 
-      var circle = new Kinetic.Circle({
-        x: stage.getWidth() / 2,
-        y: stage.getHeight() / 2,
-        radius: 70,
-        fill: 'red',
-        stroke: 'black',
-        strokeWidth: 4
-      });
+      var imageObj = new Image();
+      imageObj.onload = function() {
+        var blob = new Kinetic.Sprite({
+          x: 250,
+          y: 40,
+          image: imageObj,
+          animation: 'idle',
+          animations: animations,
+          frameRate: 7,
+          frameIndex: 0
+        });
 
-      // add the shape to the layer
-      layer.add(circle);
+        // add the shape to the layer
+        layer.add(blob);
 
-      // add the layer to the stage
-      stage.add(layer);
+        // add the layer to the stage
+        stage.add(layer);
+
+        // start sprite animation
+        blob.start();
+
+        // resume transition
+        document.getElementById('punch').addEventListener('click', function() {
+          blob.setAnimation('punch');
+          blob.on('frameIndexChange.button', function() {
+            if (this.frameIndex() === 2) {
+              setTimeout(function() {
+                blob.setAnimation('idle');
+                blob.off('.button');
+              }, 1000 / blob.frameRate());
+
+            }
+          })
+        }, false);
+      };
+      imageObj.src = '../../img/blob-sprite.png';
     &lt;/script&gt;
   &lt;/body&gt;
-&lt;/html&gt;
-</code></pre>                                                    </article>
+&lt;/html&gt;</code></pre>                                                    </article>
                     </div>
                 </div>
             </div>

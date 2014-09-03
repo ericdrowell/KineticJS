@@ -4,7 +4,7 @@
 <!--[if IE 8]>          <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!-->  <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-    <title>Circle</title>
+    <title>Image</title>
     <meta name="description" content="KineticJS is an HTML5 Canvas JavaScript framework that extends the 2d context by enabling canvas interactivity for desktop and mobile applications" />
     <meta name="author" content="Eric Rowell">
     <link rel="icon" href="../themes/daux-blue/img/favicon-blue.png" type="image/x-icon">
@@ -39,7 +39,7 @@
                     </div>
                     <div id="sub-nav-collapse" class="sub-nav-collapse">
                         <!-- Navigation -->
-                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li class="active"><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li><a href="../Shapes/Image.html">Image</a></li><li><a href="../Shapes/Sprite.html">Sprite</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
+                        <ul class="nav nav-list"><li><a href="../Getting_Started.html">Getting Started</a></li><li class="open"><a href="../Shapes/index.html" class="folder">Shapes</a><ul class="nav nav-list"><li><a href="../Shapes/Rect.html">Rect</a></li><li><a href="../Shapes/Circle.html">Circle</a></li><li><a href="../Shapes/Ellipse.html">Ellipse</a></li><li><a href="../Shapes/Wedge.html">Wedge</a></li><li><a href="../Shapes/Line.html">Line</a></li><li><a href="../Shapes/RegularPolygon.html">RegularPolygon</a></li><li class="active"><a href="../Shapes/Image.html">Image</a></li><li><a href="../Shapes/Sprite.html">Sprite</a></li></ul></li><li><a href="#" class="aj-nav folder">Plugins</a><ul class="nav nav-list"></ul></li></ul>                                                    <div class="well well-sidebar">
 
                                 <!-- Links -->
                                 <a href="https://github.com/ericdrowell/KineticJS/releases" target="_blank">Download</a><br><a href="https://github.com/ericdrowell/KineticJS" target="_blank">GitHub Repo</a><br><a href="https://github.com/ericdrowell/KineticJS/issues" target="_blank">Help/Support/Bugs</a><br>                                
@@ -59,15 +59,15 @@
                     <div class="content-page">
                         <article>
                                                             <div class="page-header sub-header clearfix">
-                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Circle.html">Circle</a>                                                                            </h1>
+                                    <h1><a href="../Shapes">Shapes</a> <i class="glyphicon glyphicon-chevron-right"></i> <a href="../Shapes/Image.html">Image</a>                                                                            </h1>
                                     <span style="float: left; font-size: 10px; color: gray;">
                                         Tuesday, September 2, 2014                                    </span>
                                     <span style="float: right; font-size: 10px; color: gray;">
-                                        8:29 AM                                    </span>
+                                        6:21 PM                                    </span>
                                 </div>
                             
-                            <p>To create  a circle with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Circle()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Circle.html">Kinetic.Circle documentation</a>.</p>
-<p><iframe width="350" height="350" src="../Examples/Shapes/Circle.html" frameborder="0" allowfullscreen></iframe></p>
+                            <p>To create an image with <code>KineticJS</code>, we can instantiate a <code>Kinetic.Image()</code> object.  For a full list of attributes and methods, check out the <a href="http://kineticjs.com/docs/Kinetic.Image.html">Kinetic.Image documentation</a>.</p>
+<p><iframe width="650" height="350" src="../Examples/Shapes/Image.html" frameborder="0" allowfullscreen></iframe></p>
 <pre><code class="language-html">&lt;!DOCTYPE HTML&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -84,30 +84,33 @@
     &lt;script defer="defer"&gt;
       var stage = new Kinetic.Stage({
         container: 'container',
-        width: 300,
+        width: 600,
         height: 300
       });
 
       var layer = new Kinetic.Layer();
 
-      var circle = new Kinetic.Circle({
-        x: stage.getWidth() / 2,
-        y: stage.getHeight() / 2,
-        radius: 70,
-        fill: 'red',
-        stroke: 'black',
-        strokeWidth: 4
-      });
+      var imageObj = new Image();
+      imageObj.onload = function() {
 
-      // add the shape to the layer
-      layer.add(circle);
+        var yoda = new Kinetic.Image({
+          x: 140,
+          y: stage.getHeight() / 2,
+          image: imageObj,
+          width: 106,
+          height: 118
+        });
 
-      // add the layer to the stage
-      stage.add(layer);
+        // add the shape to the layer
+        layer.add(yoda);
+
+        // add the layer to the stage
+        stage.add(layer);
+      };
+      imageObj.src = '../../img/yoda.jpg';
     &lt;/script&gt;
   &lt;/body&gt;
-&lt;/html&gt;
-</code></pre>                                                    </article>
+&lt;/html&gt;</code></pre>                                                    </article>
                     </div>
                 </div>
             </div>
