@@ -179,6 +179,9 @@
 
             return Kinetic.Collection.toCollection(retArr);
         },
+        findOne: function(selector) {
+            return this.find(selector)[0];
+        },
         _getNodeById: function(key) {
             var node = Kinetic.ids[key];
 
