@@ -100,6 +100,7 @@ require('./unit/plugins/Star-test.js');
 require('./unit/plugins/RegularPolygon-test.js');
 require('./unit/plugins/Path-test.js');
 require('./unit/plugins/TextPath-test.js');
+require('./unit/plugins/BitmapText-test.js');
 
 //     // filters -->
 require('./unit/filters/Blur-test.js');

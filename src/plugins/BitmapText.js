@@ -23,7 +23,6 @@
             Kinetic.Shape.call(this, config); // This shape will act as a Kinetic group
  
             self.className = BITMAPTEXT;
-            self.attrs.cgaCache = {}; // Empty object for cache
  
             this._addListeners();
  
@@ -40,7 +39,7 @@
                 el = document.createElement('div');
 
             // Empty string values
-            if (typeof text === 'undefined' || text === null || isNaN(text)) {
+            if (typeof text === 'undefined' || typeof text === 'boolean' || text === null || ( typeof text === 'number' && isNaN(text) ) ) {
                 text = '';
             }
  
@@ -57,7 +56,7 @@
                 height = null,
                 line = 0,
                 lineHeight = this.getLineHeight();
- 
+
             for (; i < len; i++) {
                 var node = nodes[i],
                     tag = node.tagName ? node.tagName.toLowerCase() : STANDARD,
@@ -75,11 +74,11 @@
                 // Loop through each character
                 for (var c = 0; c < text.length; c++) {
  
-                    var char = text.charAt(c),
-                        pos = this._getPos(char, tag);
+                    var character = text.charAt(c),
+                        pos = this._getPos(character, tag);
 
                     this.textData.push({
-                        char: char,
+                        character: character,
                         tag: tag,
                         sx: pos.x, // Source X
                         sy: pos.y, // Source Y
@@ -125,17 +124,23 @@
  
             var height = 0;
  
+            // If we have object of text characters
             if (typeof this.attrs.chars === 'object') {
-                if (typeof this.attrs.chars[tag]['1'] === 'object' ) {
-                    height = this.attrs.chars[tag]['1'][3];
-                }
-     
-                if (typeof this.attrs.chars[tag]['T'] === 'object' ) {
-                    height = Math.max(height, this.attrs.chars[tag]['1'][3]);
-                }
-     
-                if (typeof this.attrs.chars[tag]['L'] === 'object' ) {
-                    height =  Math.max(this.attrs.chars[tag]['1'][3]);
+
+                // If we have this character tag (default to standard)
+                if (typeof this.attrs.chars[tag] === 'object') {
+
+                    if (typeof this.attrs.chars[tag]['1'] === 'object' ) {
+                        height = this.attrs.chars[tag]['1'][3];
+                    }
+         
+                    if (typeof this.attrs.chars[tag]['T'] === 'object' ) {
+                        height = Math.max(height, this.attrs.chars[tag]['1'][3]);
+                    }
+         
+                    if (typeof this.attrs.chars[tag]['L'] === 'object' ) {
+                        height =  Math.max(this.attrs.chars[tag]['1'][3]);
+                    }
                 }
 
                 // If we could not determine a line height
@@ -161,12 +166,12 @@
         /**
          * Get position and dimensions of a character
          *
-         * @param char
+         * @param character
          * @param tag
          * @returns {{x: number, y: number, width: number, height: number}}
          * @private
          */
-        _getPos: function(char, tag) {
+        _getPos: function(character, tag) {
             var temp = null,
                 pos = {
                     x: 0,
@@ -177,12 +182,12 @@
  
             if (typeof this.attrs.chars === 'object') {
                 // If this tag exists and this character exists with this tag
-                if (this.attrs.chars[tag] && typeof this.attrs.chars[tag][char] === 'object') {
-                    temp = this.attrs.chars[tag][char];
+                if (this.attrs.chars[tag] && typeof this.attrs.chars[tag][character] === 'object') {
+                    temp = this.attrs.chars[tag][character];
                 }
                 // Else, if this character exists with a standard tag
-                else if (typeof this.attrs.chars[STANDARD][char] === 'object') {
-                    temp = this.attrs.chars[STANDARD][char];
+                else if (typeof this.attrs.chars[STANDARD][character] === 'object') {
+                    temp = this.attrs.chars[STANDARD][character];
                 }
             }
  
@@ -250,8 +255,8 @@
             }
  
             for (; i < len; i++) {
-                var char = this.textData[i];
-                context.drawImage(image, char.sx, char.sy, char.sw, char.sh, char.dx, char.dy, char.dw, char.dh);
+                var character = this.textData[i];
+                context.drawImage(image, character.sx, character.sy, character.sw, character.sh, character.dx, character.dy, character.dw, character.dh);
             }
         },
         _hitFunc: function(context) {
