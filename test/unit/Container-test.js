@@ -1025,6 +1025,21 @@ suite('Container', function() {
     });
 
     // ======================================================
+    test('test findOne() selector by quering existing and non-existing nodes by name', function () {
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+
+        var rect = new Kinetic.Rect({
+            name: 'rect'
+        });
+
+        layer.add(rect);
+
+        assert.equal(layer.findOne('.rect'), rect, 'findOne() on existing node must return a single node.');
+        assert.equal(layer.findOne('.doesNotExist'), undefined, 'findOne() on non-existing node must return undefined.');
+    });
+
+    // ======================================================
     test('add layer then shape', function() {
         var stage = addStage();
         var layer = new Kinetic.Layer();
