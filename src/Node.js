@@ -1538,7 +1538,7 @@
     });
 
     /**
-     * create node with JSON string.  De-serializtion does not generate custom
+     * create node with JSON string.  De-serialization does not generate custom
      *  shape drawing functions, images, or event handlers (this would make the
      *  serialized object huge).  If your app uses custom shapes, images, and
      *  event handlers (it probably does), then you need to select the appropriate
