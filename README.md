@@ -47,7 +47,3 @@ KineticJS is covered with hundreds of tests and well over a thousand assertions.
 ##Generate documentation
 
 Run `grunt docs` which will build the documentation files and place them in the docs folder.
-
-
-#Pull Requests
-I'd be happy to review any pull requests that may better the KineticJS project, in particular if you have a bug fix, enhancement, or a new shape (see `src/shapes` for examples).  Before doing so, please first make sure that all of the tests pass (`grunt test`). 
