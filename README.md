@@ -1,6 +1,8 @@
-#Hiatus
+#KineticJS has Retired
 
-Hi all! I will be taking a 3 month break from KineticJS (until July 2014) to focus on other endeavors.  KineticJS is in a great state right now (v5.1.0).  Please continue to file any issues that you may find, or submit pull requests.  They will eventually be addressed.
+Hi all! It's been awhile since I've worked on KineticJS, and I've since moved onto other projects.  KineticJS is still an awesome HTML5 Canvas library, so I will be keeping up with the github repo indefinitely (as long as there is a github).  I will no longer be fixing issues or responding to questions.  Please feel free to fork the repo if you'd like to make changes or keep things moving.
+
+Also, you can now find tars of every stable KineticJS build on [www.kineticjs.com](http://www.kineticjs.com)
 
 #Installation
 
