@@ -1,50 +1,78 @@
-///////////////////////////////////////////////////////////////////////
-//  Rect
-///////////////////////////////////////////////////////////////////////
-/**
- * Rect constructor
- * @constructor
- * @augments Kinetic.Shape
- * @param {Object} config
- */
-Kinetic.Rect = function(config) {
-    this._initRect(config);
-}
-Kinetic.Rect.prototype = {
-    _initRect: function(config) {
-        this.setDefaultAttrs({
-            width: 0,
-            height: 0,
-            cornerRadius: 0
-        });
-        this.shapeType = "Rect";
-        config.drawFunc = this.drawFunc;
+(function() {
+    /**
+     * Rect constructor
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Shape
+     * @param {Object} config
+     * @param {Number} [config.cornerRadius]
+     * @@shapeParams
+     * @@nodeParams
+     * @example
+     * var rect = new Kinetic.Rect({
+     *   width: 100,
+     *   height: 50,
+     *   fill: 'red',
+     *   stroke: 'black',
+     *   strokeWidth: 5
+     * });
+     */
+    Kinetic.Rect = function(config) {
+        this.___init(config);
+    };
 
-        Kinetic.Shape.call(this, config);
-    },
-    drawFunc: function(context) {
-        context.beginPath();
-        if(this.attrs.cornerRadius === 0) {
-            // simple rect - don't bother doing all that complicated maths stuff.
-            context.rect(0, 0, this.attrs.width, this.attrs.height);
+    Kinetic.Rect.prototype = {
+        ___init: function(config) {
+            Kinetic.Shape.call(this, config);
+            this.className = 'Rect';
+            this.sceneFunc(this._sceneFunc);
+        },
+        _sceneFunc: function(context) {
+            var cornerRadius = this.getCornerRadius(),
+                width = this.getWidth(),
+                height = this.getHeight();
+
+            
+            context.beginPath();
+
+            if(!cornerRadius) {
+                // simple rect - don't bother doing all that complicated maths stuff.
+                context.rect(0, 0, width, height);
+            }
+            else {
+                // arcTo would be nicer, but browser support is patchy (Opera)
+                context.moveTo(cornerRadius, 0);
+                context.lineTo(width - cornerRadius, 0);
+                context.arc(width - cornerRadius, cornerRadius, cornerRadius, Math.PI * 3 / 2, 0, false);
+                context.lineTo(width, height - cornerRadius);
+                context.arc(width - cornerRadius, height - cornerRadius, cornerRadius, 0, Math.PI / 2, false);
+                context.lineTo(cornerRadius, height);
+                context.arc(cornerRadius, height - cornerRadius, cornerRadius, Math.PI / 2, Math.PI, false);
+                context.lineTo(0, cornerRadius);
+                context.arc(cornerRadius, cornerRadius, cornerRadius, Math.PI, Math.PI * 3 / 2, false);
+            }
+            context.closePath();
+            context.fillStrokeShape(this);
         }
-        else {
-            // arcTo would be nicer, but browser support is patchy (Opera)
-            context.moveTo(this.attrs.cornerRadius, 0);
-            context.lineTo(this.attrs.width - this.attrs.cornerRadius, 0);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI * 3 / 2, 0, false);
-            context.lineTo(this.attrs.width, this.attrs.height - this.attrs.cornerRadius);
-            context.arc(this.attrs.width - this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, 0, Math.PI / 2, false);
-            context.lineTo(this.attrs.cornerRadius, this.attrs.height);
-            context.arc(this.attrs.cornerRadius, this.attrs.height - this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI / 2, Math.PI, false);
-            context.lineTo(0, this.attrs.cornerRadius);
-            context.arc(this.attrs.cornerRadius, this.attrs.cornerRadius, this.attrs.cornerRadius, Math.PI, Math.PI * 3 / 2, false);
-        }
-        context.closePath();
+    };
 
-        this.fill(context);
-        this.stroke(context);
-    }
-};
+    Kinetic.Util.extend(Kinetic.Rect, Kinetic.Shape);
 
-Kinetic.Global.extend(Kinetic.Rect, Kinetic.Shape);
+    Kinetic.Factory.addGetterSetter(Kinetic.Rect, 'cornerRadius', 0);
+    /**
+     * get/set corner radius
+     * @name cornerRadius
+     * @method
+     * @memberof Kinetic.Rect.prototype
+     * @param {Number} cornerRadius
+     * @returns {Number}
+     * @example
+     * // get corner radius
+     * var cornerRadius = rect.cornerRadius();
+     * 
+     * // set corner radius
+     * rect.cornerRadius(10);
+     */
+
+    Kinetic.Collection.mapMethods(Kinetic.Rect);
+})();

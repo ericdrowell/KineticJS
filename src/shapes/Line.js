@@ -1,137 +1,202 @@
-///////////////////////////////////////////////////////////////////////
-//  Line
-///////////////////////////////////////////////////////////////////////
-/**
- * Line constructor.&nbsp; Lines are defined by an array of points
- * @constructor
- * @augments Kinetic.Shape
- * @param {Object} config
- */
-Kinetic.Line = function(config) {
-    this._initLine(config);
-};
-
-Kinetic.Line.prototype = {
-    _initLine: function(config) {
-        this.setDefaultAttrs({
-            points: [],
-            lineCap: 'butt',
-            dashArray: [],
-            detectionType: 'pixel'
-        });
-
-        this.shapeType = "Line";
-        config.drawFunc = this.drawFunc;
-        // call super constructor
-        Kinetic.Shape.call(this, config);
-    },
-    drawFunc: function(context) {
-        var lastPos = {};
-        context.beginPath();
-
-        context.moveTo(this.attrs.points[0].x, this.attrs.points[0].y);
-
-        for(var n = 1; n < this.attrs.points.length; n++) {
-            var x = this.attrs.points[n].x;
-            var y = this.attrs.points[n].y;
-            if(this.attrs.dashArray.length > 0) {
-                // draw dashed line
-                var lastX = this.attrs.points[n - 1].x;
-                var lastY = this.attrs.points[n - 1].y;
-                this._dashedLine(context, lastX, lastY, x, y, this.attrs.dashArray);
-            }
-            else {
-                // draw normal line
-                context.lineTo(x, y);
-            }
-        }
-
-        this.stroke(context);
-    },
+(function() {
     /**
-	 * set points array
-	 * @name setPoints
-	 * @methodOf Kinetic.Line.prototype
-	 * @param {Array} can be an array of point objects or an array
-	 *  of Numbers.  e.g. [{x:1,y:2},{x:3,y:4}] or [1,2,3,4]
-	 */
-    setPoints: function(val) {
-    	this.setAttr('points', Kinetic.Type._getPoints(val));
-    },
-    /**
-     * draw dashed line.  Written by Phrogz
+     * Line constructor.&nbsp; Lines are defined by an array of points and
+     *  a tension
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Shape
+     * @param {Object} config
+     * @param {Array} config.points
+     * @param {Number} [config.tension] Higher values will result in a more curvy line.  A value of 0 will result in no interpolation.
+     *   The default is 0
+     * @param {Boolean} [config.closed] defines whether or not the line shape is closed, creating a polygon or blob 
+     * @@shapeParams
+     * @@nodeParams
+     * @example
+     * var line = new Kinetic.Line({
+     *   x: 100,
+     *   y: 50,
+     *   points: [73, 70, 340, 23, 450, 60, 500, 20],
+     *   stroke: 'red',
+     *   tension: 1
+     * });
      */
-    _dashedLine: function(context, x, y, x2, y2, dashArray) {
-        var dashCount = dashArray.length;
+    Kinetic.Line = function(config) {
+        this.___init(config);
+    };
 
-        var dx = (x2 - x), dy = (y2 - y);
-        var xSlope = dx > dy;
-        var slope = (xSlope) ? dy / dx : dx / dy;
+    Kinetic.Line.prototype = {
+        ___init: function(config) {
+            // call super constructor
+            Kinetic.Shape.call(this, config);
+            this.className = 'Line';
 
-        /*
-         * gaurd against slopes of infinity
-         */
-        if(slope > 9999) {
-            slope = 9999;
-        }
-        else if(slope < -9999) {
-            slope = -9999;
-        }
+            this.on('pointsChange.kinetic tensionChange.kinetic closedChange.kinetic', function() {
+                this._clearCache('tensionPoints');
+            });
 
-        var distRemaining = Math.sqrt(dx * dx + dy * dy);
-        var dashIndex = 0, draw = true;
-        while(distRemaining >= 0.1 && dashIndex < 10000) {
-            var dashLength = dashArray[dashIndex++ % dashCount];
-            if(dashLength === 0) {
-                dashLength = 0.001;
+            this.sceneFunc(this._sceneFunc);
+        },
+        _sceneFunc: function(context) {
+            var points = this.getPoints(),
+                length = points.length,
+                tension = this.getTension(),
+                closed = this.getClosed(),
+                tp, len, n;
+
+            context.beginPath();
+            context.moveTo(points[0], points[1]);
+
+            // tension
+            if(tension !== 0 && length > 4) {
+                tp = this.getTensionPoints();
+                len = tp.length;
+                n = closed ? 0 : 4;
+
+                if (!closed) {
+                    context.quadraticCurveTo(tp[0], tp[1], tp[2], tp[3]);
+                }
+
+                while(n < len - 2) {
+                    context.bezierCurveTo(tp[n++], tp[n++], tp[n++], tp[n++], tp[n++], tp[n++]);
+                }
+
+                if (!closed) {
+                    context.quadraticCurveTo(tp[len-2], tp[len-1], points[length-2], points[length-1]);
+                }
             }
-            if(dashLength > distRemaining) {
-                dashLength = distRemaining;
+            // no tension
+            else {
+                for(n = 2; n < length; n+=2) {
+                    context.lineTo(points[n], points[n+1]);
+                }
             }
-            var step = Math.sqrt(dashLength * dashLength / (1 + slope * slope));
-            if(xSlope) {
-                x += dx < 0 && dy < 0 ? step * -1 : step;
-                y += dx < 0 && dy < 0 ? slope * step * -1 : slope * step;
+
+            // closed e.g. polygons and blobs
+            if (closed) {
+                context.closePath();
+                context.fillStrokeShape(this);
+            }
+            // open e.g. lines and splines
+            else {
+                context.strokeShape(this);
+            }
+        },
+        getTensionPoints: function() {
+            return this._getCache('tensionPoints', this._getTensionPoints);
+        },
+        _getTensionPoints: function() {
+            if (this.getClosed()) {
+                return this._getTensionPointsClosed();
             }
             else {
-                x += dx < 0 && dy < 0 ? slope * step * -1 : slope * step;
-                y += dx < 0 && dy < 0 ? step * -1 : step;
+                return Kinetic.Util._expandPoints(this.getPoints(), this.getTension());
             }
-            context[draw ? 'lineTo' : 'moveTo'](x, y);
-            distRemaining -= dashLength;
-            draw = !draw;
+        },
+        _getTensionPointsClosed: function() {
+            var p = this.getPoints(),
+                len = p.length,
+                tension = this.getTension(),
+                util = Kinetic.Util,
+                firstControlPoints = util._getControlPoints(
+                    p[len-2],
+                    p[len-1],
+                    p[0],
+                    p[1],
+                    p[2],
+                    p[3],
+                    tension
+                ),
+                lastControlPoints = util._getControlPoints(
+                    p[len-4],
+                    p[len-3],
+                    p[len-2],
+                    p[len-1],
+                    p[0],
+                    p[1],
+                    tension
+                ),
+                middle = Kinetic.Util._expandPoints(p, tension),
+                tp = [
+                    firstControlPoints[2],
+                    firstControlPoints[3]
+                ]
+                .concat(middle)
+                .concat([
+                    lastControlPoints[0],
+                    lastControlPoints[1],
+                    p[len-2],
+                    p[len-1],
+                    lastControlPoints[2],
+                    lastControlPoints[3],
+                    firstControlPoints[0],
+                    firstControlPoints[1],
+                    p[0],
+                    p[1]
+                ]);
+                    
+            return tp;
         }
+    };
+    Kinetic.Util.extend(Kinetic.Line, Kinetic.Shape);
 
-        context.moveTo(x2, y2);
-    }
-};
-Kinetic.Global.extend(Kinetic.Line, Kinetic.Shape);
+    // add getters setters
+    Kinetic.Factory.addGetterSetter(Kinetic.Line, 'closed', false);
 
-// add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Line, ['dashArray']);
-Kinetic.Node.addGetters(Kinetic.Line, ['points']);
+    /**
+     * get/set closed flag.  The default is false
+     * @name closed
+     * @method
+     * @memberof Kinetic.Line.prototype
+     * @param {Boolean} closed
+     * @returns {Boolean}
+     * @example
+     * // get closed flag
+     * var closed = line.closed();
+     *
+     * // close the shape
+     * line.closed(true);
+     *
+     * // open the shape
+     * line.closed(false);
+     */
 
-/**
- * set dash array.
- * @name setDashArray
- * @methodOf Kinetic.Line.prototype
- * @param {Array} dashArray
- *  examples:<br>
- *  [10, 5] dashes are 10px long and 5 pixels apart
- *  [10, 20, 0, 20] if using a round lineCap, the line will
- *  be made up of alternating dashed lines that are 10px long
- *  and 20px apart, and dots that have a radius of 5 and are 20px
- *  apart
- */
+    Kinetic.Factory.addGetterSetter(Kinetic.Line, 'tension', 0);
 
-/**
- * get dash array
- * @name getDashArray
- * @methodOf Kinetic.Line.prototype
- */
+    /**
+     * get/set tension
+     * @name tension
+     * @method
+     * @memberof Kinetic.Line.prototype
+     * @param {Number} Higher values will result in a more curvy line.  A value of 0 will result in no interpolation.
+     *   The default is 0
+     * @returns {Number}
+     * @example
+     * // get tension
+     * var tension = line.tension();
+     *
+     * // set tension
+     * line.tension(3);
+     */
 
-/**
- * get points array
- * @name getPoints
- * @methodOf Kinetic.Line.prototype
- */
+    Kinetic.Factory.addGetterSetter(Kinetic.Line, 'points');
+    /**
+     * get/set points array
+     * @name points
+     * @method
+     * @memberof Kinetic.Line.prototype
+     * @param {Array} points
+     * @returns {Array}
+     * @example
+     * // get points
+     * var points = line.points();
+     *
+     * // set points
+     * line.points([10, 20, 30, 40, 50, 60]);
+     *
+     * // push a new point
+     * line.points(line.points().concat([70, 80]));
+     */
+
+    Kinetic.Collection.mapMethods(Kinetic.Line);
+})();

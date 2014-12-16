@@ -1,12 +1,49 @@
-#Building the KineticJS library
-To build the library, you need to have Ruby and Rubygems installed. After that, run `gem install thor`, `gem install json_pure`, and `gem install uglifier` to install the dependencies.
+#KineticJS has Retired
 
-To build a development version of the library, run `thor build:dev VERSION`, where VERSION is a string that can be anything you like. For example, using `thor build:dev core` will produce `kinetic-core.js`. To build a minified version of the library, run `thor build:prod VERSION`. If you want to add a release date other than the current day, use `-d="DATE"` (e.g. `-d="Mar 07 2012"`).  
+Hi all! It's been awhile since I've worked on KineticJS, and I've since moved on to other projects.  KineticJS is still an awesome HTML5 Canvas library, so I will be keeping the source in github indefinitely (as long as there is a github).  However, I will no longer be fixing issues or responding to questions.  Please feel free to fork the repo if you'd like to make changes.
 
-If you add a file in the src directory, be sure to add the filename to the filename array in the Thorfile.
+Also, you can now find tars of every stable KineticJS build on [www.kineticjs.com](http://www.kineticjs.com)
 
-#Tests
-To run tests, open `unitTests.html`, `functionalTests.html`, `manualTests.html`, or `performanceTests.html` in the `tests/html` directory.  Unit, functional, and performance tests output the results to the console via `console.log()` so be sure to have it open.  Use test() for hard tests which will throw an error if something fails, and use warn() for soft tests that will allow the tests to continue.  The warn() method is great for tests that will have different results in different browsers, such as canvas data url comparisons, text metric dimensions, etc.  All tests should pass in Google Chrome with no warnings, and all tests should pass with some warnings in other browsers.
+#Installation
 
-#Pull Requests
-I'd be happy to review any pull requests that may better the KineticJS project, in particular if you have a bug fix, enhancement, or a new shape (see `src/shapes` for examples).  Before doing so, please first make sure that all of the unit tests and functional tests pass.
+* `bower install kineticjs`
+* `npm install kinetic` - for Browserify. For nodejs you have to install some [dependencies](#NodeJS)
+
+###NodeJS
+
+Support of NodeJS is experimental.
+
+We are using [node-canvas](https://github.com/LearnBoost/node-canvas) to create canvas element.
+
+1. Install node-canvas [https://github.com/LearnBoost/node-canvas/wiki/_pages](https://github.com/LearnBoost/node-canvas/wiki/_pages)
+2. `npm install jsdom`
+3. `npm install kinetic`
+
+See file `nodejs-demo.js` for example.
+
+#Dev environment
+
+Before doing all dev stuff make sure you have node installed. After that, run `npm install --dev` in the main directory to install the node module dependencies.
+
+Run `grunt --help` to see all build options.
+
+##Building the KineticJS Framework 
+
+To build a development version of the framework, run `grunt dev`. To run a full build, which also produces the minified version and the individually minified modules for the custom build, run `grunt full`.  You can also run `grunt beta` to generate a beta version.   
+
+If you add a file in the src directory, be sure to add the filename to the sourceFiles array variable in Gruntfile.js.
+
+##Testing
+
+[![Build Status](https://travis-ci.org/ericdrowell/KineticJS.png)](https://travis-ci.org/ericdrowell/KineticJS)
+
+KineticJS uses Mocha for testing. 
+
+* If you need run test only one time run `grunt test`.
+* While developing it is easy to use `grunt server` with watch task. Just run it and go to [http://localhost:8080/test/runner.html](http://localhost:8080/test/runner.html). After src file change kinetic-dev.js will be automatically created, so you just need refresh test the page.
+
+KineticJS is covered with hundreds of tests and well over a thousand assertions.  KineticJS uses TDD (test driven development) which means that every new feature or bug fix is accompanied with at least one new test. 
+
+##Generate documentation
+
+Run `grunt docs` which will build the documentation files and place them in the docs folder.

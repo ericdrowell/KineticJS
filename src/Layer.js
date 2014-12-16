@@ -1,292 +1,254 @@
-/**
- * Layer constructor.  Layers are tied to their own canvas element and are used
- * to contain groups or shapes
- * @constructor
- * @augments Kinetic.Container
- * @param {Object} config
- * @param {Boolean} [config.clearBeforeDraw] set this property to true if you'd like to disable
- *  canvas clearing before each new layer draw
- * @param {Number} [config.x]
- * @param {Number} [config.y]
- * @param {Boolean} [config.visible]
- * @param {Boolean} [config.listening] whether or not the node is listening for events
- * @param {String} [config.id] unique id
- * @param {String} [config.name] non-unique name
- * @param {Number} [config.opacity] determines node opacity.  Can be any number between 0 and 1
- * @param {Object} [config.scale]
- * @param {Number} [config.scale.x]
- * @param {Number} [config.scale.y]
- * @param {Number} [config.rotation] rotation in radians
- * @param {Number} [config.rotationDeg] rotation in degrees
- * @param {Object} [config.offset] offsets default position point and rotation point
- * @param {Number} [config.offset.x]
- * @param {Number} [config.offset.y]
- * @param {Boolean} [config.draggable]
- * @param {Function} [config.dragBoundFunc] dragBoundFunc(pos, evt) should return new position
- */
-Kinetic.Layer = function(config) {
-    this._initLayer(config);
-};
+(function() {
+    // constants
+    var HASH = '#',
+        BEFORE_DRAW ='beforeDraw',
+        DRAW = 'draw',
 
-Kinetic.Layer.prototype = {
-    _initLayer: function(config) {
-        this.setDefaultAttrs({
-            clearBeforeDraw: true
-        });
+        /*
+         * 2 - 3 - 4
+         * |       |
+         * 1 - 0   5
+         *         |
+         * 8 - 7 - 6     
+         */
+        INTERSECTION_OFFSETS = [
+            {x:  0, y:  0}, // 0
+            {x: -1, y:  0}, // 1
+            {x: -1, y: -1}, // 2
+            {x:  0, y: -1}, // 3
+            {x:  1, y: -1}, // 4
+            {x:  1, y:  0}, // 5
+            {x:  1, y:  1}, // 6
+            {x:  0, y:  1}, // 7
+            {x: -1, y:  1}  // 8
+        ],
+        INTERSECTION_OFFSETS_LEN = INTERSECTION_OFFSETS.length;
 
-        this.nodeType = 'Layer';
-        this.beforeDrawFunc = undefined;
-        this.afterDrawFunc = undefined;
-        this.canvas = new Kinetic.Canvas();
-        this.canvas.getElement().style.position = 'absolute';
-        this.bufferCanvas = new Kinetic.Canvas();
-        this.bufferCanvas.name = 'buffer';
 
-        // call super constructor
-        Kinetic.Container.call(this, config);
-    },
-    /**
-     * draw children nodes.  this includes any groups
-     *  or shapes
-     * @name draw
-     * @methodOf Kinetic.Layer.prototype
-     */
-    draw: function(canvas) {
-        // before draw  handler
-        if(this.beforeDrawFunc !== undefined) {
-            this.beforeDrawFunc.call(this);
-        }
-
-        var canvases = [];
-        if(canvas) {
-            canvases.push(canvas);
-        }
-        else {
-            canvases.push(this.getCanvas());
-            canvases.push(this.bufferCanvas);
-        }
-
-        var length = canvases.length;
-        for(var n = 0; n < length; n++) {
-            var canvas = canvases[n];
-            if(Kinetic.Node.prototype._shouldDraw.call(this, canvas)) {
-                if(this.attrs.clearBeforeDraw) {
-                    canvas.clear();
-                }
-                Kinetic.Container.prototype.draw.call(this, canvas);
+    Kinetic.Util.addMethods(Kinetic.Layer, {
+        ____init: function(config) {
+            this.nodeType = 'Layer';
+            this.canvas = new Kinetic.SceneCanvas();
+            this.hitCanvas = new Kinetic.HitCanvas();
+            // call super constructor
+            Kinetic.BaseLayer.call(this, config);
+        },
+        _setCanvasSize: function(width, height) {
+            this.canvas.setSize(width, height);
+            this.hitCanvas.setSize(width, height);
+        },
+        _validateAdd: function(child) {
+            var type = child.getType();
+            if (type !== 'Group' && type !== 'Shape') {
+                Kinetic.Util.error('You may only add groups and shapes to a layer.');
             }
-        }
+        },
+        /**
+         * get visible intersection shape. This is the preferred
+         * method for determining if a point intersects a shape or not
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @param {Object} pos
+         * @param {Number} pos.x
+         * @param {Number} pos.y
+         * @returns {Kinetic.Shape}
+         */
+        getIntersection: function(pos) {
+            var obj, i, intersectionOffset, shape;
 
-        // after draw  handler
-        if(this.afterDrawFunc !== undefined) {
-            this.afterDrawFunc.call(this);
-        }
-    },
-    /**
-     * draw children nodes on buffer.  this includes any groups
-     *  or shapes
-     * @name drawBuffer
-     * @methodOf Kinetic.Layer.prototype
-     */
-    drawBuffer: function() {
-        this.draw(this.bufferCanvas);
-    },
-    /**
-     * draw children nodes on scene.  this includes any groups
-     *  or shapes
-     * @name drawScene
-     * @methodOf Kinetic.Layer.prototype
-     */
-    drawScene: function() {
-        this.draw(this.getCanvas());
-    },
-    /**
-     * set before draw handler
-     * @name beforeDraw
-     * @methodOf Kinetic.Layer.prototype
-     * @param {Function} handler
-     */
-    beforeDraw: function(func) {
-        this.beforeDrawFunc = func;
-    },
-    /**
-     * set after draw handler
-     * @name afterDraw
-     * @methodOf Kinetic.Layer.prototype
-     * @param {Function} handler
-     */
-    afterDraw: function(func) {
-        this.afterDrawFunc = func;
-    },
-    /**
-     * get layer canvas
-     * @name getCanvas
-     * @methodOf Kinetic.Layer.prototype
-     */
-    getCanvas: function() {
-        return this.canvas;
-    },
-    /**
-     * get layer canvas context
-     * @name getContext
-     * @methodOf Kinetic.Layer.prototype
-     */
-    getContext: function() {
-        return this.canvas.context;
-    },
-    /**
-     * clear canvas tied to the layer
-     * @name clear
-     * @methodOf Kinetic.Layer.prototype
-     */
-    clear: function() {
-        this.getCanvas().clear();
-    },
-    // extenders
-    setVisible: function(visible) {
-        Kinetic.Node.prototype.setVisible.call(this, visible);
-        if(visible) {
-            this.canvas.element.style.display = 'block';
-            this.bufferCanvas.element.style.display = 'block';
-        }
-        else {
-            this.canvas.element.style.display = 'none';
-            this.bufferCanvas.element.style.display = 'none';
-        }
-    },
-    setZIndex: function(index) {
-        Kinetic.Node.prototype.setZIndex.call(this, index);
-        var stage = this.getStage();
-        if(stage) {
-            stage.content.removeChild(this.canvas.element);
+            if(this.hitGraphEnabled() && this.isVisible()) {
+                // in some cases antialiased area may be bigger than 1px
+                // it is possible if we will cache node, then scale it a lot
+                // TODO: check { 0; 0 } point before loop, and remove it from INTERSECTION_OFFSETS.
+                var spiralSearchDistance = 1;
+                var continueSearch = false;
+                while (true) {
+                    for (i=0; i<INTERSECTION_OFFSETS_LEN; i++) {
+                        intersectionOffset = INTERSECTION_OFFSETS[i];
+                        obj = this._getIntersection({
+                            x: pos.x + intersectionOffset.x * spiralSearchDistance,
+                            y: pos.y + intersectionOffset.y * spiralSearchDistance
+                        });
+                        shape = obj.shape;
+                        if (shape) {
+                            return shape;
+                        }
+                        // we should continue search if we found antialiased pixel
+                        // that means our node somewhere very close
+                        else if (obj.antialiased) {
+                            continueSearch = true;
+                        }
+                    }
+                    // if no shape, and no antialiased pixel, we should end searching 
+                    if (continueSearch) {
+                        spiralSearchDistance += 1;
+                    } else {
+                        return;
+                    }
+                }
+            } else {
+                return null;
+            }
+        },
+        _getImageData: function(x, y) {
+            var width = this.hitCanvas.width || 1,
+                height = this.hitCanvas.height || 1,
+                index = (Math.round(y) * width ) + Math.round(x);
 
-            if(index < stage.getChildren().length - 1) {
-                stage.content.insertBefore(this.canvas.element, stage.getChildren()[index + 1].canvas.element);
+            if (!this._hitImageData) {
+                this._hitImageData = this.hitCanvas.context.getImageData(0, 0, width, height);
+            }
+
+            return [
+                this._hitImageData.data[4 * index + 0] , // Red
+                this._hitImageData.data[4 * index + 1], // Green
+                this._hitImageData.data[4 * index + 2], // Blue
+                this._hitImageData.data[4 * index + 3] // Alpha
+            ];
+        },
+        _getIntersection: function(pos) {
+            var p = this.hitCanvas.context.getImageData(pos.x, pos.y, 1, 1).data,
+                p3 = p[3],
+                colorKey, shape;
+
+            // fully opaque pixel
+            if(p3 === 255) {
+                colorKey = Kinetic.Util._rgbToHex(p[0], p[1], p[2]);
+                shape = Kinetic.shapes[HASH + colorKey];
+                return {
+                    shape: shape
+                };
+            }
+            // antialiased pixel
+            else if(p3 > 0) {
+                return {
+                    antialiased: true
+                };
+            }
+            // empty pixel
+            else {
+                return {};
+            }
+        },
+        drawScene: function(can, top) {
+            var layer = this.getLayer(),
+                canvas = can || (layer && layer.getCanvas());
+
+            this._fire(BEFORE_DRAW, {
+                node: this
+            });
+
+            if(this.getClearBeforeDraw()) {
+                canvas.getContext().clear();
+            }
+            
+            Kinetic.Container.prototype.drawScene.call(this, canvas, top);
+
+            this._fire(DRAW, {
+                node: this
+            });
+
+            return this;
+        },
+        // the apply transform method is handled by the Layer and FastLayer class
+        // because it is up to the layer to decide if an absolute or relative transform
+        // should be used
+        _applyTransform: function(shape, context, top) {
+            var m = shape.getAbsoluteTransform(top).getMatrix();
+            context.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        },
+        drawHit: function(can, top) {
+            var layer = this.getLayer(),
+                canvas = can || (layer && layer.hitCanvas);
+
+            if(layer && layer.getClearBeforeDraw()) {
+                layer.getHitCanvas().getContext().clear();
+            }
+
+            Kinetic.Container.prototype.drawHit.call(this, canvas, top);
+            this.imageData = null; // Clear imageData cache
+            return this;
+        },
+        /**
+         * clear scene and hit canvas contexts tied to the layer
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @param {Object} [bounds]
+         * @param {Number} [bounds.x]
+         * @param {Number} [bounds.y]
+         * @param {Number} [bounds.width]
+         * @param {Number} [bounds.height]
+         * @example
+         * layer.clear();
+         * layer.clear(0, 0, 100, 100);
+         */
+        clear: function(bounds) {
+            this.getContext().clear(bounds);
+            this.getHitCanvas().getContext().clear(bounds);
+            this.imageData = null; // Clear getImageData cache
+            return this;
+        },
+        // extend Node.prototype.setVisible
+        setVisible: function(visible) {
+            Kinetic.Node.prototype.setVisible.call(this, visible);
+            if(visible) {
+                this.getCanvas()._canvas.style.display = 'block';
+                this.hitCanvas._canvas.style.display = 'block';
             }
             else {
-                stage.content.appendChild(this.canvas.element);
+                this.getCanvas()._canvas.style.display = 'none';
+                this.hitCanvas._canvas.style.display = 'none';
             }
-        }
-    },
-    moveToTop: function() {
-        Kinetic.Node.prototype.moveToTop.call(this);
-        var stage = this.getStage();
-        if(stage) {
-            stage.content.removeChild(this.canvas.element);
-            stage.content.appendChild(this.canvas.element);
-        }
-    },
-    moveUp: function() {
-        if(Kinetic.Node.prototype.moveUp.call(this)) {
-            var stage = this.getStage();
-            if(stage) {
-                stage.content.removeChild(this.canvas.element);
-
-                if(this.index < stage.getChildren().length - 1) {
-                    stage.content.insertBefore(this.canvas.element, stage.getChildren()[this.index + 1].canvas.element);
-                }
-                else {
-                    stage.content.appendChild(this.canvas.element);
-                }
-            }
-        }
-    },
-    moveDown: function() {
-        if(Kinetic.Node.prototype.moveDown.call(this)) {
-            var stage = this.getStage();
-            if(stage) {
-                var children = stage.getChildren();
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, children[this.index + 1].canvas.element);
-            }
-        }
-    },
-    moveToBottom: function() {
-        if(Kinetic.Node.prototype.moveToBottom.call(this)) {
-            var stage = this.getStage();
-            if(stage) {
-                var children = stage.getChildren();
-                stage.content.removeChild(this.canvas.element);
-                stage.content.insertBefore(this.canvas.element, children[1].canvas.element);
-            }
-        }
-    },
-    getLayer: function() {
-        return this;
-    },
-    /**
-     * Creates a composite data URL. If MIME type is not
-     *  specified, then "image/png" will result. For "image/jpeg", specify a quality
-     *  level as quality (range 0.0 - 1.0).  Note that this method works
-     *  differently from toDataURL() for other nodes because it generates an absolute dataURL
-     *  based on what's currently drawn on the layer, rather than drawing
-     *  the current state of each child node
-     * @name toDataURL
-     * @methodOf Kinetic.Layer.prototype
-     * @param {Object} config
-     * @param {String} [config.mimeType] mime type.  can be "image/png" or "image/jpeg".
-     *  "image/png" is the default
-     * @param {Number} [config.width] data url image width
-     * @param {Number} [config.height] data url image height
-     * @param {Number} [config.quality] jpeg quality.  If using an "image/jpeg" mimeType,
-     *  you can specify the quality from 0 to 1, where 0 is very poor quality and 1
-     *  is very high quality
-     */
-    toDataURL: function(config) {
-        var canvas;
-        var mimeType = config && config.mimeType ? config.mimeType : null;
-        var quality = config && config.quality ? config.quality : null;
-
-        /*
-         * if layer is hidden, return blank canvas
-         * else if width and height are defined, create blank canvas and draw onto it
-         * else return canvas as is
+            return this;
+        },
+        /**
+         * enable hit graph
+         * @name enableHitGraph
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @returns {Layer}
          */
-        if(!this.isVisible()) {
-            var stage = this.getStage();
-            canvas = new Kinetic.Canvas(stage.getWidth(), stage.getHeight());
-        }
-        else if(config && config.width && config.height) {
-            canvas = new Kinetic.Canvas(config.width, config.height);
-            this.draw(canvas);
-        }
-        else {
-            canvas = this.getCanvas();
-        }
-        return canvas.toDataURL(mimeType, quality);
-    },
-    /**
-     * remove layer from stage
-     */
-    remove: function() {
-        Kinetic.Node.prototype.remove.call(this);
-        /*
-         * remove canvas DOM from the document if
-         * it exists
+        enableHitGraph: function() {
+            this.setHitGraphEnabled(true);
+            return this;
+        },
+        /**
+         * disable hit graph
+         * @name disableHitGraph
+         * @method
+         * @memberof Kinetic.Layer.prototype
+         * @returns {Layer}
          */
-        try {
-            this.getStage().content.removeChild(this.canvas.element);
-        } catch(e) {
-            Kinetic.Global.warn('unable to remove layer scene canvas element from the document');
+        disableHitGraph: function() {
+            this.setHitGraphEnabled(false);
+            return this;
+        },
+        setSize : function(width, height) {
+            Kinetic.BaseLayer.prototype.setSize.call(this, width, height);
+            this.hitCanvas.setSize(width, height);
         }
-    }
-};
-Kinetic.Global.extend(Kinetic.Layer, Kinetic.Container);
+    });
+    Kinetic.Util.extend(Kinetic.Layer, Kinetic.BaseLayer);
 
-// add getters and setters
-Kinetic.Node.addGettersSetters(Kinetic.Layer, ['clearBeforeDraw']);
-
-/**
- * set flag which determines if the layer is cleared or not
- *  before drawing
- * @name setClearBeforeDraw
- * @methodOf Kinetic.Layer.prototype
- * @param {Boolean} clearBeforeDraw
- */
-
-/**
- * get flag which determines if the layer is cleared or not
- *  before drawing
- * @name getClearBeforeDraw
- * @methodOf Kinetic.Layer.prototype
- */
+    Kinetic.Factory.addGetterSetter(Kinetic.Layer, 'hitGraphEnabled', true);
+    /**
+     * get/set hitGraphEnabled flag.  Disabling the hit graph will greatly increase
+     *  draw performance because the hit graph will not be redrawn each time the layer is
+     *  drawn.  This, however, also disables mouse/touch event detection
+     * @name hitGraphEnabled
+     * @method
+     * @memberof Kinetic.Layer.prototype
+     * @param {Boolean} enabled
+     * @returns {Boolean}
+     * @example
+     * // get hitGraphEnabled flag
+     * var hitGraphEnabled = layer.hitGraphEnabled();
+     *
+     * // disable hit graph
+     * layer.hitGraphEnabled(false);
+     *
+     * // enable hit graph
+     * layer.hitGraphEnabled(true);
+     */
+    Kinetic.Collection.mapMethods(Kinetic.Layer);
+})();

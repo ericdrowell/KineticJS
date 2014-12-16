@@ -1,0 +1,13 @@
+dist
+doc-includes
+jsdoc-master
+src
+docs
+test
+.travis.yml
+Gruntfile.js
+bower-template.json
+bower.json
+presentation-schedule.md
+*.sublime-project
+*.sublime-workspace

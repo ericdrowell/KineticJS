@@ -1,179 +1,200 @@
-///////////////////////////////////////////////////////////////////////
-//  Image
-///////////////////////////////////////////////////////////////////////
-/**
- * Image constructor
- * @constructor
- * @augments Kinetic.Shape
- * @param {Object} config
- * @param {ImageObject} config.image
- * @param {Number} [config.width]
- * @param {Number} [config.height]
- * @param {Object} [config.crop]
- */
-Kinetic.Image = function(config) {
-    this._initImage(config);
-};
+(function() {
 
-Kinetic.Image.prototype = {
-    _initImage: function(config) {
-        this.shapeType = "Image";
-        config.drawFunc = this.drawFunc;
-        // call super constructor
-        Kinetic.Shape.call(this, config);
+    // CONSTANTS
+    var IMAGE = 'Image';
 
-        var that = this;
-        this.on('imageChange', function(evt) {
-            that._syncSize();
-        });
-
-        this._syncSize();
-    },
-    drawFunc: function(context) {
-        var width = this.getWidth();
-        var height = this.getHeight();
-
-        context.beginPath();
-        context.rect(0, 0, width, height);
-        context.closePath();
-        this.fill(context);
-        this.stroke(context);
-
-        if(this.attrs.image) {
-            // if cropping
-            if(this.attrs.crop && this.attrs.crop.width && this.attrs.crop.height) {
-                var cropX = this.attrs.crop.x ? this.attrs.crop.x : 0;
-                var cropY = this.attrs.crop.y ? this.attrs.crop.y : 0;
-                var cropWidth = this.attrs.crop.width;
-                var cropHeight = this.attrs.crop.height;
-                this.drawImage(context, this.attrs.image, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
-            }
-            // no cropping
-            else {
-                this.drawImage(context, this.attrs.image, 0, 0, width, height);
-            }
-        }
-    },
     /**
-     * apply filter
-     * @name applyFilter
-     * @methodOf Kinetic.Image.prototype
+     * Image constructor
+     * @constructor
+     * @memberof Kinetic
+     * @augments Kinetic.Shape
      * @param {Object} config
-     * @param {Function} config.filter filter function
-     * @param {Function} [config.callback] callback function to be called once
-     *  filter has been applied
+     * @param {Image} config.image
+     * @param {Object} [config.crop]
+     * @@shapeParams
+     * @@nodeParams
+     * @example
+     * var imageObj = new Image();
+     * imageObj.onload = function() {
+     *   var image = new Kinetic.Image({
+     *     x: 200,
+     *     y: 50,
+     *     image: imageObj,
+     *     width: 100,
+     *     height: 100
+     *   });
+     * };
+     * imageObj.src = '/path/to/image.jpg'
      */
-    applyFilter: function(config) {
-        var canvas = new Kinetic.Canvas(this.attrs.image.width, this.attrs.image.height);
-        var context = canvas.getContext();
-        context.drawImage(this.attrs.image, 0, 0);
-        try {
-            var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
-            config.filter(imageData, config);
-            var that = this;
-            Kinetic.Type._getImage(imageData, function(imageObj) {
-                that.setImage(imageObj);
+    Kinetic.Image = function(config) {
+        this.___init(config);
+    };
 
-                if(config.callback) {
-                    config.callback();
+    Kinetic.Image.prototype = {
+        ___init: function(config) {
+            // call super constructor
+            Kinetic.Shape.call(this, config);
+            this.className = IMAGE;
+            this.sceneFunc(this._sceneFunc);
+            this.hitFunc(this._hitFunc);
+        },
+        _useBufferCanvas: function() {
+            return (this.hasShadow() || this.getAbsoluteOpacity() !== 1) && this.hasStroke() && this.getStage();
+        },
+        _sceneFunc: function(context) {
+            var width = this.getWidth(),
+                height = this.getHeight(),
+                image = this.getImage(),
+                cropWidth, cropHeight, params;
+
+            if (image) {
+                cropWidth = this.getCropWidth();
+                cropHeight = this.getCropHeight();
+                if (cropWidth && cropHeight) {
+                    params = [image, this.getCropX(), this.getCropY(), cropWidth, cropHeight, 0, 0, width, height];
+                } else {
+                    params = [image, 0, 0, width, height];
                 }
-            });
-        } catch(e) {
-            Kinetic.Global.warn('Unable to apply filter.');
-        }
-    },
-    /**
-     * set crop
-     * @name setCrop
-     * @methodOf Kinetic.Image.prototype
-     * @param {Object|Array} config
-     * @param {Number} config.x
-     * @param {Number} config.y
-     * @param {Number} config.width
-     * @param {Number} config.height
-     */
-    setCrop: function() {
-    	var config = [].slice.call(arguments);
-        var pos = Kinetic.Type._getXY(config);
-        var size = Kinetic.Type._getSize(config);
-        var both = Kinetic.Type._merge(pos, size);
-        this.setAttr('crop', Kinetic.Type._merge(both, this.getCrop()));
-    },
-    /**
-     * create image buffer which enables more accurate hit detection mapping of the image
-     *  by avoiding event detections for transparent pixels
-     * @name createImageBuffer
-     * @methodOf Kinetic.Image.prototype
-     * @param {Function} [callback] callback function to be called once
-     *  the buffer image has been created and set
-     */
-    createImageBuffer: function(callback) {
-        var canvas = new Kinetic.Canvas(this.attrs.width, this.attrs.height);
-        var context = canvas.getContext();
-        context.drawImage(this.attrs.image, 0, 0);
-        try {
-            var imageData = context.getImageData(0, 0, canvas.getWidth(), canvas.getHeight());
-            var data = imageData.data;
-            var rgbColorKey = Kinetic.Type._hexToRgb(this.colorKey);
-            // replace non transparent pixels with color key
-            for(var i = 0, n = data.length; i < n; i += 4) {
-                data[i] = rgbColorKey.r;
-                data[i + 1] = rgbColorKey.g;
-                data[i + 2] = rgbColorKey.b;
-                // i+3 is alpha (the fourth element)
             }
 
-            var that = this;
-            Kinetic.Type._getImage(imageData, function(imageObj) {
-                that.imageBuffer = imageObj;
-                if(callback) {
-                    callback();
-                }
-            });
-        } catch(e) {
-            Kinetic.Global.warn('Unable to create image buffer.');
+            if (this.hasFill() || this.hasStroke() || this.hasShadow()) {
+                context.beginPath();
+                context.rect(0, 0, width, height);
+                context.closePath();
+                context.fillStrokeShape(this);
+            }
+
+            if (image) {
+                context.drawImage.apply(context, params);
+            }
+        },
+        _hitFunc: function(context) {
+            var width = this.getWidth(),
+                height = this.getHeight();
+
+            context.beginPath();
+            context.rect(0, 0, width, height);
+            context.closePath();
+            context.fillStrokeShape(this);
+        },
+        getWidth: function() {
+            var image = this.getImage();
+            return this.attrs.width || (image ? image.width : 0);
+        },
+        getHeight: function() {
+            var image = this.getImage();
+            return this.attrs.height || (image ? image.height : 0);
         }
-    },
+    };
+    Kinetic.Util.extend(Kinetic.Image, Kinetic.Shape);
+
+    // add getters setters
+    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'image');
+
     /**
-     * clear buffer image
-     * @name clearImageBuffer
-     * @methodOf Kinetic.Image.prototype
+     * set image
+     * @name setImage
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Image} image
      */
-    clearImageBuffer: function() {
-        delete this.imageBuffer;
-    },
-    _syncSize: function() {
-        if(this.attrs.image) {
-            if(!this.attrs.width) {
-                this.setWidth(this.attrs.image.width);
-            }
-            if(!this.attrs.height) {
-                this.setHeight(this.attrs.image.height);
-            }
-        }
-    }
-};
-Kinetic.Global.extend(Kinetic.Image, Kinetic.Shape);
 
-// add getters setters
-Kinetic.Node.addGettersSetters(Kinetic.Image, ['image']);
-Kinetic.Node.addGetters(Kinetic.Image, ['crop']);
+    /**
+     * get image
+     * @name getImage
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @returns {Image}
+     */
 
-/**
- * set image
- * @name setImage
- * @methodOf Kinetic.Image.prototype
- * @param {ImageObject} image
- */
+    Kinetic.Factory.addComponentsGetterSetter(Kinetic.Image, 'crop', ['x', 'y', 'width', 'height']);
+    /**
+     * get/set crop
+     * @method
+     * @name crop
+     * @memberof Kinetic.Image.prototype
+     * @param {Object} crop 
+     * @param {Number} crop.x
+     * @param {Number} crop.y
+     * @param {Number} crop.width
+     * @param {Number} crop.height
+     * @returns {Object}
+     * @example
+     * // get crop
+     * var crop = image.crop();
+     *
+     * // set crop
+     * image.crop({
+     *   x: 20,
+     *   y: 20,
+     *   width: 20,
+     *   height: 20
+     * });
+     */
 
-/**
- * get crop
- * @name getCrop
- * @methodOf Kinetic.Image.prototype
- */
+    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'cropX', 0);
+    /**
+     * get/set crop x
+     * @method
+     * @name cropX
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} x
+     * @returns {Number}
+     * @example
+     * // get crop x
+     * var cropX = image.cropX();
+     *
+     * // set crop x
+     * image.cropX(20);
+     */
 
-/**
- * get image
- * @name getImage
- * @methodOf Kinetic.Image.prototype
- */
+    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'cropY', 0);
+    /**
+     * get/set crop y
+     * @name cropY
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} y
+     * @returns {Number}
+     * @example
+     * // get crop y
+     * var cropY = image.cropY();
+     *
+     * // set crop y
+     * image.cropY(20);
+     */
+
+    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'cropWidth', 0);
+    /**
+     * get/set crop width
+     * @name cropWidth
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} width
+     * @returns {Number}
+     * @example
+     * // get crop width
+     * var cropWidth = image.cropWidth();
+     *
+     * // set crop width
+     * image.cropWidth(20);
+     */
+
+    Kinetic.Factory.addGetterSetter(Kinetic.Image, 'cropHeight', 0);
+    /**
+     * get/set crop height
+     * @name cropHeight
+     * @method
+     * @memberof Kinetic.Image.prototype
+     * @param {Number} height
+     * @returns {Number}
+     * @example
+     * // get crop height
+     * var cropHeight = image.cropHeight();
+     *
+     * // set crop height
+     * image.cropHeight(20);
+     */
+
+    Kinetic.Collection.mapMethods(Kinetic.Image);
+})();

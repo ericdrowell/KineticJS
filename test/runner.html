@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="utf-8">
+    <title>KineticJS Mocha Tests</title>
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+    <style>
+      #mocha {
+        margin-top: 20px;
+      }
+      #mocha .test {
+        overflow: auto;
+      }
+      h1 {
+        font-family: Calibri;
+        margin-left: 10px;
+      }
+      h2.kinetic-title {
+        font-family: Calibri;
+        font-size: 16px;
+        color: #555;
+        border-top: 2px solid #999;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>KineticJS Test</h1>
+    <div id="mocha"></div>
+    <div id="kinetic-container"></div>
+
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="lib/stats.js"></script>
+    <script src="../dist/kinetic-dev.js"></script>
+    <!--<script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.7.4.js"></script>-->
+    <script src="runner.js"></script>
+
+    <!-- assets -->
+    <script src="assets/tiger.js"></script>
+    <script src="assets/worldMap.js"></script>
+
+    <!--=============== unit tests ================-->
+
+    <!-- core -->
+    <script src="unit/Global-test.js"></script>
+    <script src="unit/Util-test.js"></script>
+    <script src="unit/Canvas-test.js"></script>
+    <script src="unit/Node-test.js"></script> 
+    <script src="unit/Container-test.js"></script>
+    <script src="unit/Stage-test.js"></script>
+    <script src="unit/BaseLayer-test.js"></script>
+    <script src="unit/Layer-test.js"></script>
+    <script src="unit/Group-test.js"></script>
+    <script src="unit/FastLayer-test.js"></script>
+    <script src="unit/Shape-test.js"></script>
+    <script src="unit/Collection-test.js"></script>
+
+    <!-- shapes -->
+    <script src="unit/shapes/Rect-test.js"></script>
+    <script src="unit/shapes/Circle-test.js"></script>
+    <script src="unit/shapes/Image-test.js"></script>
+    <script src="unit/shapes/Line-test.js"></script>
+    <script src="unit/shapes/Text-test.js"></script>
+    <script src="unit/shapes/Blob-test.js"></script>
+    <script src="unit/shapes/Ellipse-test.js"></script>
+    <script src="unit/shapes/Polygon-test.js"></script>
+    <script src="unit/shapes/Spline-test.js"></script>
+    <script src="unit/shapes/Sprite-test.js"></script>
+    <script src="unit/shapes/Wedge-test.js"></script>
+    <script src="unit/shapes/Arc-test.js"></script>
+    <script src="unit/shapes/Ring-test.js"></script>
+
+    <!-- extensions -->
+    <script src="unit/Animation-test.js"></script>
+    <script src="unit/DragAndDrop-test.js"></script>
+    <script src="unit/Tween-test.js"></script>
+
+    <!-- plugins -->
+    <script src="unit/plugins/Label-test.js"></script>
+    <script src="unit/plugins/Star-test.js"></script>
+    <script src="unit/plugins/RegularPolygon-test.js"></script>
+    <script src="unit/plugins/Path-test.js"></script>
+    <script src="unit/plugins/TextPath-test.js"></script>
+    <script src="unit/plugins/Arrow-test.js"></script>
+
+    <!-- filters -->
+    <script src="unit/filters/Blur-test.js"></script>
+    <script src="unit/filters/Brighten-test.js"></script>
+    <script src="unit/filters/RGB-test.js"></script>
+    <script src="unit/filters/HSV-test.js"></script>
+    <script src="unit/filters/HSL-test.js"></script>
+    <script src="unit/filters/Invert-test.js"></script>
+    <script src="unit/filters/Mask-test.js"></script>
+    <script src="unit/filters/Grayscale-test.js"></script>
+    <script src="unit/filters/Enhance-test.js"></script>
+    <script src="unit/filters/Pixelate-test.js"></script>
+    <script src="unit/filters/Noise-test.js"></script>
+    <script src="unit/filters/Threshold-test.js"></script>
+    <script src="unit/filters/Posterize-test.js"></script>
+    <script src="unit/filters/Sepia-test.js"></script>
+    <script src="unit/filters/Emboss-test.js"></script>
+    <script src="unit/filters/Solarize-test.js"></script>
+    <script src="unit/filters/Kaleidoscope-test.js"></script>
+
+    <!--=============== functional tests ================-->
+
+    <script src="functional/MouseEvents-test.js"></script>
+    <script src="functional/TouchEvents-test.js"></script>
+    <script src="functional/DragAndDropEvents-test.js"></script>
+
+    <!--=============== manual tests ================-->
+    <script src="manual/manual-test.js"></script>
+
+    <script>
+      if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+      else { mocha.run(); }
+    </script>
+  </body>
+</html>
