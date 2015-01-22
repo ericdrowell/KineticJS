@@ -1,6 +1,6 @@
-##This repo has Retired
+##Mothballed
 
-Hi all! It's been awhile since I've worked on KineticJS, and I've since moved on to other projects.  KineticJS is still an awesome HTML5 Canvas library, so I will be keeping the source in github indefinitely (as long as there is a github).  However, I will no longer be fixing issues or responding to questions.  Please feel free to fork the repo if you'd like to make changes.
+Hi all! I will no longer be maintaining this repo or the official KineticJS website because I have moved onto other ventures and projects.  The latest version of KineticJS, 5.1.0, is very solid and can still be used in production applications.  Please feel free to fork the repo if you'd like to make changes.
 
 Also, you can now find tars of every stable KineticJS build on [www.kineticjs.com](http://www.kineticjs.com)
 
