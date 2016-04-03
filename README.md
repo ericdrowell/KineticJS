@@ -1,6 +1,8 @@
 ##Mothballed
+I will no longer be maintaining this repo or the official KineticJS website because I have moved onto other ventures and projects.  The latest version of KineticJS, 5.1.0, is very solid and can still be used in production applications.  Please feel free to fork the repo if you'd like to make changes.
 
-Hi all! I will no longer be maintaining this repo or the official KineticJS website because I have moved onto other ventures and projects.  The latest version of KineticJS, 5.1.0, is very solid and can still be used in production applications.  Please feel free to fork the repo if you'd like to make changes.
+##Concrete.js Alternative
+Concrete.js is the lightweight version of KineticJS.  It supports perpherial things like hit detection, layering, pixel ratio management, exports, caching, and downloads.  While KineticJS is a heavy weight framework based on a scene graph, Concrete.js doesn't have an opinion on whether or not your canvas app requires a scene graph.  You can learn more here by going to [www.concretejs.com](http://www.concretejs.com)
 
 Also, you can now find tars of every stable KineticJS build on [www.kineticjs.com](http://www.kineticjs.com)
 
