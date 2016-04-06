@@ -580,10 +580,21 @@
         },
         _stroke: function(shape) {
             if(shape.hasStroke()) {
+                var strokeScaleEnabled = shape.getStrokeScaleEnabled();
+
+                if (!strokeScaleEnabled) {
+                    this.save();
+                    this.setTransform(1, 0, 0, 1, 0, 0);
+                }
+
                 this._applyLineCap(shape);
                 this.setAttr('lineWidth', shape.strokeWidth());
                 this.setAttr('strokeStyle', shape.colorKey);
                 shape._strokeFuncHit(this);
+
+                if (!strokeScaleEnabled) {
+                    this.restore();
+                }
             }
         }
     };
