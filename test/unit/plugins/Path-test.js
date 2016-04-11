@@ -773,7 +773,8 @@ suite('Path', function() {
 
         var path = new Kinetic.Path({
             data: "M 50 0 C 50 150 170 170 200 170",
-            stroke: 'black'
+            stroke: 'black',
+            fillEnabled: false
         });
 
         // override color key so that we can test the context trace
@@ -806,4 +807,28 @@ suite('Path', function() {
         assert.equal(hitTrace, 'clearRect(0,0,578,200);save();transform(1,0,0,1,0,0);beginPath();moveTo(50,0);bezierCurveTo(50,150,170,170,200,170);lineWidth=2;strokeStyle=black;stroke();restore();');
     });
      
+    // ======================================================
+    test('Open path with fill', function() {
+
+        // https://github.com/ericdrowell/KineticJS/issues/721
+
+        var stage = addStage();
+        var layer = new Kinetic.Layer();
+
+        var path = new Kinetic.Path({
+            data: "M 50 0 C 50 150 170 170 200 170",
+            stroke: 'black',
+            strokeWidth: 10,
+            fill: 'green'
+        });
+
+        layer.add(path);
+        stage.add(layer);
+
+        var trace = layer.getContext().getTrace();
+
+        //console.log(trace);
+
+        assert.equal(trace,    'clearRect(0,0,578,200);save();transform(1,0,0,1,0,0);beginPath();moveTo(50,0);bezierCurveTo(50,150,170,170,200,170);fillStyle=green;fill();lineWidth=10;strokeStyle=black;stroke();restore();');
+    });
 });
