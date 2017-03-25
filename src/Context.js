@@ -436,7 +436,7 @@
                 this.translate(fillPatternX || 0, fillPatternY || 0);
             }
             if(fillPatternRotation) {
-                this.rotate(fillPatternRotation);
+                this.rotate(fillPatternRotation*Math.PI/180);
             }
             if(fillPatternScale) {
                 this.scale(fillPatternScale.x, fillPatternScale.y);
