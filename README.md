@@ -1,17 +1,17 @@
-##Mothballed
+## Mothballed
 I will no longer be maintaining this repo or the official KineticJS website because I have moved onto other ventures and projects.  The latest version of KineticJS, 5.1.0, is very solid and can still be used in production applications.  Please feel free to fork the repo if you'd like to make changes.
 
-##Concrete.js Alternative
+## Concrete.js Alternative
 Concrete.js is the lightweight version of KineticJS.  It supports perpherial things like hit detection, layering, pixel ratio management, exports, caching, and downloads.  While KineticJS is a heavy weight framework based on a scene graph, Concrete.js doesn't have an opinion on whether or not your canvas app requires a scene graph.  You can learn more by going to [www.concretejs.com](http://www.concretejs.com)
 
 Also, you can now find tars of every stable KineticJS build on [www.kineticjs.com](http://www.kineticjs.com)
 
-#Installation
+# Installation
 
 * `bower install kineticjs`
 * `npm install kinetic` - for Browserify. For nodejs you have to install some [dependencies](#NodeJS)
 
-###NodeJS
+### NodeJS
 
 Support of NodeJS is experimental.
 
@@ -23,19 +23,19 @@ We are using [node-canvas](https://github.com/LearnBoost/node-canvas) to create 
 
 See file `nodejs-demo.js` for example.
 
-#Dev environment
+# Dev environment
 
 Before doing all dev stuff make sure you have node installed. After that, run `npm install --dev` in the main directory to install the node module dependencies.
 
 Run `grunt --help` to see all build options.
 
-##Building the KineticJS Framework 
+## Building the KineticJS Framework 
 
 To build a development version of the framework, run `grunt dev`. To run a full build, which also produces the minified version and the individually minified modules for the custom build, run `grunt full`.  You can also run `grunt beta` to generate a beta version.   
 
 If you add a file in the src directory, be sure to add the filename to the sourceFiles array variable in Gruntfile.js.
 
-##Testing
+## Testing
 
 [![Build Status](https://travis-ci.org/ericdrowell/KineticJS.png)](https://travis-ci.org/ericdrowell/KineticJS)
 
@@ -46,6 +46,6 @@ KineticJS uses Mocha for testing.
 
 KineticJS is covered with hundreds of tests and well over a thousand assertions.  KineticJS uses TDD (test driven development) which means that every new feature or bug fix is accompanied with at least one new test. 
 
-##Generate documentation
+## Generate documentation
 
 Run `grunt docs` which will build the documentation files and place them in the docs folder.
